@@ -1,0 +1,110 @@
+-- -- ============================================================
+-- -- V1: Convert translatable fields to JSONB for i18n support
+-- -- Supports: uz_latn, uz_cyrl, en, ru
+-- -- ============================================================
+--
+-- -- ---------- SUBJECTS ----------
+--
+-- -- 1. Add new JSONB columns
+-- ALTER TABLE subjects ADD COLUMN IF NOT EXISTS name_i18n jsonb;
+-- ALTER TABLE subjects ADD COLUMN IF NOT EXISTS description_i18n jsonb;
+--
+-- -- 2. Migrate existing data: wrap current value under "uz_latn" key
+-- UPDATE subjects
+-- SET name_i18n = jsonb_build_objectbject('uz_latn', name)
+-- WHERE name_i18n IS NULL AND name IS NOT NULL;
+--
+-- UPDATE subjects
+-- SET description_i18n = jsonb_build_object('uz_latn', description)
+-- WHERE description_i18n IS NULL AND description IS NOT NULL;
+--
+-- -- 3. Drop old columns and rename new ones
+-- ALTER TABLE subjects DROP COLUMN IF EXISTS name;
+-- ALTER TABLE subjects DROP COLUMN IF EXISTS description;
+-- ALTER TABLE subjects RENAME COLUMN name_i18n TO name;
+-- ALTER TABLE subjects RENAME COLUMN description_i18n TO description;
+--
+-- -- 4. Add NOT NULL constraint on name
+-- ALTER TABLE subjects ALTER COLUMN name SET NOT NULL;
+--
+-- -- 5. Drop old locale column (no longer needed; translations are embedded)
+-- ALTER TABLE subjects DROP COLUMN IF EXISTS locale;
+--
+-- -- 6. Drop old unique constraint and add new one using JSONB default key
+-- ALTER TABLE subjects DROP CONSTRAINT IF EXISTS subjects_user_id_name_locale_key;
+-- CREATE UNIQUE INDEX IF NOT EXISTS uq_subjects_user_name
+--     ON subjects (user_id, ((name ->> 'uz_latn')))
+--     WHERE deleted_at IS NULL;
+--
+--
+-- -- ---------- TOPICS ----------
+--
+-- ALTER TABLE topics ADD COLUMN IF NOT EXISTS name_i18n jsonb;
+-- ALTER TABLE topics ADD COLUMN IF NOT EXISTS description_i18n jsonb;
+--
+-- UPDATE topics
+-- SET name_i18n = jsonb_build_object('uz_latn', name)
+-- WHERE name_i18n IS NULL AND name IS NOT NULL;
+--
+-- UPDATE topics
+-- SET description_i18n = jsonb_build_object('uz_latn', description)
+-- WHERE description_i18n IS NULL AND description IS NOT NULL;
+--
+-- ALTER TABLE topics DROP COLUMN IF EXISTS name;
+-- ALTER TABLE topics DROP COLUMN IF EXISTS description;
+-- ALTER TABLE topics RENAME COLUMN name_i18n TO name;
+-- ALTER TABLE topics RENAME COLUMN description_i18n TO description;
+--
+-- ALTER TABLE topics ALTER COLUMN name SET NOT NULL;
+--
+--
+-- -- ---------- QUESTIONS ----------
+--
+-- ALTER TABLE questions ADD COLUMN IF NOT EXISTS question_text_i18n jsonb;
+-- ALTER TABLE questions ADD COLUMN IF NOT EXISTS proof_i18n jsonb;
+--
+-- UPDATE questions
+-- SET question_text_i18n = jsonb_build_object('uz_latn', question_text)
+-- WHERE question_text_i18n IS NULL AND question_text IS NOT NULL;
+--
+-- UPDATE questions
+-- SET proof_i18n = jsonb_build_object('uz_latn', proof)
+-- WHERE proof_i18n IS NULL AND proof IS NOT NULL;
+--
+-- ALTER TABLE questions DROP COLUMN IF EXISTS question_text;
+-- ALTER TABLE questions DROP COLUMN IF EXISTS proof;
+-- ALTER TABLE questions RENAME COLUMN question_text_i18n TO question_text;
+-- ALTER TABLE questions RENAME COLUMN proof_i18n TO proof;
+--
+-- ALTER TABLE questions ALTER COLUMN question_text SET NOT NULL;
+--
+-- -- Drop old locale column from questions
+-- ALTER TABLE questions DROP COLUMN IF EXISTS locale;
+--
+--
+-- -- ---------- QUESTION_VERSIONS ----------
+--
+-- ALTER TABLE question_versions ADD COLUMN IF NOT EXISTS question_text_i18n jsonb;
+-- ALTER TABLE question_versions ADD COLUMN IF NOT EXISTS proof_i18n jsonb;
+--
+-- UPDATE question_versions
+-- SET question_text_i18n = jsonb_build_object('uz_latn', question_text)
+-- WHERE question_text_i18n IS NULL AND question_text IS NOT NULL;
+--
+-- UPDATE question_versions
+-- SET proof_i18n = jsonb_build_object('uz_latn', proof)
+-- WHERE proof_i18n IS NULL AND proof IS NOT NULL;
+--
+-- ALTER TABLE question_versions DROP COLUMN IF EXISTS question_text;
+-- ALTER TABLE question_versions DROP COLUMN IF EXISTS proof;
+-- ALTER TABLE question_versions RENAME COLUMN question_text_i18n TO question_text;
+-- ALTER TABLE question_versions RENAME COLUMN proof_i18n TO proof;
+--
+-- ALTER TABLE question_versions ALTER COLUMN question_text SET NOT NULL;
+--
+--
+-- -- ---------- GIN INDEXES for JSONB search performance ----------
+--
+-- CREATE INDEX IF NOT EXISTS idx_subjects_name_gin ON subjects USING gin (name jsonb_path_ops);
+-- CREATE INDEX IF NOT EXISTS idx_topics_name_gin ON topics USING gin (name jsonb_path_ops);
+-- CREATE INDEX IF NOT EXISTS idx_questions_text_gin ON questions USING gin (question_text jsonb_path_ops);

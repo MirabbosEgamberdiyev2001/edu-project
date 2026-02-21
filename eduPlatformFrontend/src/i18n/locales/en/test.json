@@ -1,0 +1,118 @@
+{
+  "pageTitle": "Tests",
+  "pageSubtitle": "Generate and manage tests",
+  "generate": "Generate Test",
+  "history": "Test History",
+  "detail": "Test Details",
+  "form": {
+    "step1Title": "Select Subject & Topics",
+    "step2Title": "Question Settings",
+    "step3Title": "Additional Settings",
+    "step4Title": "Review & Generate",
+    "selectSubject": "Select Subject",
+    "selectTopics": "Select Topics",
+    "questionCount": "Number of Questions",
+    "variantCount": "Number of Variants",
+    "difficulty": "Difficulty Distribution",
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard",
+    "shuffle": "Shuffle",
+    "shuffleQuestions": "Shuffle Questions",
+    "shuffleOptions": "Shuffle Options",
+    "header": "Header Settings",
+    "schoolName": "School Name",
+    "className": "Class",
+    "teacherName": "Teacher Name",
+    "date": "Date",
+    "title": "Test Title",
+    "titlePlaceholder": "Enter test title",
+    "generate": "Generate Test",
+    "generating": "Generating...",
+    "availableQuestions": "Available Questions",
+    "totalAvailable": "Total Available",
+    "preview": "Preview"
+  },
+  "card": {
+    "questions": "{{count}} questions",
+    "variants": "{{count}} variants",
+    "created": "Created",
+    "status": "Status",
+    "downloads": "Downloads"
+  },
+  "detail": {
+    "title": "Test Details",
+    "info": "Test Information",
+    "variants": "Variants",
+    "answerKey": "Answer Key",
+    "export": "Export",
+    "subject": "Subject",
+    "topics": "Topics",
+    "questions": "Questions",
+    "variantCount": "Variants",
+    "seed": "Random Seed",
+    "shuffle": "Shuffle"
+  },
+  "export": {
+    "test": "Test",
+    "answerKey": "Answer Key",
+    "combined": "Combined",
+    "proofs": "Proofs",
+    "pdf": "PDF",
+    "docx": "DOCX",
+    "downloading": "Downloading..."
+  },
+  "status": {
+    "CREATED": "Created",
+    "GENERATING": "Generating",
+    "READY": "Ready",
+    "DOWNLOADED": "Downloaded",
+    "DELETED": "Deleted"
+  },
+  "delete": {
+    "title": "Delete Test",
+    "confirm": "Are you sure you want to delete this test? This action cannot be undone.",
+    "deleting": "Deleting..."
+  },
+  "duplicate": "Duplicate",
+  "regenerate": "Regenerate",
+  "empty": {
+    "title": "No tests found",
+    "description": "Generate your first test to get started"
+  },
+  "mode": {
+    "auto": "Automatic",
+    "manual": "Manual"
+  },
+  "manual": {
+    "step1Title": "Title & Topics",
+    "step2Title": "Select Questions",
+    "step3Title": "Settings",
+    "step4Title": "Review & Generate",
+    "filterDifficulty": "Difficulty",
+    "filterStatus": "Status",
+    "filterAll": "All",
+    "selectedCount": "{{count}} questions selected",
+    "noQuestionsFound": "No questions found for selected topics",
+    "selectAtLeastOne": "Select at least one question",
+    "questionsSelected": "questions selected",
+    "selectAllPage": "Select all on page"
+  },
+  "submitToModeration": "Submit to Moderation",
+  "submitDialog": {
+    "title": "Submit Questions to Moderation",
+    "description": "Submit the questions from this test for moderation review. Only DRAFT and REJECTED questions will be submitted.",
+    "total": "Total unique questions: {{count}}",
+    "submittable": "{{count}} questions can be submitted",
+    "noneSubmittable": "No questions available for submission",
+    "submitting": "Submitting...",
+    "confirm": "Submit for Moderation"
+  },
+  "errors": {
+    "noTopics": "Please select at least one topic",
+    "noQuestions": "Not enough questions available for selected topics",
+    "noActiveQuestions": "No active questions found for selected topics. Questions must be in ACTIVE status.",
+    "noActiveExplain": "Questions go through: DRAFT -> Submit -> PENDING -> Moderator approves -> ACTIVE. Submit your questions for moderation first.",
+    "generateFailed": "Failed to generate test"
+  }
+}

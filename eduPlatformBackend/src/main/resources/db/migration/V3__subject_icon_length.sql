@@ -1,0 +1,2 @@
+-- -- Increase subject icon column length to support image URLs
+-- ALTER TABLE subjects ALTER COLUMN icon TYPE VARCHAR(500);

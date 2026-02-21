@@ -1,0 +1,27 @@
+{
+  "required": "Bu maydon to'ldirilishi shart",
+  "email": "Elektron pochta noto'g'ri formatda",
+  "phone": "Telefon raqam noto'g'ri formatda (+998XXXXXXXXX)",
+  "emailOrPhone": "Email yoki telefon raqam kiritilishi shart",
+  "password": {
+    "min": "Parol kamida {{min}} belgidan iborat bo'lishi kerak",
+    "max": "Parol {{max}} belgidan oshmasligi kerak",
+    "lowercase": "Kamida bitta kichik harf bo'lishi kerak",
+    "uppercase": "Kamida bitta katta harf bo'lishi kerak",
+    "digit": "Kamida bitta raqam bo'lishi kerak"
+  },
+  "confirmPassword": "Parollar mos kelmadi",
+  "otp": {
+    "required": "Tasdiqlash kodini kiriting",
+    "length": "Kod {{length}} raqamdan iborat bo'lishi kerak"
+  },
+  "firstName": {
+    "required": "Ism kiritilishi shart",
+    "max": "Ism 100 belgidan oshmasligi kerak"
+  },
+  "lastName": {
+    "required": "Familiya kiritilishi shart",
+    "max": "Familiya 100 belgidan oshmasligi kerak"
+  },
+  "role": "Rol tanlanishi shart"
+}

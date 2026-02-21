@@ -1,0 +1,118 @@
+{
+  "pageTitle": "Testlar",
+  "pageSubtitle": "Testlarni yaratish va boshqarish",
+  "generate": "Test yaratish",
+  "history": "Test tarixi",
+  "detail": "Test tafsilotlari",
+  "form": {
+    "step1Title": "Fan va mavzularni tanlash",
+    "step2Title": "Savol sozlamalari",
+    "step3Title": "Qo'shimcha sozlamalar",
+    "step4Title": "Ko'rish va tasdiqlash",
+    "selectSubject": "Fanni tanlang",
+    "selectTopics": "Mavzularni tanlang",
+    "questionCount": "Savollar soni",
+    "variantCount": "Variantlar soni",
+    "difficulty": "Qiyinlik taqsimoti",
+    "easy": "Oson",
+    "medium": "O'rta",
+    "hard": "Qiyin",
+    "shuffle": "Aralashtirish",
+    "shuffleQuestions": "Savollarni aralashtirish",
+    "shuffleOptions": "Variantlarni aralashtirish",
+    "header": "Sarlavha sozlamalari",
+    "schoolName": "Maktab nomi",
+    "className": "Sinf",
+    "teacherName": "O'qituvchi ismi",
+    "date": "Sana",
+    "title": "Test nomi",
+    "titlePlaceholder": "Test nomini kiriting",
+    "generate": "Test yaratish",
+    "generating": "Yaratilmoqda...",
+    "availableQuestions": "Mavjud savollar",
+    "totalAvailable": "Jami mavjud",
+    "preview": "Ko'rish"
+  },
+  "card": {
+    "questions": "{{count}} ta savol",
+    "variants": "{{count}} ta variant",
+    "created": "Yaratilgan",
+    "status": "Holat",
+    "downloads": "Yuklanmalar"
+  },
+  "detail": {
+    "title": "Test tafsilotlari",
+    "info": "Test ma'lumotlari",
+    "variants": "Variantlar",
+    "answerKey": "Javoblar kaliti",
+    "export": "Eksport",
+    "subject": "Fan",
+    "topics": "Mavzular",
+    "questions": "Savollar",
+    "variantCount": "Variantlar",
+    "seed": "Tasodifiy raqam",
+    "shuffle": "Aralashtirish"
+  },
+  "export": {
+    "test": "Test",
+    "answerKey": "Javoblar kaliti",
+    "combined": "Birlashtirilgan",
+    "proofs": "Isbotlar",
+    "pdf": "PDF",
+    "docx": "DOCX",
+    "downloading": "Yuklanmoqda..."
+  },
+  "status": {
+    "CREATED": "Yaratilgan",
+    "GENERATING": "Yaratilmoqda",
+    "READY": "Tayyor",
+    "DOWNLOADED": "Yuklangan",
+    "DELETED": "O'chirilgan"
+  },
+  "delete": {
+    "title": "Testni o'chirish",
+    "confirm": "Bu testni o'chirishni xohlaysizmi? Bu amalni qaytarib bo'lmaydi.",
+    "deleting": "O'chirilmoqda..."
+  },
+  "duplicate": "Nusxalash",
+  "regenerate": "Qayta yaratish",
+  "empty": {
+    "title": "Testlar topilmadi",
+    "description": "Boshlash uchun birinchi testingizni yarating"
+  },
+  "mode": {
+    "auto": "Avtomatik",
+    "manual": "Qo'lda"
+  },
+  "manual": {
+    "step1Title": "Nom va mavzular",
+    "step2Title": "Savollarni tanlash",
+    "step3Title": "Sozlamalar",
+    "step4Title": "Ko'rish va tasdiqlash",
+    "filterDifficulty": "Qiyinlik",
+    "filterStatus": "Holat",
+    "filterAll": "Barchasi",
+    "selectedCount": "{{count}} ta savol tanlandi",
+    "noQuestionsFound": "Tanlangan mavzular uchun savollar topilmadi",
+    "selectAtLeastOne": "Kamida bitta savol tanlang",
+    "questionsSelected": "ta savol tanlandi",
+    "selectAllPage": "Barchasini tanlash"
+  },
+  "submitToModeration": "Moderatsiyaga yuborish",
+  "submitDialog": {
+    "title": "Savollarni moderatsiyaga yuborish",
+    "description": "Ushbu testdagi savollarni moderatsiya tekshiruviga yuborish. Faqat QORALAMA va RAD ETILGAN savollar yuboriladi.",
+    "total": "Jami noyob savollar: {{count}}",
+    "submittable": "{{count}} ta savol yuborilishi mumkin",
+    "noneSubmittable": "Yuborish uchun savollar mavjud emas",
+    "submitting": "Yuborilmoqda...",
+    "confirm": "Moderatsiyaga yuborish"
+  },
+  "errors": {
+    "noTopics": "Kamida bitta mavzuni tanlang",
+    "noQuestions": "Tanlangan mavzular uchun yetarli savol yo'q",
+    "noActiveQuestions": "Tanlangan mavzular uchun faol savollar topilmadi. Savollar ACTIVE holatida bo'lishi kerak.",
+    "noActiveExplain": "Savollar quyidagi bosqichlardan o'tadi: QORALAMA -> Yuborish -> KUTILMOQDA -> Moderator tasdiqlaydi -> FAOL. Avval savollaringizni moderatsiyaga yuboring.",
+    "generateFailed": "Test yaratishda xatolik"
+  }
+}

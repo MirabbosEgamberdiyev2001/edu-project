@@ -1,0 +1,27 @@
+{
+  "required": "This field is required",
+  "email": "Invalid email format",
+  "phone": "Invalid phone format (+998XXXXXXXXX)",
+  "emailOrPhone": "Email or phone number is required",
+  "password": {
+    "min": "Password must be at least {{min}} characters",
+    "max": "Password must not exceed {{max}} characters",
+    "lowercase": "Must contain at least one lowercase letter",
+    "uppercase": "Must contain at least one uppercase letter",
+    "digit": "Must contain at least one digit"
+  },
+  "confirmPassword": "Passwords do not match",
+  "otp": {
+    "required": "Enter verification code",
+    "length": "Code must be {{length}} digits"
+  },
+  "firstName": {
+    "required": "First name is required",
+    "max": "First name must not exceed 100 characters"
+  },
+  "lastName": {
+    "required": "Last name is required",
+    "max": "Last name must not exceed 100 characters"
+  },
+  "role": "Role is required"
+}

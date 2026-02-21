@@ -1,0 +1,28 @@
+{
+  "title": "Mavzular",
+  "pageTitle": "Mavzular",
+  "pageSubtitle": "Fan bo'yicha mavzularni boshqarish",
+  "selectSubject": "Fanni tanlang",
+  "selectSubjectHint": "Mavzularni ko'rish uchun fanni tanlang",
+  "selectSubjectDescription": "Yuqoridagi ro'yxatdan fanni tanlang",
+  "noSubjects": "Fanlar topilmadi. Avval fan yarating.",
+  "create": "Yaratish",
+  "createTitle": "Yangi mavzu yaratish",
+  "createSubtopic": "Ichki mavzu yaratish",
+  "edit": "Tahrirlash",
+  "editTitle": "Mavzuni tahrirlash",
+  "delete": "O'chirish",
+  "deleteTitle": "Mavzuni o'chirish",
+  "deleteConfirm": "\"{{name}}\" mavzusini o'chirishni xohlaysizmi? Barcha ichki mavzular ham o'chiriladi.",
+  "addRoot": "Mavzu qo'shish",
+  "addSubtopic": "Ichki mavzu qo'shish",
+  "empty": "Mavzular topilmadi",
+  "emptyDescription": "Birinchi mavzungizni yarating",
+  "form": {
+    "name": "Mavzu nomi",
+    "namePlaceholder": "Mavzu nomini kiriting",
+    "description": "Tavsif",
+    "descriptionPlaceholder": "Mavzu haqida qisqacha tavsif",
+    "langHint": "Barcha tillarni to'ldiring. Kamida o'zbekcha (lotin) majburiy."
+  }
+}

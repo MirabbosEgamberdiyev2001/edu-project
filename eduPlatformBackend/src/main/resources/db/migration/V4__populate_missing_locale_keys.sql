@@ -1,0 +1,146 @@
+-- -- ============================================================
+-- -- V4: Fix stale locale keys in JSONB translation fields
+-- -- Problem: Some data was saved with frontend lang codes ("uzl", "uzc")
+-- -- instead of proper backend keys ("uz_latn", "uz_cyrl").
+-- -- This migration:
+-- --   1. Moves "uzl" values -> "uz_latn" (if uz_latn is missing)
+-- --   2. Moves "uzc" values -> "uz_cyrl" (if uz_cyrl is missing)
+-- --   3. Removes stale "uzl" and "uzc" keys from all JSONB fields
+-- -- ============================================================
+--
+-- -- ========== SUBJECTS: name ==========
+--
+-- -- Move "uzl" -> "uz_latn" if uz_latn is missing
+-- UPDATE subjects
+-- SET name = name || jsonb_build_object('uz_latn', name ->> 'uzl')
+-- WHERE name IS NOT NULL
+--   AND name ? 'uzl'
+--   AND NOT (name ? 'uz_latn' AND (name ->> 'uz_latn') IS NOT NULL AND (name ->> 'uz_latn') <> '');
+--
+-- -- Move "uzc" -> "uz_cyrl" if uz_cyrl is missing
+-- UPDATE subjects
+-- SET name = name || jsonb_build_object('uz_cyrl', name ->> 'uzc')
+-- WHERE name IS NOT NULL
+--   AND name ? 'uzc'
+--   AND NOT (name ? 'uz_cyrl' AND (name ->> 'uz_cyrl') IS NOT NULL AND (name ->> 'uz_cyrl') <> '');
+--
+-- -- Remove stale keys
+-- UPDATE subjects SET name = name - 'uzl' - 'uzc' WHERE name ? 'uzl' OR name ? 'uzc';
+--
+-- -- ========== SUBJECTS: description ==========
+--
+-- UPDATE subjects
+-- SET description = description || jsonb_build_object('uz_latn', description ->> 'uzl')
+-- WHERE description IS NOT NULL
+--   AND description ? 'uzl'
+--   AND NOT (description ? 'uz_latn' AND (description ->> 'uz_latn') IS NOT NULL AND (description ->> 'uz_latn') <> '');
+--
+-- UPDATE subjects
+-- SET description = description || jsonb_build_object('uz_cyrl', description ->> 'uzc')
+-- WHERE description IS NOT NULL
+--   AND description ? 'uzc'
+--   AND NOT (description ? 'uz_cyrl' AND (description ->> 'uz_cyrl') IS NOT NULL AND (description ->> 'uz_cyrl') <> '');
+--
+-- UPDATE subjects SET description = description - 'uzl' - 'uzc'
+-- WHERE description IS NOT NULL AND (description ? 'uzl' OR description ? 'uzc');
+--
+-- -- ========== TOPICS: name ==========
+--
+-- UPDATE topics
+-- SET name = name || jsonb_build_object('uz_latn', name ->> 'uzl')
+-- WHERE name IS NOT NULL
+--   AND name ? 'uzl'
+--   AND NOT (name ? 'uz_latn' AND (name ->> 'uz_latn') IS NOT NULL AND (name ->> 'uz_latn') <> '');
+--
+-- UPDATE topics
+-- SET name = name || jsonb_build_object('uz_cyrl', name ->> 'uzc')
+-- WHERE name IS NOT NULL
+--   AND name ? 'uzc'
+--   AND NOT (name ? 'uz_cyrl' AND (name ->> 'uz_cyrl') IS NOT NULL AND (name ->> 'uz_cyrl') <> '');
+--
+-- UPDATE topics SET name = name - 'uzl' - 'uzc' WHERE name ? 'uzl' OR name ? 'uzc';
+--
+-- -- ========== TOPICS: description ==========
+--
+-- UPDATE topics
+-- SET description = description || jsonb_build_object('uz_latn', description ->> 'uzl')
+-- WHERE description IS NOT NULL
+--   AND description ? 'uzl'
+--   AND NOT (description ? 'uz_latn' AND (description ->> 'uz_latn') IS NOT NULL AND (description ->> 'uz_latn') <> '');
+--
+-- UPDATE topics
+-- SET description = description || jsonb_build_object('uz_cyrl', description ->> 'uzc')
+-- WHERE description IS NOT NULL
+--   AND description ? 'uzc'
+--   AND NOT (description ? 'uz_cyrl' AND (description ->> 'uz_cyrl') IS NOT NULL AND (description ->> 'uz_cyrl') <> '');
+--
+-- UPDATE topics SET description = description - 'uzl' - 'uzc'
+-- WHERE description IS NOT NULL AND (description ? 'uzl' OR description ? 'uzc');
+--
+-- -- ========== QUESTIONS: question_text ==========
+--
+-- UPDATE questions
+-- SET question_text = question_text || jsonb_build_object('uz_latn', question_text ->> 'uzl')
+-- WHERE question_text IS NOT NULL
+--   AND question_text ? 'uzl'
+--   AND NOT (question_text ? 'uz_latn' AND (question_text ->> 'uz_latn') IS NOT NULL AND (question_text ->> 'uz_latn') <> '');
+--
+-- UPDATE questions
+-- SET question_text = question_text || jsonb_build_object('uz_cyrl', question_text ->> 'uzc')
+-- WHERE question_text IS NOT NULL
+--   AND question_text ? 'uzc'
+--   AND NOT (question_text ? 'uz_cyrl' AND (question_text ->> 'uz_cyrl') IS NOT NULL AND (question_text ->> 'uz_cyrl') <> '');
+--
+-- UPDATE questions SET question_text = question_text - 'uzl' - 'uzc'
+-- WHERE question_text ? 'uzl' OR question_text ? 'uzc';
+--
+-- -- ========== QUESTIONS: proof ==========
+--
+-- UPDATE questions
+-- SET proof = proof || jsonb_build_object('uz_latn', proof ->> 'uzl')
+-- WHERE proof IS NOT NULL
+--   AND proof ? 'uzl'
+--   AND NOT (proof ? 'uz_latn' AND (proof ->> 'uz_latn') IS NOT NULL AND (proof ->> 'uz_latn') <> '');
+--
+-- UPDATE questions
+-- SET proof = proof || jsonb_build_object('uz_cyrl', proof ->> 'uzc')
+-- WHERE proof IS NOT NULL
+--   AND proof ? 'uzc'
+--   AND NOT (proof ? 'uz_cyrl' AND (proof ->> 'uz_cyrl') IS NOT NULL AND (proof ->> 'uz_cyrl') <> '');
+--
+-- UPDATE questions SET proof = proof - 'uzl' - 'uzc'
+-- WHERE proof IS NOT NULL AND (proof ? 'uzl' OR proof ? 'uzc');
+--
+-- -- ========== QUESTION_VERSIONS: question_text ==========
+--
+-- UPDATE question_versions
+-- SET question_text = question_text || jsonb_build_object('uz_latn', question_text ->> 'uzl')
+-- WHERE question_text IS NOT NULL
+--   AND question_text ? 'uzl'
+--   AND NOT (question_text ? 'uz_latn' AND (question_text ->> 'uz_latn') IS NOT NULL AND (question_text ->> 'uz_latn') <> '');
+--
+-- UPDATE question_versions
+-- SET question_text = question_text || jsonb_build_object('uz_cyrl', question_text ->> 'uzc')
+-- WHERE question_text IS NOT NULL
+--   AND question_text ? 'uzc'
+--   AND NOT (question_text ? 'uz_cyrl' AND (question_text ->> 'uz_cyrl') IS NOT NULL AND (question_text ->> 'uz_cyrl') <> '');
+--
+-- UPDATE question_versions SET question_text = question_text - 'uzl' - 'uzc'
+-- WHERE question_text ? 'uzl' OR question_text ? 'uzc';
+--
+-- -- ========== QUESTION_VERSIONS: proof ==========
+--
+-- UPDATE question_versions
+-- SET proof = proof || jsonb_build_object('uz_latn', proof ->> 'uzl')
+-- WHERE proof IS NOT NULL
+--   AND proof ? 'uzl'
+--   AND NOT (proof ? 'uz_latn' AND (proof ->> 'uz_latn') IS NOT NULL AND (proof ->> 'uz_latn') <> '');
+--
+-- UPDATE question_versions
+-- SET proof = proof || jsonb_build_object('uz_cyrl', proof ->> 'uzc')
+-- WHERE proof IS NOT NULL
+--   AND proof ? 'uzc'
+--   AND NOT (proof ? 'uz_cyrl' AND (proof ->> 'uz_cyrl') IS NOT NULL AND (proof ->> 'uz_cyrl') <> '');
+--
+-- UPDATE question_versions SET proof = proof - 'uzl' - 'uzc'
+-- WHERE proof IS NOT NULL AND (proof ? 'uzl' OR proof ? 'uzc');

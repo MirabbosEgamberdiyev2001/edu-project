@@ -1,0 +1,93 @@
+import {
+  Box,
+  Typography,
+  Paper,
+  CircularProgress,
+  Grid,
+  Button,
+} from '@mui/material';
+import DownloadIcon from '@mui/icons-material/Download';
+import { useTranslation } from 'react-i18next';
+import { useTeacherDashboard, useExportTeacherDashboard } from '../hooks/useTeacherDashboard';
+import StatSummaryCards from '../components/StatSummaryCards';
+import ScoreTrendChart from '../components/ScoreTrendChart';
+import TopStudentsTable from '../components/TopStudentsTable';
+import AtRiskStudentsTable from '../components/AtRiskStudentsTable';
+
+export default function TeacherAnalyticsPage() {
+  const { t } = useTranslation('analytics');
+  const { data, isLoading } = useTeacherDashboard();
+  const { exportDashboard } = useExportTeacherDashboard();
+
+  if (isLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!data) return null;
+
+  const stats = [
+    { label: t('totalStudents'), value: data.totalStudents, color: '#1976d2' },
+    { label: t('totalGroups'), value: data.totalGroups, color: '#2e7d32' },
+    { label: t('totalAssignments'), value: data.totalAssignments, color: '#ed6c02' },
+    { label: t('avgScore'), value: Math.round(data.averageScore), color: '#9c27b0', suffix: '%' },
+    { label: t('completionRate'), value: Math.round(data.completionRate), color: '#00796b', suffix: '%' },
+  ];
+
+  return (
+    <Box>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Box>
+          <Typography variant="h5" fontWeight={700}>{t('teacherTitle')}</Typography>
+          <Typography variant="body2" color="text.secondary">{t('teacherSubtitle')}</Typography>
+        </Box>
+        <Button startIcon={<DownloadIcon />} onClick={exportDashboard} variant="outlined" size="small">
+          {t('exportPdf')}
+        </Button>
+      </Box>
+
+      <Box sx={{ mb: 3 }}>
+        <StatSummaryCards stats={stats} />
+      </Box>
+
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ p: 2 }}>
+            <ScoreTrendChart data={data.testCreationTrend} title={t('testCreationTrend')} />
+          </Paper>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ p: 2 }}>
+            <Typography variant="subtitle2" sx={{ mb: 2 }}>{t('recentActivity')}</Typography>
+            {data.recentActivity.map((activity, i) => (
+              <Box key={i} sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Typography variant="body2">{activity.description}</Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {new Date(activity.createdAt).toLocaleDateString()}
+                </Typography>
+              </Box>
+            ))}
+          </Paper>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ p: 2 }}>
+            <Typography variant="subtitle2" sx={{ mb: 2 }}>{t('topStudents')}</Typography>
+            <TopStudentsTable students={data.topStudents} />
+          </Paper>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ p: 2 }}>
+            <Typography variant="subtitle2" sx={{ mb: 2 }}>{t('atRiskStudents')}</Typography>
+            <AtRiskStudentsTable students={data.atRiskStudents} />
+          </Paper>
+        </Grid>
+      </Grid>
+    </Box>
+  );
+}

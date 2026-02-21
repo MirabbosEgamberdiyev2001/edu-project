@@ -1,0 +1,3 @@
+-- -- V2: Change refresh_token and user_agent columns to TEXT (JWT tokens exceed 255 chars)
+-- ALTER TABLE user_sessions ALTER COLUMN refresh_token TYPE TEXT;
+-- ALTER TABLE user_sessions ALTER COLUMN user_agent TYPE TEXT;

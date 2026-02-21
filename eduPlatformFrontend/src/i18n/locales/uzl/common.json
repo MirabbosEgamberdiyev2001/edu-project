@@ -1,0 +1,33 @@
+{
+  "appName": "EduPlatform",
+  "loading": "Yuklanmoqda...",
+  "error": "Xatolik yuz berdi",
+  "success": "Muvaffaqiyatli",
+  "cancel": "Bekor qilish",
+  "save": "Saqlash",
+  "delete": "O'chirish",
+  "edit": "Tahrirlash",
+  "back": "Orqaga",
+  "next": "Keyingi",
+  "submit": "Yuborish",
+  "or": "yoki",
+  "dashboard": "Bosh sahifa",
+  "subjects": "Fanlar",
+  "topics": "Mavzular",
+  "questions": "Savollar",
+  "tests": "Testlar",
+  "settings": "Sozlamalar",
+  "profile": "Profil",
+  "logout": "Chiqish",
+  "language": "Til",
+  "notFound": {
+    "title": "Sahifa topilmadi",
+    "description": "Siz izlayotgan sahifa mavjud emas yoki boshqa manzilga ko'chirilgan",
+    "goHome": "Bosh sahifaga qaytish"
+  },
+  "unauthorized": {
+    "title": "Ruxsat berilmagan",
+    "description": "Sizda bu sahifaga kirishga ruxsat yo'q",
+    "goBack": "Orqaga qaytish"
+  }
+}

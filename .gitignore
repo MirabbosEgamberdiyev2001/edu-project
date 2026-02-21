@@ -1,0 +1,23 @@
+# === Backend (Java/Maven) ===
+eduPlatformBackend/target/
+eduPlatformBackend/.idea/
+eduPlatformBackend/.qodo/
+eduPlatformBackend/*.iml
+eduPlatformBackend/uploads/
+
+# === Frontend (Node/React) ===
+eduPlatformFrontend/node_modules/
+eduPlatformFrontend/dist/
+eduPlatformFrontend/.env
+eduPlatformFrontend/.env.local
+eduPlatformFrontend/.env.*.local
+eduPlatformFrontend/packages/*/node_modules/
+eduPlatformFrontend/packages/*/dist/
+
+# === Root ===
+uploads/
+.idea/
+.qodo/
+*.log
+.DS_Store
+.claude/

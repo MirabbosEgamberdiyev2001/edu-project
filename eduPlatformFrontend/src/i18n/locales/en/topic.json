@@ -1,0 +1,28 @@
+{
+  "title": "Topics",
+  "pageTitle": "Topics",
+  "pageSubtitle": "Manage topics by subject",
+  "selectSubject": "Select a subject",
+  "selectSubjectHint": "Select a subject to view topics",
+  "selectSubjectDescription": "Choose a subject from the dropdown above",
+  "noSubjects": "No subjects found. Create a subject first.",
+  "create": "Create",
+  "createTitle": "Create New Topic",
+  "createSubtopic": "Create Subtopic",
+  "edit": "Edit",
+  "editTitle": "Edit Topic",
+  "delete": "Delete",
+  "deleteTitle": "Delete Topic",
+  "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? All subtopics will also be deleted.",
+  "addRoot": "Add Topic",
+  "addSubtopic": "Add subtopic",
+  "empty": "No topics found",
+  "emptyDescription": "Create your first topic to get started",
+  "form": {
+    "name": "Topic name",
+    "namePlaceholder": "Enter topic name",
+    "description": "Description",
+    "descriptionPlaceholder": "Brief description of the topic",
+    "langHint": "Fill in all languages. At least Uzbek (Latin) is required."
+  }
+}
