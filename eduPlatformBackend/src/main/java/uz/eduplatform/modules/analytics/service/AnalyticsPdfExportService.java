@@ -7,7 +7,6 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.springframework.stereotype.Service;
 import uz.eduplatform.modules.analytics.dto.GroupStatisticsDto;
 import uz.eduplatform.modules.analytics.dto.TeacherDashboardDto;
@@ -32,8 +31,8 @@ public class AnalyticsPdfExportService {
             PDPage page = new PDPage(PDRectangle.A4);
             doc.addPage(page);
 
-            PDType1Font fontBold = new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
-            PDType1Font fontNormal = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
+            PDType1Font fontBold = PDType1Font.HELVETICA_BOLD;
+            PDType1Font fontNormal = PDType1Font.HELVETICA;
 
             try (PDPageContentStream cs = new PDPageContentStream(doc, page)) {
                 float y = page.getMediaBox().getHeight() - MARGIN;
@@ -108,8 +107,8 @@ public class AnalyticsPdfExportService {
             PDPage page = new PDPage(PDRectangle.A4);
             doc.addPage(page);
 
-            PDType1Font fontBold = new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
-            PDType1Font fontNormal = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
+            PDType1Font fontBold = PDType1Font.HELVETICA_BOLD;
+            PDType1Font fontNormal = PDType1Font.HELVETICA;
 
             try (PDPageContentStream cs = new PDPageContentStream(doc, page)) {
                 float y = page.getMediaBox().getHeight() - MARGIN;

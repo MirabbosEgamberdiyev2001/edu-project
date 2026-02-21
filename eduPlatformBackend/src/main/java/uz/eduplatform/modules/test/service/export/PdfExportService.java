@@ -3,7 +3,6 @@ package uz.eduplatform.modules.test.service.export;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -11,7 +10,6 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.springframework.stereotype.Service;
 import uz.eduplatform.core.common.exception.BusinessException;
 import uz.eduplatform.core.common.utils.MessageService;
@@ -286,8 +284,8 @@ public class PdfExportService implements TestExportService {
             }
         }
         log.warn("NotoSans font not found at {}, falling back to Helvetica (Cyrillic will not render)", path);
-        return bold ? new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD)
-                    : new PDType1Font(Standard14Fonts.FontName.HELVETICA);
+        return bold ? PDType1Font.HELVETICA_BOLD
+                    : PDType1Font.HELVETICA;
     }
 
     // ===== Private helpers =====
@@ -506,8 +504,8 @@ public class PdfExportService implements TestExportService {
     }
 
     private byte[] mergePdfs(byte[] pdf1, byte[] pdf2, Locale locale) {
-        try (PDDocument doc1 = Loader.loadPDF(pdf1);
-             PDDocument doc2 = Loader.loadPDF(pdf2)) {
+        try (PDDocument doc1 = PDDocument.load(pdf1);
+             PDDocument doc2 = PDDocument.load(pdf2)) {
 
             for (int i = 0; i < doc2.getNumberOfPages(); i++) {
                 doc1.addPage(doc2.getPage(i));
