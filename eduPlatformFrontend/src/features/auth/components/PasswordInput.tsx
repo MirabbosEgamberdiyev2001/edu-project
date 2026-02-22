@@ -12,22 +12,19 @@ export default function PasswordInput(props: PasswordInputProps) {
     <TextField
       {...props}
       type={showPassword ? 'text' : 'password'}
-      slotProps={{
-        ...props.slotProps,
-        input: {
-          ...(props.slotProps?.input as object),
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton
-                onClick={() => setShowPassword(!showPassword)}
-                edge="end"
-                size="small"
-              >
-                {showPassword ? <VisibilityOff /> : <Visibility />}
-              </IconButton>
-            </InputAdornment>
-          ),
-        },
+      InputProps={{
+        ...props.InputProps,
+        endAdornment: (
+          <InputAdornment position="end">
+            <IconButton
+              onClick={() => setShowPassword(!showPassword)}
+              edge="end"
+              size="small"
+            >
+              {showPassword ? <VisibilityOff /> : <Visibility />}
+            </IconButton>
+          </InputAdornment>
+        ),
       }}
     />
   );

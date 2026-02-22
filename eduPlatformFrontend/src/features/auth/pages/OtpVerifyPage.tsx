@@ -33,7 +33,7 @@ export default function OtpVerifyPage() {
   const toast = useToast();
   const autoVerifyAttempted = useRef(false);
 
-  // Merge: prefer router state, fallback to URL query params (from email link)
+  // Merge: prefer router state, fallback to URL query params, then sessionStorage
   const state = useMemo<OtpState | null>(() => {
     if (routerState?.identifier && routerState?.purpose) {
       return routerState;
@@ -42,6 +42,18 @@ export default function OtpVerifyPage() {
     const qPurpose = searchParams.get('purpose');
     if (qIdentifier && (qPurpose === 'REGISTER' || qPurpose === 'PASSWORD_RESET')) {
       return { identifier: qIdentifier, purpose: qPurpose };
+    }
+    // Fallback: restore from sessionStorage (survives page refresh)
+    try {
+      const saved = sessionStorage.getItem('otpState');
+      if (saved) {
+        const parsed = JSON.parse(saved) as OtpState;
+        if (parsed.identifier && parsed.purpose) {
+          return parsed;
+        }
+      }
+    } catch {
+      // ignore
     }
     return null;
   }, [routerState, searchParams]);

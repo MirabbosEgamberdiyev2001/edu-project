@@ -20,6 +20,13 @@
   "profile": "Profil",
   "logout": "Chiqish",
   "language": "Til",
+  "groups": "Guruhlar",
+  "assignments": "Topshiriqlar",
+  "analytics": "Tahlillar",
+  "myTests": "Mening testlarim",
+  "myAttempts": "Mening urinishlarim",
+  "myChildren": "Mening farzandlarim",
+  "pairing": "Bog'lanish",
   "notFound": {
     "title": "Sahifa topilmadi",
     "description": "Siz izlayotgan sahifa mavjud emas yoki boshqa manzilga ko'chirilgan",

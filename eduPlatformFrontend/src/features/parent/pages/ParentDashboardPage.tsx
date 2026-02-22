@@ -50,18 +50,16 @@ export default function ParentDashboardPage() {
       {isParent && showPairing && (
         <Box sx={{ mb: 3 }}>
           <PairWithCodeForm
-            onPair={(code) => pairWithCode.mutate(code, { onSuccess: () => setShowPairing(false) })}
+            onSubmit={(code: string) => pairWithCode.mutate({ code }, { onSuccess: () => setShowPairing(false) })}
             isPending={pairWithCode.isPending}
           />
         </Box>
       )}
 
-      {children && (
-        <ChildrenList
-          children={children}
-          onSelect={(childId) => navigate(`/my-children/${childId}`)}
-        />
-      )}
+      <ChildrenList
+        children={children}
+        isLoading={isLoading}
+      />
     </Box>
   );
 }

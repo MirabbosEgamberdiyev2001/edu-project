@@ -27,5 +27,18 @@
   "myQuestions": "My Questions",
   "myTests": "My Tests",
   "recentActivity": "Recent Activity",
-  "noActivity": "No recent activity"
+  "noActivity": "No recent activity",
+  "activeSessions": "Active Sessions",
+  "activeSessionsDescription": "Manage your active sessions across devices",
+  "currentSession": "Current Session",
+  "revokeSession": "Revoke",
+  "revokeAllSessions": "Revoke All Other Sessions",
+  "revokeConfirm": "Are you sure you want to revoke this session?",
+  "revokeAllConfirm": "Are you sure you want to revoke all other sessions?",
+  "sessionRevoked": "Session revoked successfully",
+  "allSessionsRevoked": "All other sessions revoked",
+  "ipAddress": "IP Address",
+  "device": "Device",
+  "lastActivity": "Last Activity",
+  "noSessions": "No active sessions"
 }

@@ -27,5 +27,18 @@
   "myQuestions": "Менинг саволларим",
   "myTests": "Менинг тестларим",
   "recentActivity": "Сўнгги фаолият",
-  "noActivity": "Сўнгги фаолият йўқ"
+  "noActivity": "Сўнгги фаолият йўқ",
+  "activeSessions": "Фаол сеанслар",
+  "activeSessionsDescription": "Қурилмаларингиздаги фаол сеансларни бошқариш",
+  "currentSession": "Жорий сеанс",
+  "revokeSession": "Бекор қилиш",
+  "revokeAllSessions": "Бошқа барча сеансларни бекор қилиш",
+  "revokeConfirm": "Ушбу сеансни бекор қилмоқчимисиз?",
+  "revokeAllConfirm": "Бошқа барча сеансларни бекор қилмоқчимисиз?",
+  "sessionRevoked": "Сеанс муваффақиятли бекор қилинди",
+  "allSessionsRevoked": "Барча бошқа сеанслар бекор қилинди",
+  "ipAddress": "IP манзил",
+  "device": "Қурилма",
+  "lastActivity": "Охирги фаоллик",
+  "noSessions": "Фаол сеанслар йўқ"
 }

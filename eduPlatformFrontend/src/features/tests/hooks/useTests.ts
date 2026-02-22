@@ -1,6 +1,17 @@
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { testApi } from '@/api/testApi';
 
+export function useTests(params?: { page?: number; size?: number }) {
+  return useQuery({
+    queryKey: ['tests', 'list', params],
+    queryFn: async () => {
+      const { data } = await testApi.getHistory(params);
+      return data.data;
+    },
+    placeholderData: keepPreviousData,
+  });
+}
+
 export function useTestHistory(params?: { page?: number; size?: number }) {
   return useQuery({
     queryKey: ['tests', 'history', params],

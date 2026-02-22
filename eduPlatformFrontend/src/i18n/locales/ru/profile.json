@@ -27,5 +27,18 @@
   "myQuestions": "Мои вопросы",
   "myTests": "Мои тесты",
   "recentActivity": "Последняя активность",
-  "noActivity": "Нет недавней активности"
+  "noActivity": "Нет недавней активности",
+  "activeSessions": "Активные сессии",
+  "activeSessionsDescription": "Управление активными сессиями на устройствах",
+  "currentSession": "Текущая сессия",
+  "revokeSession": "Отозвать",
+  "revokeAllSessions": "Отозвать все другие сессии",
+  "revokeConfirm": "Вы уверены, что хотите отозвать эту сессию?",
+  "revokeAllConfirm": "Вы уверены, что хотите отозвать все другие сессии?",
+  "sessionRevoked": "Сессия успешно отозвана",
+  "allSessionsRevoked": "Все другие сессии отозваны",
+  "ipAddress": "IP-адрес",
+  "device": "Устройство",
+  "lastActivity": "Последняя активность",
+  "noSessions": "Нет активных сессий"
 }

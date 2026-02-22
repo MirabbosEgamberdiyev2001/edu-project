@@ -25,7 +25,7 @@ export default function GroupAnalyticsPage() {
   const navigate = useNavigate();
   const { t } = useTranslation('analytics');
   const { data, isLoading } = useGroupStatistics(groupId!);
-  const { exportStatistics } = useExportGroupStatistics();
+  const { exportGroupStats } = useExportGroupStatistics();
 
   if (isLoading) {
     return (
@@ -55,7 +55,7 @@ export default function GroupAnalyticsPage() {
           <Typography variant="h5" fontWeight={700}>{data.groupName}</Typography>
           <Typography variant="body2" color="text.secondary">{t('groupAnalytics')}</Typography>
         </Box>
-        <Button startIcon={<DownloadIcon />} onClick={() => exportStatistics(groupId!)} variant="outlined" size="small">
+        <Button startIcon={<DownloadIcon />} onClick={() => exportGroupStats(groupId!)} variant="outlined" size="small">
           {t('exportPdf')}
         </Button>
       </Box>

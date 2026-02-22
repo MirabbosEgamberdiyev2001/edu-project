@@ -14,6 +14,10 @@ export function useRegister() {
     mutationFn: (data: RegisterRequest) => authApi.register(data),
     onSuccess: (_resp, variables) => {
       const identifier = variables.email || variables.phone || '';
+      sessionStorage.setItem(
+        'otpState',
+        JSON.stringify({ identifier, purpose: 'REGISTER' }),
+      );
       navigate('/auth/otp-verify', {
         state: {
           identifier,

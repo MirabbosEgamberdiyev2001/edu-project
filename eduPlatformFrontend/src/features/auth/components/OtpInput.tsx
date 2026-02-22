@@ -14,7 +14,7 @@ interface OtpInputProps {
 export default function OtpInput({ value, onChange, onComplete, error, disabled }: OtpInputProps) {
   const theme = useTheme();
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const digits = value.padEnd(OTP_LENGTH, '').split('').slice(0, OTP_LENGTH);
+  const digits = Array.from({ length: OTP_LENGTH }, (_, i) => value[i] || '');
 
   const primaryColor = theme.palette.primary.main;
   const errorColor = theme.palette.error.main;
@@ -34,13 +34,6 @@ export default function OtpInput({ value, onChange, onComplete, error, disabled 
     }
   }, [disabled, focusInput]);
 
-  // Auto-submit when all digits are filled
-  useEffect(() => {
-    if (value.length === OTP_LENGTH && onComplete) {
-      onComplete(value);
-    }
-  }, [value, onComplete]);
-
   const handleChange = useCallback(
     (index: number, inputValue: string) => {
       const char = inputValue.replace(/\D/g, '').slice(-1);
@@ -53,9 +46,11 @@ export default function OtpInput({ value, onChange, onComplete, error, disabled 
 
       if (char && index < OTP_LENGTH - 1) {
         focusInput(index + 1);
+      } else if (newValue.length === OTP_LENGTH && onComplete) {
+        onComplete(newValue);
       }
     },
-    [digits, onChange, focusInput],
+    [digits, onChange, focusInput, onComplete],
   );
 
   const handleKeyDown = useCallback(
@@ -89,9 +84,12 @@ export default function OtpInput({ value, onChange, onComplete, error, disabled 
       if (pasted) {
         onChange(pasted);
         focusInput(Math.min(pasted.length, OTP_LENGTH - 1));
+        if (pasted.length === OTP_LENGTH && onComplete) {
+          onComplete(pasted);
+        }
       }
     },
-    [onChange, focusInput],
+    [onChange, focusInput, onComplete],
   );
 
   const handleFocus = useCallback((e: React.FocusEvent<HTMLInputElement>) => {

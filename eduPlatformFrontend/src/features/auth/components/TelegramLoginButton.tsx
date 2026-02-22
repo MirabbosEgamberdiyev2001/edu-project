@@ -11,7 +11,7 @@ export default function TelegramLoginButton() {
     if (!botUsername || !containerRef.current) return;
 
     // Define the callback globally
-    (window as Record<string, unknown>).onTelegramAuth = (user: {
+    (window as unknown as Record<string, unknown>).onTelegramAuth = (user: {
       id: number; first_name: string; last_name?: string;
       username?: string; photo_url?: string; auth_date: number; hash: string;
     }) => {
@@ -37,7 +37,7 @@ export default function TelegramLoginButton() {
     containerRef.current.appendChild(script);
 
     return () => {
-      delete (window as Record<string, unknown>).onTelegramAuth;
+      delete (window as unknown as Record<string, unknown>).onTelegramAuth;
     };
   }, [botUsername, telegramAuth]);
 

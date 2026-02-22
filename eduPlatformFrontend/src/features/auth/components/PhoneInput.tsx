@@ -18,18 +18,15 @@ export default function PhoneInput({ value, onChange, ...props }: PhoneInputProp
       {...props}
       value={displayValue}
       onChange={handleChange}
-      slotProps={{
-        ...props.slotProps,
-        input: {
-          ...(props.slotProps?.input as object),
-          startAdornment: (
-            <InputAdornment position="start">{PHONE_PREFIX}</InputAdornment>
-          ),
-        },
-        htmlInput: {
-          inputMode: 'numeric',
-          maxLength: 9,
-        },
+      InputProps={{
+        ...props.InputProps,
+        startAdornment: (
+          <InputAdornment position="start">{PHONE_PREFIX}</InputAdornment>
+        ),
+      }}
+      inputProps={{
+        inputMode: 'numeric',
+        maxLength: 9,
       }}
     />
   );

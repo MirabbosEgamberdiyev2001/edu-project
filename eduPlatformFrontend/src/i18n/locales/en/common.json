@@ -20,6 +20,13 @@
   "profile": "Profile",
   "logout": "Logout",
   "language": "Language",
+  "groups": "Groups",
+  "assignments": "Assignments",
+  "analytics": "Analytics",
+  "myTests": "My Tests",
+  "myAttempts": "My Attempts",
+  "myChildren": "My Children",
+  "pairing": "Pairing",
   "notFound": {
     "title": "Page Not Found",
     "description": "The page you are looking for does not exist or has been moved",

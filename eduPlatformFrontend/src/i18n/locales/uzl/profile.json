@@ -27,5 +27,18 @@
   "myQuestions": "Mening savollarim",
   "myTests": "Mening testlarim",
   "recentActivity": "So'nggi faoliyat",
-  "noActivity": "So'nggi faoliyat yo'q"
+  "noActivity": "So'nggi faoliyat yo'q",
+  "activeSessions": "Faol seanslar",
+  "activeSessionsDescription": "Qurilmalaringizdagi faol seanslarni boshqarish",
+  "currentSession": "Joriy seans",
+  "revokeSession": "Bekor qilish",
+  "revokeAllSessions": "Boshqa barcha seanslarni bekor qilish",
+  "revokeConfirm": "Ushbu seansni bekor qilmoqchimisiz?",
+  "revokeAllConfirm": "Boshqa barcha seanslarni bekor qilmoqchimisiz?",
+  "sessionRevoked": "Seans muvaffaqiyatli bekor qilindi",
+  "allSessionsRevoked": "Barcha boshqa seanslar bekor qilindi",
+  "ipAddress": "IP manzil",
+  "device": "Qurilma",
+  "lastActivity": "Oxirgi faollik",
+  "noSessions": "Faol seanslar yo'q"
 }

@@ -173,19 +173,17 @@ export default function SubjectFormDialog({ open, onClose, onSubmit, subject, is
           fullWidth
           sx={{ mb: 2 }}
           helperText={icon && /^https?:\/\/.+/i.test(icon) ? t('form.iconPreview') : undefined}
-          slotProps={{
-            input: {
-              endAdornment: icon && /^https?:\/\/.+/i.test(icon) ? (
-                <Box
-                  component="img"
-                  src={icon}
-                  sx={{ width: 32, height: 32, objectFit: 'contain', borderRadius: 1 }}
-                  onError={(e: React.SyntheticEvent<HTMLImageElement>) => { e.currentTarget.style.display = 'none'; }}
-                />
-              ) : icon ? (
-                <Typography variant="h6" component="span">{icon}</Typography>
-              ) : undefined,
-            },
+          InputProps={{
+            endAdornment: icon && /^https?:\/\/.+/i.test(icon) ? (
+              <Box
+                component="img"
+                src={icon}
+                sx={{ width: 32, height: 32, objectFit: 'contain', borderRadius: 1 }}
+                onError={(e: React.SyntheticEvent<HTMLImageElement>) => { e.currentTarget.style.display = 'none'; }}
+              />
+            ) : icon ? (
+              <Typography variant="h6" component="span">{icon}</Typography>
+            ) : undefined,
           }}
         />
 

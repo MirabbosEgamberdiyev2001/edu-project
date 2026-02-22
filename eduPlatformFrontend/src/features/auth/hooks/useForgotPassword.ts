@@ -14,6 +14,10 @@ export function useForgotPassword() {
     mutationFn: (data: ForgotPasswordRequest) => authApi.forgotPassword(data),
     onSuccess: (_resp, variables) => {
       const identifier = variables.email || variables.phone || '';
+      sessionStorage.setItem(
+        'otpState',
+        JSON.stringify({ identifier, purpose: 'PASSWORD_RESET' }),
+      );
       navigate('/auth/otp-verify', {
         state: {
           identifier,

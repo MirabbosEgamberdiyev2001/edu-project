@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { useState, useMemo } from 'react';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   AppBar,
@@ -30,6 +30,13 @@ import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import PeopleIcon from '@mui/icons-material/People';
 import HistoryIcon from '@mui/icons-material/History';
 import RateReviewIcon from '@mui/icons-material/RateReview';
+import GroupsIcon from '@mui/icons-material/Groups';
+import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
+import BarChartIcon from '@mui/icons-material/BarChart';
+import FamilyRestroomIcon from '@mui/icons-material/FamilyRestroom';
+import LinkIcon from '@mui/icons-material/Link';
+import ListAltIcon from '@mui/icons-material/ListAlt';
+import GradingIcon from '@mui/icons-material/Grading';
 import { useAuth } from '@/hooks/useAuth';
 import { Role } from '@/types/user';
 import { authApi } from '@/api/authApi';
@@ -39,12 +46,82 @@ import LanguageSwitcher from '@/features/auth/components/LanguageSwitcher';
 
 const DRAWER_WIDTH = 260;
 
+interface NavItem {
+  label: string;
+  icon: React.ReactNode;
+  path: string;
+}
+
+function getMenuItems(role: Role, t: (key: string) => string): (NavItem | 'divider')[] {
+  const items: (NavItem | 'divider')[] = [];
+
+  // Dashboard - all roles
+  items.push({ label: t('common:dashboard'), icon: <DashboardIcon />, path: '/dashboard' });
+
+  switch (role) {
+    case Role.TEACHER:
+      items.push({ label: t('common:subjects'), icon: <MenuBookIcon />, path: '/subjects' });
+      items.push({ label: t('common:topics'), icon: <TopicIcon />, path: '/topics' });
+      items.push({ label: t('common:questions'), icon: <QuizIcon />, path: '/questions' });
+      items.push({ label: t('common:tests'), icon: <AssignmentIcon />, path: '/tests' });
+      items.push({ label: t('common:groups'), icon: <GroupsIcon />, path: '/groups' });
+      items.push({ label: t('common:assignments'), icon: <AssignmentTurnedInIcon />, path: '/assignments' });
+      items.push({ label: t('common:analytics'), icon: <BarChartIcon />, path: '/analytics/teacher' });
+      break;
+
+    case Role.STUDENT:
+      items.push({ label: t('common:myTests'), icon: <ListAltIcon />, path: '/my-tests' });
+      items.push({ label: t('common:myAttempts'), icon: <GradingIcon />, path: '/my-attempts' });
+      items.push({ label: t('common:analytics'), icon: <BarChartIcon />, path: '/analytics/student' });
+      items.push({ label: t('common:pairing'), icon: <LinkIcon />, path: '/pairing' });
+      break;
+
+    case Role.PARENT:
+      items.push({ label: t('common:myChildren'), icon: <FamilyRestroomIcon />, path: '/my-children' });
+      break;
+
+    case Role.MODERATOR:
+      items.push({ label: t('common:questions'), icon: <QuizIcon />, path: '/questions' });
+      items.push('divider');
+      items.push({ label: t('admin:nav.moderation'), icon: <RateReviewIcon />, path: '/admin/moderation' });
+      break;
+
+    case Role.ADMIN:
+    case Role.SUPER_ADMIN:
+      items.push({ label: t('common:subjects'), icon: <MenuBookIcon />, path: '/subjects' });
+      items.push({ label: t('common:topics'), icon: <TopicIcon />, path: '/topics' });
+      items.push({ label: t('common:questions'), icon: <QuizIcon />, path: '/questions' });
+      items.push({ label: t('common:tests'), icon: <AssignmentIcon />, path: '/tests' });
+      items.push({ label: t('common:groups'), icon: <GroupsIcon />, path: '/groups' });
+      items.push({ label: t('common:assignments'), icon: <AssignmentTurnedInIcon />, path: '/assignments' });
+      items.push('divider');
+      items.push({ label: t('admin:nav.dashboard'), icon: <AdminPanelSettingsIcon />, path: '/admin' });
+      items.push({ label: t('admin:nav.users'), icon: <PeopleIcon />, path: '/admin/users' });
+      items.push({ label: t('admin:nav.auditLog'), icon: <HistoryIcon />, path: '/admin/audit-logs' });
+      items.push({ label: t('admin:nav.moderation'), icon: <RateReviewIcon />, path: '/admin/moderation' });
+      break;
+  }
+
+  // Profile & Settings - all roles
+  items.push('divider');
+  items.push({ label: t('common:profile'), icon: <PersonIcon />, path: '/profile' });
+  items.push({ label: t('common:settings'), icon: <LockIcon />, path: '/settings/change-password' });
+
+  return items;
+}
+
 export default function AppLayout() {
-  const { t } = useTranslation('common');
+  const { t } = useTranslation(['common', 'admin']);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+
+  const menuItems = useMemo(
+    () => (user?.role ? getMenuItems(user.role, t) : []),
+    [user?.role, t]
+  );
 
   const handleLogout = async () => {
     try {
@@ -64,70 +141,25 @@ export default function AppLayout() {
         <Logo size="small" />
       </Toolbar>
       <Divider />
-      <List>
-        <ListItemButton onClick={() => navigate('/dashboard')}>
-          <ListItemIcon><DashboardIcon /></ListItemIcon>
-          <ListItemText primary={t('dashboard')} />
-        </ListItemButton>
-        <ListItemButton onClick={() => navigate('/subjects')}>
-          <ListItemIcon><MenuBookIcon /></ListItemIcon>
-          <ListItemText primary={t('subjects')} />
-        </ListItemButton>
-        <ListItemButton onClick={() => navigate('/topics')}>
-          <ListItemIcon><TopicIcon /></ListItemIcon>
-          <ListItemText primary={t('topics')} />
-        </ListItemButton>
-        <ListItemButton onClick={() => navigate('/questions')}>
-          <ListItemIcon><QuizIcon /></ListItemIcon>
-          <ListItemText primary={t('questions')} />
-        </ListItemButton>
-        <ListItemButton onClick={() => navigate('/tests')}>
-          <ListItemIcon><AssignmentIcon /></ListItemIcon>
-          <ListItemText primary={t('tests')} />
-        </ListItemButton>
-        <ListItemButton onClick={() => navigate('/profile')}>
-          <ListItemIcon><PersonIcon /></ListItemIcon>
-          <ListItemText primary={t('profile')} />
-        </ListItemButton>
-        <ListItemButton onClick={() => navigate('/settings/change-password')}>
-          <ListItemIcon><LockIcon /></ListItemIcon>
-          <ListItemText primary={t('settings')} />
-        </ListItemButton>
-      </List>
-
-      {/* Moderation - visible for MODERATOR/ADMIN/SUPER_ADMIN */}
-      {(user?.role === Role.MODERATOR || user?.role === Role.ADMIN || user?.role === Role.SUPER_ADMIN) && (
-        <>
-          <Divider />
-          <List>
-            <ListItemButton onClick={() => navigate('/admin/moderation')}>
-              <ListItemIcon><RateReviewIcon /></ListItemIcon>
-              <ListItemText primary={t('admin:nav.moderation')} />
+      {menuItems.map((item, index) => {
+        if (item === 'divider') {
+          return <Divider key={`divider-${index}`} sx={{ my: 0.5 }} />;
+        }
+        return (
+          <List key={item.path} disablePadding>
+            <ListItemButton
+              selected={location.pathname === item.path}
+              onClick={() => {
+                navigate(item.path);
+                setMobileOpen(false);
+              }}
+            >
+              <ListItemIcon>{item.icon}</ListItemIcon>
+              <ListItemText primary={item.label} />
             </ListItemButton>
           </List>
-        </>
-      )}
-
-      {/* Admin navigation - visible only for ADMIN/SUPER_ADMIN */}
-      {(user?.role === Role.ADMIN || user?.role === Role.SUPER_ADMIN) && (
-        <>
-          <Divider />
-          <List>
-            <ListItemButton onClick={() => navigate('/admin')}>
-              <ListItemIcon><AdminPanelSettingsIcon /></ListItemIcon>
-              <ListItemText primary={t('admin:nav.dashboard')} />
-            </ListItemButton>
-            <ListItemButton onClick={() => navigate('/admin/users')}>
-              <ListItemIcon><PeopleIcon /></ListItemIcon>
-              <ListItemText primary={t('admin:nav.users')} />
-            </ListItemButton>
-            <ListItemButton onClick={() => navigate('/admin/audit-logs')}>
-              <ListItemIcon><HistoryIcon /></ListItemIcon>
-              <ListItemText primary={t('admin:nav.auditLog')} />
-            </ListItemButton>
-          </List>
-        </>
-      )}
+        );
+      })}
     </Box>
   );
 
@@ -171,7 +203,7 @@ export default function AppLayout() {
             <Divider />
             <MenuItem onClick={handleLogout}>
               <ListItemIcon><LogoutIcon fontSize="small" /></ListItemIcon>
-              {t('logout')}
+              {t('common:logout')}
             </MenuItem>
           </Menu>
         </Toolbar>

@@ -58,7 +58,7 @@ export default function AssignmentsPage() {
   );
 
   const tests = useMemo(() =>
-    testsData?.content?.map((t) => ({ id: t.id, title: t.title })) || [],
+    testsData?.content?.map((item) => ({ id: item.id, title: item.title })) || [],
     [testsData],
   );
 

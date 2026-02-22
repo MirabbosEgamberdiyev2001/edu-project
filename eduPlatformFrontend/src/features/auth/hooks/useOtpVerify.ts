@@ -16,6 +16,7 @@ export function useOtpVerify() {
   return useMutation({
     mutationFn: (data: OtpVerifyRequest) => authApi.verifyOtp(data),
     onSuccess: ({ data: resp }) => {
+      sessionStorage.removeItem('otpState');
       const result = resp.data;
 
       // Registration flow: auto-login

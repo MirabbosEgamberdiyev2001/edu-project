@@ -39,7 +39,7 @@ export default function ChildDashboardView({ data }: ChildDashboardViewProps) {
           <Paper sx={{ p: 2 }}>
             <Typography variant="subtitle2" sx={{ mb: 2 }}>{t('subjectScores')}</Typography>
             {data.subjectScores.map((score) => (
-              <SubjectScoreBar key={score.subjectId} score={score} />
+              <SubjectScoreBar key={score.subjectId} subject={score} />
             ))}
           </Paper>
         </Grid>

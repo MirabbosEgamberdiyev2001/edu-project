@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Box,
   Typography,
@@ -12,12 +12,22 @@ import {
   Avatar,
   Chip,
   Divider,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
+  IconButton,
+  Alert,
+  CircularProgress,
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import LockIcon from '@mui/icons-material/Lock';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ComputerIcon from '@mui/icons-material/Computer';
 import { useAuth } from '@/hooks/useAuth';
 import { userApi } from '@/api/userApi';
+import { authApi } from '@/api/authApi';
 import { useAuthStore } from '@/stores/authStore';
 import type { UpdateProfileRequest } from '@/types/auth';
 
@@ -147,7 +157,7 @@ export default function ProfilePage() {
       </Paper>
 
       {/* Actions */}
-      <Paper sx={{ p: 3 }}>
+      <Paper sx={{ p: 3, mb: 3 }}>
         <Typography variant="subtitle2" gutterBottom>{t('accountInfo')}</Typography>
         <Button
           variant="outlined"
@@ -157,7 +167,134 @@ export default function ProfilePage() {
           {t('changePassword')}
         </Button>
       </Paper>
+
+      {/* Active Sessions */}
+      <SessionsSection />
     </Box>
+  );
+}
+
+function SessionsSection() {
+  const { t } = useTranslation('profile');
+  const queryClient = useQueryClient();
+
+  const { data: sessionsData, isLoading } = useQuery({
+    queryKey: ['sessions'],
+    queryFn: () => authApi.getSessions(),
+    select: (res) => res.data.data,
+  });
+
+  const revokeSession = useMutation({
+    mutationFn: (sessionId: string) => authApi.revokeSession(sessionId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+    },
+  });
+
+  const revokeAll = useMutation({
+    mutationFn: () => authApi.revokeAllSessions(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+    },
+  });
+
+  const handleRevoke = (sessionId: string) => {
+    if (window.confirm(t('revokeConfirm'))) {
+      revokeSession.mutate(sessionId);
+    }
+  };
+
+  const handleRevokeAll = () => {
+    if (window.confirm(t('revokeAllConfirm'))) {
+      revokeAll.mutate();
+    }
+  };
+
+  const sessions = sessionsData || [];
+  const hasOtherSessions = sessions.some((s) => !s.isCurrent);
+
+  return (
+    <Paper sx={{ p: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+        <Box>
+          <Typography variant="subtitle2">{t('activeSessions')}</Typography>
+          <Typography variant="body2" color="text.secondary">{t('activeSessionsDescription')}</Typography>
+        </Box>
+        {hasOtherSessions && (
+          <Button
+            variant="outlined"
+            color="error"
+            size="small"
+            onClick={handleRevokeAll}
+            disabled={revokeAll.isPending}
+          >
+            {t('revokeAllSessions')}
+          </Button>
+        )}
+      </Box>
+
+      {isLoading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
+          <CircularProgress size={24} />
+        </Box>
+      ) : sessions.length === 0 ? (
+        <Alert severity="info" sx={{ mt: 2 }}>{t('noSessions')}</Alert>
+      ) : (
+        <List disablePadding>
+          {sessions.map((session) => (
+            <ListItem
+              key={session.id}
+              sx={{
+                border: '1px solid',
+                borderColor: session.isCurrent ? 'primary.main' : 'divider',
+                borderRadius: 1,
+                mb: 1,
+                bgcolor: session.isCurrent ? 'primary.50' : 'transparent',
+              }}
+            >
+              <ComputerIcon sx={{ mr: 2, color: 'text.secondary' }} />
+              <ListItemText
+                primary={
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography variant="body2" fontWeight={600}>
+                      {session.deviceInfo || t('device')}
+                    </Typography>
+                    {session.isCurrent && (
+                      <Chip label={t('currentSession')} size="small" color="primary" />
+                    )}
+                  </Box>
+                }
+                secondary={
+                  <Box component="span" sx={{ display: 'flex', gap: 2, mt: 0.5 }}>
+                    <Typography variant="caption" color="text.secondary">
+                      {t('ipAddress')}: {session.ipAddress}
+                    </Typography>
+                    {session.lastActivityAt && (
+                      <Typography variant="caption" color="text.secondary">
+                        {t('lastActivity')}: {new Date(session.lastActivityAt).toLocaleString()}
+                      </Typography>
+                    )}
+                  </Box>
+                }
+              />
+              {!session.isCurrent && (
+                <ListItemSecondaryAction>
+                  <IconButton
+                    edge="end"
+                    color="error"
+                    onClick={() => handleRevoke(session.id)}
+                    disabled={revokeSession.isPending}
+                    size="small"
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </ListItemSecondaryAction>
+              )}
+            </ListItem>
+          ))}
+        </List>
+      )}
+    </Paper>
   );
 }
 
