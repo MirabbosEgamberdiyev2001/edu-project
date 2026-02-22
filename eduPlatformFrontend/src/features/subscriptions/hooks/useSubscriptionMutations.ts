@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { subscriptionApi } from '@/api/subscriptionApi';
 import { subscriptionPlanApi } from '@/api/subscriptionPlanApi';
 import { paymentApi } from '@/api/paymentApi';
@@ -10,6 +11,7 @@ import type { ApiError } from '@/types/api';
 export function useSubscriptionMutations() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { t } = useTranslation('common');
 
   const cancelSubscription = useMutation({
     mutationFn: (id: string) => subscriptionApi.cancelSubscription(id),
@@ -18,7 +20,7 @@ export function useSubscriptionMutations() {
       queryClient.invalidateQueries({ queryKey: ['my-subscription'] });
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to cancel subscription');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 
@@ -28,7 +30,7 @@ export function useSubscriptionMutations() {
       window.location.href = resp.data.redirectUrl;
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to initiate payment');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 
@@ -38,6 +40,7 @@ export function useSubscriptionMutations() {
 export function usePlanMutations() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { t } = useTranslation('common');
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['subscription-plans'] });
 
   const createPlan = useMutation({
@@ -47,7 +50,7 @@ export function usePlanMutations() {
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to create plan');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 
@@ -59,7 +62,7 @@ export function usePlanMutations() {
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to update plan');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 
@@ -70,7 +73,7 @@ export function usePlanMutations() {
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to delete plan');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 

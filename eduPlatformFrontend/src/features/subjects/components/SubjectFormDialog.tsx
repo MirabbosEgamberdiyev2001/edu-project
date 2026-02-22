@@ -123,7 +123,7 @@ export default function SubjectFormDialog({ open, onClose, onSubmit, subject, is
 
         <Tabs
           value={langTab}
-          onChange={(_, v) => setLangTab(v)}
+          onChange={(_, v) => !isPending && setLangTab(v)}
           sx={{ mb: 2, borderBottom: 1, borderColor: 'divider' }}
         >
           {SUPPORTED_LANGUAGES.map((lang) => (
@@ -151,6 +151,7 @@ export default function SubjectFormDialog({ open, onClose, onSubmit, subject, is
           onChange={(e) => setName({ ...name, [currentKey]: e.target.value })}
           fullWidth
           required={currentFrontendLang === 'uzl'}
+          disabled={isPending}
           sx={{ mb: 2 }}
         />
 
@@ -162,6 +163,7 @@ export default function SubjectFormDialog({ open, onClose, onSubmit, subject, is
           fullWidth
           multiline
           rows={3}
+          disabled={isPending}
           sx={{ mb: 2 }}
         />
 
@@ -171,6 +173,7 @@ export default function SubjectFormDialog({ open, onClose, onSubmit, subject, is
           value={icon}
           onChange={(e) => setIcon(e.target.value)}
           fullWidth
+          disabled={isPending}
           sx={{ mb: 2 }}
           helperText={icon && /^https?:\/\/.+/i.test(icon) ? t('form.iconPreview') : undefined}
           InputProps={{
@@ -193,6 +196,7 @@ export default function SubjectFormDialog({ open, onClose, onSubmit, subject, is
             label={t('form.category')}
             value={category}
             onChange={(e) => setCategory(e.target.value as SubjectCategory)}
+            disabled={isPending}
             sx={{ flexGrow: 1 }}
           >
             <MenuItem value="">{t('form.noCategory')}</MenuItem>
@@ -205,6 +209,7 @@ export default function SubjectFormDialog({ open, onClose, onSubmit, subject, is
             type="number"
             value={gradeLevel}
             onChange={(e) => setGradeLevel(e.target.value)}
+            disabled={isPending}
             sx={{ width: 120 }}
           />
         </Box>
@@ -233,7 +238,7 @@ export default function SubjectFormDialog({ open, onClose, onSubmit, subject, is
         </Box>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={onClose}>{t('common:cancel')}</Button>
+        <Button onClick={onClose} disabled={isPending}>{t('common:cancel')}</Button>
         <Button
           variant="contained"
           onClick={handleSubmit}

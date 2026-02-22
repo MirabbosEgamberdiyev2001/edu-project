@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { parentApi } from '@/api/parentApi';
 import { useToast } from '@/hooks/useToast';
 import type { PairWithCodeRequest } from '@/types/parent';
@@ -8,6 +9,7 @@ import type { ApiError } from '@/types/api';
 export function useParentMutations() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { t } = useTranslation('common');
 
   const invalidateChildren = () =>
     queryClient.invalidateQueries({ queryKey: ['parent', 'children'] });
@@ -21,7 +23,7 @@ export function useParentMutations() {
       toast.success(resp.message);
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to generate pairing code');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 
@@ -32,7 +34,7 @@ export function useParentMutations() {
       invalidateChildren();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to pair with code');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 
@@ -44,7 +46,7 @@ export function useParentMutations() {
       invalidateParents();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to revoke pairing');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 

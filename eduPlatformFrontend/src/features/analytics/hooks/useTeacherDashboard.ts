@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { analyticsApi } from '@/api/analyticsApi';
 import { useToast } from '@/hooks/useToast';
 
@@ -14,6 +15,7 @@ export function useTeacherDashboard() {
 
 export function useExportTeacherDashboard() {
   const toast = useToast();
+  const { t } = useTranslation('common');
 
   const exportDashboard = async () => {
     try {
@@ -26,7 +28,7 @@ export function useExportTeacherDashboard() {
       link.click();
       window.URL.revokeObjectURL(url);
     } catch {
-      toast.error('Failed to export dashboard');
+      toast.error(t('error'));
     }
   };
 

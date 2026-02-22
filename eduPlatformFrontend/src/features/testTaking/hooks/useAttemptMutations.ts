@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { testTakingApi } from '@/api/testTakingApi';
 import { useToast } from '@/hooks/useToast';
 import type { SubmitAnswerRequest, BatchSaveAnswerRequest } from '@/types/testTaking';
@@ -8,6 +9,7 @@ import type { ApiError } from '@/types/api';
 export function useAttemptMutations() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { t } = useTranslation('common');
 
   const startAttempt = useMutation({
     mutationFn: (assignmentId: string) => testTakingApi.startAttempt(assignmentId),
@@ -15,7 +17,7 @@ export function useAttemptMutations() {
       queryClient.invalidateQueries({ queryKey: ['test-taking'] });
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to start test');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 
@@ -23,7 +25,7 @@ export function useAttemptMutations() {
     mutationFn: ({ attemptId, data }: { attemptId: string; data: SubmitAnswerRequest }) =>
       testTakingApi.submitAnswer(attemptId, data),
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to save answer');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 
@@ -39,7 +41,7 @@ export function useAttemptMutations() {
       queryClient.invalidateQueries({ queryKey: ['test-taking'] });
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to submit test');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 

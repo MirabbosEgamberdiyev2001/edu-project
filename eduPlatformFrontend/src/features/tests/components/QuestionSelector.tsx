@@ -32,10 +32,10 @@ const difficultyColor = {
 const statusColor = {
   DRAFT: 'default' as const,
   PENDING: 'info' as const,
+  APPROVED: 'primary' as const,
   ACTIVE: 'success' as const,
   REJECTED: 'error' as const,
   ARCHIVED: 'default' as const,
-  DEPRECATED: 'default' as const,
 };
 
 export default function QuestionSelector({ topicIds, selectedIds, onSelectionChange }: QuestionSelectorProps) {

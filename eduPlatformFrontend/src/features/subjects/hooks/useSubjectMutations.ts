@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { subjectApi } from '@/api/subjectApi';
 import { useToast } from '@/hooks/useToast';
+import { useTranslation } from 'react-i18next';
 import type { CreateSubjectRequest, UpdateSubjectRequest } from '@/types/subject';
 import type { AxiosError } from 'axios';
 import type { ApiError } from '@/types/api';
@@ -8,6 +9,7 @@ import type { ApiError } from '@/types/api';
 export function useSubjectMutations() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { t } = useTranslation('common');
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['subjects'] });
 
@@ -18,7 +20,7 @@ export function useSubjectMutations() {
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to create subject');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 
@@ -30,7 +32,7 @@ export function useSubjectMutations() {
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to update subject');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 
@@ -41,7 +43,7 @@ export function useSubjectMutations() {
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to delete subject');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 
@@ -52,7 +54,7 @@ export function useSubjectMutations() {
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to archive subject');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 
@@ -63,7 +65,7 @@ export function useSubjectMutations() {
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to restore subject');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 
@@ -74,7 +76,7 @@ export function useSubjectMutations() {
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to fork template');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 

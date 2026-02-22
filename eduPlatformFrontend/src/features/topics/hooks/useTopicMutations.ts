@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { topicApi } from '@/api/topicApi';
 import { useToast } from '@/hooks/useToast';
+import { useTranslation } from 'react-i18next';
 import type { CreateTopicRequest, UpdateTopicRequest, MoveTopicRequest, ReorderTopicsRequest } from '@/types/topic';
 import type { AxiosError } from 'axios';
 import type { ApiError } from '@/types/api';
@@ -8,6 +9,7 @@ import type { ApiError } from '@/types/api';
 export function useTopicMutations(subjectId: string | undefined) {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { t } = useTranslation('common');
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ['topics', subjectId] });
@@ -22,7 +24,7 @@ export function useTopicMutations(subjectId: string | undefined) {
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to create topic');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 
@@ -34,7 +36,7 @@ export function useTopicMutations(subjectId: string | undefined) {
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to update topic');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 
@@ -45,7 +47,7 @@ export function useTopicMutations(subjectId: string | undefined) {
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to delete topic');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 
@@ -57,7 +59,7 @@ export function useTopicMutations(subjectId: string | undefined) {
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to move topic');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 
@@ -68,7 +70,7 @@ export function useTopicMutations(subjectId: string | undefined) {
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to reorder topics');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 

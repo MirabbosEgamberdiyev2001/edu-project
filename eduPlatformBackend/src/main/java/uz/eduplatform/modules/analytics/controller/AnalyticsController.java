@@ -67,9 +67,10 @@ public class AnalyticsController {
     @Operation(summary = "O'quvchi analitikasi (o'qituvchi ko'rinishi)", description = "O'qituvchi yoki admin tomonidan istalgan o'quvchining analitikasini ko'rish.")
     @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<StudentAnalyticsDto>> getStudentAnalytics(
-            @PathVariable UUID studentId) {
+            @PathVariable UUID studentId,
+            @AuthenticationPrincipal UserPrincipal principal) {
 
-        StudentAnalyticsDto analytics = analyticsService.getStudentAnalytics(studentId);
+        StudentAnalyticsDto analytics = analyticsService.getStudentAnalytics(studentId, principal.getId());
         return ResponseEntity.ok(ApiResponse.success(analytics));
     }
 

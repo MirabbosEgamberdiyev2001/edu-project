@@ -41,7 +41,7 @@ public class GroupService {
     @Transactional
     public GroupDto createGroup(UUID teacherId, CreateGroupRequest request) {
         if (request.getSubjectId() != null) {
-            subjectRepository.findById(request.getSubjectId())
+            subjectRepository.findByIdAndUserId(request.getSubjectId(), teacherId)
                     .orElseThrow(() -> new ResourceNotFoundException("Subject", "id", request.getSubjectId()));
         }
 
@@ -119,7 +119,7 @@ public class GroupService {
             group.setDescription(request.getDescription());
         }
         if (request.getSubjectId() != null) {
-            subjectRepository.findById(request.getSubjectId())
+            subjectRepository.findByIdAndUserId(request.getSubjectId(), teacherId)
                     .orElseThrow(() -> new ResourceNotFoundException("Subject", "id", request.getSubjectId()));
             group.setSubjectId(request.getSubjectId());
         }

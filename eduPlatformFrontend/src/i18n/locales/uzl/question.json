@@ -77,10 +77,10 @@
   "statuses": {
     "DRAFT": "Qoralama",
     "PENDING": "Kutilmoqda",
+    "APPROVED": "Tasdiqlangan",
     "ACTIVE": "Faol",
     "REJECTED": "Rad etilgan",
-    "ARCHIVED": "Arxivlangan",
-    "DEPRECATED": "Eskirgan"
+    "ARCHIVED": "Arxivlangan"
   },
   "filters": {
     "allTypes": "Barcha turlar",

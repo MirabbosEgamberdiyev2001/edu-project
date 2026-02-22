@@ -77,10 +77,10 @@
   "statuses": {
     "DRAFT": "Қоралама",
     "PENDING": "Кутилмоқда",
+    "APPROVED": "Тасдиқланган",
     "ACTIVE": "Фаол",
     "REJECTED": "Рад этилган",
-    "ARCHIVED": "Архивланган",
-    "DEPRECATED": "Эскирган"
+    "ARCHIVED": "Архивланган"
   },
   "filters": {
     "allTypes": "Барча турлар",

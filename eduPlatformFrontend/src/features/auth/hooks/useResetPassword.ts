@@ -1,4 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '@/api/authApi';
 import { useToast } from '@/hooks/useToast';
@@ -9,6 +10,7 @@ import type { ApiError } from '@/types/api';
 export function useResetPassword() {
   const navigate = useNavigate();
   const toast = useToast();
+  const { t } = useTranslation('common');
 
   return useMutation({
     mutationFn: (data: PasswordResetRequest) => authApi.resetPassword(data),
@@ -17,7 +19,7 @@ export function useResetPassword() {
       navigate('/auth/login', { replace: true });
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to reset password');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 }

@@ -7,6 +7,7 @@ import {
   Paper,
   CircularProgress,
   Avatar,
+  Alert,
 } from '@mui/material';
 import TopicIcon from '@mui/icons-material/Topic';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
@@ -17,7 +18,7 @@ import { resolveTranslation } from '@/utils/i18nUtils';
 
 export default function TopicsPage() {
   const { t } = useTranslation('topic');
-  const { data: subjectsData, isLoading: subjectsLoading } = useSubjects({ size: 100 });
+  const { data: subjectsData, isLoading: subjectsLoading, isError: subjectsError } = useSubjects({ size: 100 });
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>('');
 
   const subjects = subjectsData?.content || [];
@@ -36,6 +37,8 @@ export default function TopicsPage() {
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
             <CircularProgress size={24} />
           </Box>
+        ) : subjectsError ? (
+          <Alert severity="error">{t('common:error')}</Alert>
         ) : subjects.length > 0 ? (
           <TextField
             select

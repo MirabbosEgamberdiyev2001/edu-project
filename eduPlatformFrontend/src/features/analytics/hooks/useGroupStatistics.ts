@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { analyticsApi } from '@/api/analyticsApi';
 import { useToast } from '@/hooks/useToast';
 
@@ -15,6 +16,7 @@ export function useGroupStatistics(groupId: string) {
 
 export function useExportGroupStatistics() {
   const toast = useToast();
+  const { t } = useTranslation('common');
 
   const exportGroupStats = async (groupId: string) => {
     try {
@@ -27,7 +29,7 @@ export function useExportGroupStatistics() {
       link.click();
       window.URL.revokeObjectURL(url);
     } catch {
-      toast.error('Failed to export group statistics');
+      toast.error(t('error'));
     }
   };
 

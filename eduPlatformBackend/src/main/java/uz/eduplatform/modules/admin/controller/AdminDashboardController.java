@@ -21,7 +21,7 @@ import uz.eduplatform.modules.admin.service.TrendDataService;
 @RestController
 @RequestMapping("/api/v1/admin/dashboard")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('TEACHER', 'MODERATOR', 'ADMIN', 'SUPER_ADMIN')")
+@PreAuthorize("hasAnyRole('MODERATOR', 'ADMIN', 'SUPER_ADMIN')")
 @Tag(name = "Admin dashboard", description = "Admin boshqaruv paneli API'lari — umumiy statistika, trendlar, tizim ma'lumotlari")
 public class AdminDashboardController {
 

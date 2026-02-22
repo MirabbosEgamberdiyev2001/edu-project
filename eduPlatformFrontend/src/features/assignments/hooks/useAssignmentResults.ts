@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { assignmentApi } from '@/api/assignmentApi';
 import { useToast } from '@/hooks/useToast';
 
@@ -15,6 +16,7 @@ export function useAssignmentResults(assignmentId: string) {
 
 export function useExportResults() {
   const toast = useToast();
+  const { t } = useTranslation('common');
 
   const exportResults = async (assignmentId: string, format: 'CSV' | 'EXCEL') => {
     try {
@@ -27,7 +29,7 @@ export function useExportResults() {
       link.click();
       window.URL.revokeObjectURL(url);
     } catch {
-      toast.error('Failed to export results');
+      toast.error(t('error'));
     }
   };
 

@@ -104,9 +104,10 @@ public class QuestionController {
     @Operation(summary = "Savolni ID bo'yicha olish", description = "Berilgan ID bo'yicha savol ma'lumotlarini to'liq olish — matn, variantlar, to'g'ri javob, izoh.")
     public ResponseEntity<ApiResponse<QuestionDto>> getQuestion(
             @PathVariable UUID id,
+            @AuthenticationPrincipal UserPrincipal principal,
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
 
-        QuestionDto question = questionService.getQuestionById(id, language);
+        QuestionDto question = questionService.getQuestionById(id, principal.getId(), language);
         return ResponseEntity.ok(ApiResponse.success(question));
     }
 
@@ -191,9 +192,10 @@ public class QuestionController {
     @Operation(summary = "Savol versiyalari tarixini olish", description = "Savolning barcha o'zgarishlar tarixini ko'rish — kim, qachon, qanday o'zgartirgan.")
     public ResponseEntity<ApiResponse<List<QuestionVersionDto>>> getVersionHistory(
             @PathVariable UUID id,
+            @AuthenticationPrincipal UserPrincipal principal,
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
 
-        List<QuestionVersionDto> versions = questionService.getVersionHistory(id, language);
+        List<QuestionVersionDto> versions = questionService.getVersionHistory(id, principal.getId(), language);
         return ResponseEntity.ok(ApiResponse.success(versions));
     }
 
@@ -244,12 +246,13 @@ public class QuestionController {
     @Operation(summary = "Mavzu bo'yicha savollarni olish", description = "Berilgan mavzu ID si bo'yicha barcha savollarni sahifalab olish.")
     public ResponseEntity<ApiResponse<PagedResponse<QuestionDto>>> getQuestionsByTopic(
             @PathVariable UUID topicId,
+            @AuthenticationPrincipal UserPrincipal principal,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
 
         PagedResponse<QuestionDto> response = questionService.getQuestionsByTopic(
-                topicId, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")), language);
+                topicId, principal.getId(), PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")), language);
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }

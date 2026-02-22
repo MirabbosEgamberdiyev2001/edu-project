@@ -56,6 +56,9 @@ public class AssignmentService {
         // Resolve group members if groupId is provided
         List<UUID> assignedStudentIds = request.getAssignedStudentIds();
         if (request.getGroupId() != null) {
+            // Validate teacher owns the group
+            groupService.getGroup(request.getGroupId(), teacherId);
+
             List<UUID> groupStudentIds = groupService.getGroupStudentIds(request.getGroupId());
             if (groupStudentIds.isEmpty()) {
                 throw BusinessException.ofKey("assignment.group.no.members");

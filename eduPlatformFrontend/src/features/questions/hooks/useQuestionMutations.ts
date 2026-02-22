@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { questionApi } from '@/api/questionApi';
 import { useToast } from '@/hooks/useToast';
 import type { CreateQuestionRequest, UpdateQuestionRequest } from '@/types/question';
@@ -8,6 +9,7 @@ import type { ApiError } from '@/types/api';
 export function useQuestionMutations() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { t } = useTranslation('common');
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ['questions'] });
@@ -22,7 +24,7 @@ export function useQuestionMutations() {
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to create question');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 
@@ -34,7 +36,7 @@ export function useQuestionMutations() {
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to update question');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 
@@ -45,7 +47,7 @@ export function useQuestionMutations() {
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to delete question');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 
@@ -56,7 +58,7 @@ export function useQuestionMutations() {
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to submit question');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 
@@ -68,7 +70,7 @@ export function useQuestionMutations() {
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to rollback question');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 
@@ -84,7 +86,7 @@ export function useQuestionMutations() {
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to bulk submit questions');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 

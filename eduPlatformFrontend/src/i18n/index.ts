@@ -16,6 +16,7 @@ import uzlAssignment from './locales/uzl/assignment.json';
 import uzlTestTaking from './locales/uzl/testTaking.json';
 import uzlAnalytics from './locales/uzl/analytics.json';
 import uzlParent from './locales/uzl/parent.json';
+import uzlSubscription from './locales/uzl/subscription.json';
 
 import uzcAuth from './locales/uzc/auth.json';
 import uzcCommon from './locales/uzc/common.json';
@@ -31,6 +32,7 @@ import uzcAssignment from './locales/uzc/assignment.json';
 import uzcTestTaking from './locales/uzc/testTaking.json';
 import uzcAnalytics from './locales/uzc/analytics.json';
 import uzcParent from './locales/uzc/parent.json';
+import uzcSubscription from './locales/uzc/subscription.json';
 
 import enAuth from './locales/en/auth.json';
 import enCommon from './locales/en/common.json';
@@ -46,6 +48,7 @@ import enAssignment from './locales/en/assignment.json';
 import enTestTaking from './locales/en/testTaking.json';
 import enAnalytics from './locales/en/analytics.json';
 import enParent from './locales/en/parent.json';
+import enSubscription from './locales/en/subscription.json';
 
 import ruAuth from './locales/ru/auth.json';
 import ruCommon from './locales/ru/common.json';
@@ -61,20 +64,21 @@ import ruAssignment from './locales/ru/assignment.json';
 import ruTestTaking from './locales/ru/testTaking.json';
 import ruAnalytics from './locales/ru/analytics.json';
 import ruParent from './locales/ru/parent.json';
+import ruSubscription from './locales/ru/subscription.json';
 
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources: {
-      uzl: { auth: uzlAuth, common: uzlCommon, validation: uzlValidation, subject: uzlSubject, topic: uzlTopic, question: uzlQuestion, test: uzlTest, admin: uzlAdmin, profile: uzlProfile, group: uzlGroup, assignment: uzlAssignment, testTaking: uzlTestTaking, analytics: uzlAnalytics, parent: uzlParent },
-      uzc: { auth: uzcAuth, common: uzcCommon, validation: uzcValidation, subject: uzcSubject, topic: uzcTopic, question: uzcQuestion, test: uzcTest, admin: uzcAdmin, profile: uzcProfile, group: uzcGroup, assignment: uzcAssignment, testTaking: uzcTestTaking, analytics: uzcAnalytics, parent: uzcParent },
-      en: { auth: enAuth, common: enCommon, validation: enValidation, subject: enSubject, topic: enTopic, question: enQuestion, test: enTest, admin: enAdmin, profile: enProfile, group: enGroup, assignment: enAssignment, testTaking: enTestTaking, analytics: enAnalytics, parent: enParent },
-      ru: { auth: ruAuth, common: ruCommon, validation: ruValidation, subject: ruSubject, topic: ruTopic, question: ruQuestion, test: ruTest, admin: ruAdmin, profile: ruProfile, group: ruGroup, assignment: ruAssignment, testTaking: ruTestTaking, analytics: ruAnalytics, parent: ruParent },
+      uzl: { auth: uzlAuth, common: uzlCommon, validation: uzlValidation, subject: uzlSubject, topic: uzlTopic, question: uzlQuestion, test: uzlTest, admin: uzlAdmin, profile: uzlProfile, group: uzlGroup, assignment: uzlAssignment, testTaking: uzlTestTaking, analytics: uzlAnalytics, parent: uzlParent, subscription: uzlSubscription },
+      uzc: { auth: uzcAuth, common: uzcCommon, validation: uzcValidation, subject: uzcSubject, topic: uzcTopic, question: uzcQuestion, test: uzcTest, admin: uzcAdmin, profile: uzcProfile, group: uzcGroup, assignment: uzcAssignment, testTaking: uzcTestTaking, analytics: uzcAnalytics, parent: uzcParent, subscription: uzcSubscription },
+      en: { auth: enAuth, common: enCommon, validation: enValidation, subject: enSubject, topic: enTopic, question: enQuestion, test: enTest, admin: enAdmin, profile: enProfile, group: enGroup, assignment: enAssignment, testTaking: enTestTaking, analytics: enAnalytics, parent: enParent, subscription: enSubscription },
+      ru: { auth: ruAuth, common: ruCommon, validation: ruValidation, subject: ruSubject, topic: ruTopic, question: ruQuestion, test: ruTest, admin: ruAdmin, profile: ruProfile, group: ruGroup, assignment: ruAssignment, testTaking: ruTestTaking, analytics: ruAnalytics, parent: ruParent, subscription: ruSubscription },
     },
     fallbackLng: 'uzl',
     defaultNS: 'common',
-    ns: ['auth', 'common', 'validation', 'subject', 'topic', 'question', 'test', 'admin', 'profile', 'group', 'assignment', 'testTaking', 'analytics', 'parent'],
+    ns: ['auth', 'common', 'validation', 'subject', 'topic', 'question', 'test', 'admin', 'profile', 'group', 'assignment', 'testTaking', 'analytics', 'parent', 'subscription'],
     interpolation: { escapeValue: false },
     detection: {
       order: ['localStorage', 'navigator'],

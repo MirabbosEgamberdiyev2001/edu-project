@@ -13,6 +13,7 @@ import {
   Chip,
   CircularProgress,
   Tooltip,
+  Alert,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -37,7 +38,7 @@ interface TopicTreeViewProps {
 
 export default function TopicTreeView({ subjectId }: TopicTreeViewProps) {
   const { t } = useTranslation('topic');
-  const { data: tree, isLoading } = useTopicTree(subjectId);
+  const { data: tree, isLoading, isError } = useTopicTree(subjectId);
   const { create, update, remove } = useTopicMutations(subjectId);
 
   const [formOpen, setFormOpen] = useState(false);
@@ -77,6 +78,10 @@ export default function TopicTreeView({ subjectId }: TopicTreeViewProps) {
         <CircularProgress />
       </Box>
     );
+  }
+
+  if (isError) {
+    return <Alert severity="error">{t('common:error')}</Alert>;
   }
 
   return (

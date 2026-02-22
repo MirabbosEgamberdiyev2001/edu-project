@@ -55,7 +55,7 @@ export default function SubjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation('subject');
-  const { data: subject, isLoading } = useSubject(id);
+  const { data: subject, isLoading, isError } = useSubject(id);
   const { update, remove, archive, restore } = useSubjectMutations();
 
   const [formOpen, setFormOpen] = useState(false);
@@ -69,7 +69,7 @@ export default function SubjectDetailPage() {
     );
   }
 
-  if (!subject) {
+  if (isError || !subject) {
     return (
       <Box sx={{ textAlign: 'center', py: 8 }}>
         <Typography variant="h6" color="text.secondary">{t('notFound')}</Typography>

@@ -92,7 +92,7 @@ export default function TopicFormDialog({ open, onClose, onSubmit, topic, parent
 
         <Tabs
           value={langTab}
-          onChange={(_, v) => setLangTab(v)}
+          onChange={(_, v) => !isPending && setLangTab(v)}
           sx={{ mb: 2, borderBottom: 1, borderColor: 'divider' }}
         >
           {SUPPORTED_LANGUAGES.map((lang) => (
@@ -120,6 +120,7 @@ export default function TopicFormDialog({ open, onClose, onSubmit, topic, parent
           onChange={(e) => setName({ ...name, [currentKey]: e.target.value })}
           fullWidth
           required={currentFrontendLang === 'uzl'}
+          disabled={isPending}
           sx={{ mb: 2 }}
         />
 
@@ -131,10 +132,11 @@ export default function TopicFormDialog({ open, onClose, onSubmit, topic, parent
           fullWidth
           multiline
           rows={3}
+          disabled={isPending}
         />
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={onClose}>{t('common:cancel')}</Button>
+        <Button onClick={onClose} disabled={isPending}>{t('common:cancel')}</Button>
         <Button
           variant="contained"
           onClick={handleSubmit}

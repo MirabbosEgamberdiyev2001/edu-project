@@ -41,10 +41,10 @@ const DIFFICULTY_COLORS: Record<string, 'success' | 'warning' | 'error'> = {
 const STATUS_COLORS: Record<string, 'default' | 'primary' | 'success' | 'error' | 'warning' | 'info'> = {
   DRAFT: 'default',
   PENDING: 'info',
+  APPROVED: 'primary',
   ACTIVE: 'success',
   REJECTED: 'error',
   ARCHIVED: 'warning',
-  DEPRECATED: 'default',
 };
 
 export default function QuestionCard({ question, onEdit, onDelete, onSubmit }: QuestionCardProps) {

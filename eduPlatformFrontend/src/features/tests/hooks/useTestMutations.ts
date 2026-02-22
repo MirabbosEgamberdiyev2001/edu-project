@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { AxiosError } from 'axios';
 import { useToast } from '@/hooks/useToast';
 import { testApi } from '@/api/testApi';
@@ -8,6 +9,7 @@ import type { ApiError } from '@/types/api';
 export function useTestMutations() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { t } = useTranslation('common');
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['tests'] });
 
@@ -18,7 +20,7 @@ export function useTestMutations() {
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to generate test');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 
@@ -29,7 +31,7 @@ export function useTestMutations() {
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to delete test');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 
@@ -40,7 +42,7 @@ export function useTestMutations() {
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to duplicate test');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 
@@ -51,7 +53,7 @@ export function useTestMutations() {
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to regenerate test');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 

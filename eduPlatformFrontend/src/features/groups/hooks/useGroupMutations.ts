@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { groupApi } from '@/api/groupApi';
 import { useToast } from '@/hooks/useToast';
 import type { CreateGroupRequest, UpdateGroupRequest } from '@/types/group';
@@ -8,6 +9,7 @@ import type { ApiError } from '@/types/api';
 export function useGroupMutations() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { t } = useTranslation('common');
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['groups'] });
 
@@ -18,7 +20,7 @@ export function useGroupMutations() {
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to create group');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 
@@ -30,7 +32,7 @@ export function useGroupMutations() {
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to update group');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 
@@ -41,7 +43,7 @@ export function useGroupMutations() {
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to delete group');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 
@@ -52,7 +54,7 @@ export function useGroupMutations() {
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || 'Failed to archive group');
+      toast.error(error.response?.data?.message || t('error'));
     },
   });
 

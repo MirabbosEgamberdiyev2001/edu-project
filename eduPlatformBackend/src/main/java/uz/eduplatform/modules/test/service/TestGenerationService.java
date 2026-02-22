@@ -11,7 +11,11 @@ import uz.eduplatform.modules.content.domain.Difficulty;
 import uz.eduplatform.modules.content.domain.Question;
 import uz.eduplatform.modules.content.domain.QuestionStatus;
 import uz.eduplatform.modules.content.domain.QuestionType;
+import uz.eduplatform.modules.content.domain.Subject;
+import uz.eduplatform.modules.content.domain.Topic;
 import uz.eduplatform.modules.content.repository.QuestionRepository;
+import uz.eduplatform.modules.content.repository.SubjectRepository;
+import uz.eduplatform.modules.content.repository.TopicRepository;
 import uz.eduplatform.modules.test.domain.TestHistory;
 import uz.eduplatform.modules.test.domain.TestQuestion;
 import uz.eduplatform.modules.test.domain.TestStatus;
@@ -30,6 +34,8 @@ public class TestGenerationService {
     private final QuestionRepository questionRepository;
     private final TestHistoryRepository testHistoryRepository;
     private final TestQuestionRepository testQuestionRepository;
+    private final TopicRepository topicRepository;
+    private final SubjectRepository subjectRepository;
     private final TestValidationService validationService;
     private final AuditService auditService;
     private final ObjectMapper objectMapper;
@@ -40,6 +46,18 @@ public class TestGenerationService {
     public GenerateTestResponse generateTest(UUID userId, GenerateTestRequest request) {
         // 1. Validate input
         validationService.validateRequest(request);
+
+        // 1.1 Validate topic ownership - teacher must own all topics via their subjects
+        if (request.getTopicIds() != null && !request.getTopicIds().isEmpty()) {
+            for (UUID topicId : request.getTopicIds()) {
+                Topic topic = topicRepository.findById(topicId)
+                        .orElseThrow(() -> BusinessException.ofKey("test.topic.not.found"));
+                Subject subject = topic.getSubject();
+                if (!subject.getUser().getId().equals(userId)) {
+                    throw BusinessException.ofKey("test.topic.not.owned");
+                }
+            }
+        }
 
         boolean isManualMode = request.getQuestionIds() != null && !request.getQuestionIds().isEmpty();
         List<Question> selected;

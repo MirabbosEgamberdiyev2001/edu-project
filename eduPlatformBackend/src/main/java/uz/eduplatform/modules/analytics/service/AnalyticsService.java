@@ -124,6 +124,27 @@ public class AnalyticsService {
     }
 
     @Transactional(readOnly = true)
+    public StudentAnalyticsDto getStudentAnalytics(UUID studentId, UUID teacherId) {
+        // Validate teacher has this student in at least one of their groups
+        boolean hasAccess = false;
+        List<StudentGroup> teacherGroups = groupRepository.findByTeacherIdOrderByCreatedAtDesc(
+                teacherId, PageRequest.of(0, 1000)).getContent();
+        for (StudentGroup group : teacherGroups) {
+            List<UUID> memberIds = groupRepository.findStudentIdsByGroupId(group.getId());
+            if (memberIds.contains(studentId)) {
+                hasAccess = true;
+                break;
+            }
+        }
+        if (!hasAccess) {
+            throw new uz.eduplatform.core.common.exception.BusinessException(
+                    "error.access.denied", null, org.springframework.http.HttpStatus.FORBIDDEN);
+        }
+
+        return getStudentAnalytics(studentId);
+    }
+
+    @Transactional(readOnly = true)
     public StudentAnalyticsDto getStudentAnalytics(UUID studentId) {
         User student = userRepository.findById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", studentId));

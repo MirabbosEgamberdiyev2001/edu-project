@@ -68,8 +68,16 @@ public class QuestionService {
     }
 
     @Transactional(readOnly = true)
-    public PagedResponse<QuestionDto> getQuestionsByTopic(UUID topicId, Pageable pageable, AcceptLanguage language) {
+    public PagedResponse<QuestionDto> getQuestionsByTopic(UUID topicId, UUID userId, Pageable pageable, AcceptLanguage language) {
         String localeKey = language.toLocaleKey();
+
+        // Validate that the topic belongs to a subject owned by this user
+        Topic topic = topicRepository.findById(topicId)
+                .orElseThrow(() -> new ResourceNotFoundException("Topic", "id", topicId));
+        if (!topic.getSubject().getUser().getId().equals(userId)) {
+            throw new BusinessException(messageService.get("error.access.denied", language.toLocale()));
+        }
+
         Page<Question> page = questionRepository.findByTopicIdAndStatusNot(
                 topicId, QuestionStatus.ARCHIVED, pageable);
 
@@ -85,15 +93,21 @@ public class QuestionService {
     public List<QuestionDto> getQuestionsByIds(List<UUID> ids, UUID userId, AcceptLanguage language) {
         String localeKey = language.toLocaleKey();
         return questionRepository.findAllById(ids).stream()
+                .filter(q -> q.getUser().getId().equals(userId))
                 .map(q -> mapToDto(q, localeKey))
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public QuestionDto getQuestionById(UUID questionId, AcceptLanguage language) {
+    public QuestionDto getQuestionById(UUID questionId, UUID userId, AcceptLanguage language) {
         String localeKey = language.toLocaleKey();
         Question question = questionRepository.findById(questionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Question", "id", questionId));
+
+        if (!question.getUser().getId().equals(userId)) {
+            throw new BusinessException(messageService.get("question.not.owner", language.toLocale()));
+        }
+
         return mapToDto(question, localeKey);
     }
 
@@ -334,10 +348,14 @@ public class QuestionService {
     }
 
     @Transactional(readOnly = true)
-    public List<QuestionVersionDto> getVersionHistory(UUID questionId, AcceptLanguage language) {
+    public List<QuestionVersionDto> getVersionHistory(UUID questionId, UUID userId, AcceptLanguage language) {
         String localeKey = language.toLocaleKey();
-        questionRepository.findById(questionId)
+        Question question = questionRepository.findById(questionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Question", "id", questionId));
+
+        if (!question.getUser().getId().equals(userId)) {
+            throw new BusinessException(messageService.get("question.not.owner", language.toLocale()));
+        }
 
         return versionRepository.findByQuestionIdOrderByVersionDesc(questionId).stream()
                 .map(v -> mapVersionToDto(v, localeKey))

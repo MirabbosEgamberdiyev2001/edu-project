@@ -77,10 +77,10 @@
   "statuses": {
     "DRAFT": "Draft",
     "PENDING": "Pending",
+    "APPROVED": "Approved",
     "ACTIVE": "Active",
     "REJECTED": "Rejected",
-    "ARCHIVED": "Archived",
-    "DEPRECATED": "Deprecated"
+    "ARCHIVED": "Archived"
   },
   "filters": {
     "allTypes": "All types",

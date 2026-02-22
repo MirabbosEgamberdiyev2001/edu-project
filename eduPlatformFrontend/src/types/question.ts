@@ -18,10 +18,10 @@ export enum Difficulty {
 export enum QuestionStatus {
   DRAFT = 'DRAFT',
   PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
   ACTIVE = 'ACTIVE',
   REJECTED = 'REJECTED',
   ARCHIVED = 'ARCHIVED',
-  DEPRECATED = 'DEPRECATED',
 }
 
 export interface QuestionVersionDto {

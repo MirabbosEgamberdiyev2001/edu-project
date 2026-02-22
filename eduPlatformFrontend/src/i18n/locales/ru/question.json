@@ -77,10 +77,10 @@
   "statuses": {
     "DRAFT": "Черновик",
     "PENDING": "На рассмотрении",
+    "APPROVED": "Одобрен",
     "ACTIVE": "Активный",
     "REJECTED": "Отклонен",
-    "ARCHIVED": "Архивирован",
-    "DEPRECATED": "Устарел"
+    "ARCHIVED": "Архивирован"
   },
   "filters": {
     "allTypes": "Все типы",
