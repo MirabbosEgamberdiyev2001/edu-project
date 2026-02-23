@@ -37,5 +37,7 @@
   "submittedAt": "Время сдачи",
   "reviewAnswers": "Обзор ответов",
   "yourAnswer": "Ваш ответ",
-  "correctAnswer": "Правильный ответ"
+  "correctAnswer": "Правильный ответ",
+  "answerPlaceholder": "Ваш ответ...",
+  "essayPlaceholder": "Напишите ваш ответ..."
 }

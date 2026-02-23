@@ -24,6 +24,7 @@
     "topic": "Topic",
     "selectSubject": "Select subject",
     "selectTopic": "Select topic",
+    "gradeLevel": "Grade",
     "options": "Answer options",
     "addOption": "Add option",
     "correctAnswer": "Correct answer",
@@ -85,9 +86,15 @@
   "filters": {
     "allTypes": "All types",
     "allDifficulties": "All difficulties",
-    "allStatuses": "All statuses"
+    "allStatuses": "All statuses",
+    "status": "Status",
+    "clear": "Clear",
+    "pageSize": "Size"
   },
   "bulkSubmit": "Submit Selected",
   "bulkSubmitSuccess": "Questions submitted for moderation",
-  "selectedCount": "{{count}} selected"
+  "selectedCount": "{{count}} selected",
+  "totalCount": "{{count}} questions total",
+  "emptyFiltered": "No questions match your filters",
+  "emptyFilteredDescription": "Try adjusting your search or filters"
 }

@@ -7,6 +7,7 @@ import {
   FormGroup,
   Box,
 } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 import type { AttemptQuestionDto } from '@/types/testTaking';
 
 interface AnswerInputProps {
@@ -17,6 +18,7 @@ interface AnswerInputProps {
 }
 
 export default function AnswerInput({ question, value, onChange, disabled }: AnswerInputProps) {
+  const { t } = useTranslation('testTaking');
   const options = Array.isArray(question.options) ? question.options as { key: string; text: string }[] : [];
 
   switch (question.questionType) {
@@ -74,7 +76,7 @@ export default function AnswerInput({ question, value, onChange, disabled }: Ans
             fullWidth
             value={(value as string) || ''}
             onChange={(e) => onChange(e.target.value)}
-            placeholder="Your answer..."
+            placeholder={t('answerPlaceholder')}
             disabled={disabled}
           />
         </Box>
@@ -89,7 +91,7 @@ export default function AnswerInput({ question, value, onChange, disabled }: Ans
             rows={6}
             value={(value as string) || ''}
             onChange={(e) => onChange(e.target.value)}
-            placeholder="Write your answer..."
+            placeholder={t('essayPlaceholder')}
             disabled={disabled}
           />
         </Box>

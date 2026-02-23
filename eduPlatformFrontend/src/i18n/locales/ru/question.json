@@ -24,6 +24,7 @@
     "topic": "Тема",
     "selectSubject": "Выберите предмет",
     "selectTopic": "Выберите тему",
+    "gradeLevel": "Класс",
     "options": "Варианты ответов",
     "addOption": "Добавить вариант",
     "correctAnswer": "Правильный ответ",
@@ -85,9 +86,15 @@
   "filters": {
     "allTypes": "Все типы",
     "allDifficulties": "Все сложности",
-    "allStatuses": "Все статусы"
+    "allStatuses": "Все статусы",
+    "status": "Статус",
+    "clear": "Сбросить",
+    "pageSize": "Размер"
   },
   "bulkSubmit": "Отправить выбранные",
   "bulkSubmitSuccess": "Вопросы отправлены на модерацию",
-  "selectedCount": "{{count}} выбрано"
+  "selectedCount": "{{count}} выбрано",
+  "totalCount": "{{count}} вопросов всего",
+  "emptyFiltered": "Вопросы по фильтрам не найдены",
+  "emptyFilteredDescription": "Попробуйте изменить параметры поиска или фильтры"
 }

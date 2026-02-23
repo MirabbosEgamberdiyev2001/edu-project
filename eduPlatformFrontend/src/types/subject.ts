@@ -1,11 +1,3 @@
-export enum SubjectCategory {
-  DTM = 'DTM',
-  SCHOOL = 'SCHOOL',
-  OLYMPIAD = 'OLYMPIAD',
-  CERTIFICATE = 'CERTIFICATE',
-  ATTESTATSIYA = 'ATTESTATSIYA',
-}
-
 export interface SubjectDto {
   id: string;
   userId: string;
@@ -15,12 +7,11 @@ export interface SubjectDto {
   descriptionTranslations: Record<string, string> | null;
   icon: string | null;
   color: string | null;
-  category: SubjectCategory | null;
-  gradeLevel: number | null;
   isTemplate: boolean;
   templateId: string | null;
   isActive: boolean;
   isArchived: boolean;
+  gradeLevel: number | null;
   topicCount: number;
   questionCount: number;
   testCount: number;
@@ -34,7 +25,6 @@ export interface CreateSubjectRequest {
   description?: Record<string, string>;
   icon?: string;
   color?: string;
-  category?: SubjectCategory;
   gradeLevel?: number;
 }
 
@@ -43,9 +33,8 @@ export interface UpdateSubjectRequest {
   description?: Record<string, string>;
   icon?: string;
   color?: string;
-  category?: SubjectCategory;
-  gradeLevel?: number;
   isActive?: boolean;
+  gradeLevel?: number;
 }
 
 // PagedResponse moved to @/types/api.ts

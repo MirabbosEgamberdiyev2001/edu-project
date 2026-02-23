@@ -37,5 +37,7 @@
   "submittedAt": "Топширилган вақт",
   "reviewAnswers": "Жавобларни кўриш",
   "yourAnswer": "Сизнинг жавобингиз",
-  "correctAnswer": "Тўғри жавоб"
+  "correctAnswer": "Тўғри жавоб",
+  "answerPlaceholder": "Жавобингиз...",
+  "essayPlaceholder": "Жавобингизни ёзинг..."
 }

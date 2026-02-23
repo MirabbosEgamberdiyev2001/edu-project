@@ -16,7 +16,6 @@ import uz.eduplatform.core.common.dto.PagedResponse;
 import uz.eduplatform.core.common.utils.MessageService;
 import uz.eduplatform.core.i18n.AcceptLanguage;
 import uz.eduplatform.core.security.UserPrincipal;
-import uz.eduplatform.modules.content.domain.SubjectCategory;
 import uz.eduplatform.modules.content.dto.*;
 import uz.eduplatform.modules.content.service.SubjectService;
 
@@ -32,11 +31,10 @@ public class SubjectController {
     private final MessageService messageService;
 
     @GetMapping
-    @Operation(summary = "Foydalanuvchi fanlarini olish", description = "Joriy foydalanuvchining barcha fanlarini sahifalab olish. Kategoriya, qidiruv va saralash parametrlari bilan filtrlash mumkin.")
+    @Operation(summary = "Foydalanuvchi fanlarini olish", description = "Joriy foydalanuvchining barcha fanlarini sahifalab olish (template fanlar ham ko'rinadi).")
     public ResponseEntity<ApiResponse<PagedResponse<SubjectDto>>> getSubjects(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language,
-            @RequestParam(required = false) SubjectCategory category,
             @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -45,7 +43,7 @@ public class SubjectController {
 
         Sort sort = Sort.by(Sort.Direction.fromString(direction), sortBy);
         PagedResponse<SubjectDto> response = subjectService.getSubjects(
-                principal.getId(), category, search, PageRequest.of(page, size, sort), language);
+                principal.getId(), search, PageRequest.of(page, size, sort), language);
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }
@@ -64,8 +62,8 @@ public class SubjectController {
     }
 
     @PostMapping
-    @Operation(summary = "Yangi fan yaratish", description = "Yangi fan yaratish. Faqat TEACHER, ADMIN va SUPER_ADMIN rollari uchun ruxsat berilgan.")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN', 'SUPER_ADMIN')")
+    @Operation(summary = "Yangi fan yaratish", description = "Yangi fan yaratish. Faqat ADMIN va SUPER_ADMIN rollari uchun ruxsat berilgan.")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<SubjectDto>> createSubject(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language,
@@ -78,7 +76,7 @@ public class SubjectController {
 
     @PostMapping("/bulk")
     @Operation(summary = "Bir nechta fan yaratish", description = "Bir so'rovda bir nechta fanni ommaviy yaratish. Mavjud nomlar avtomatik o'tkazib yuboriladi.")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<BulkCreateResponse>> createSubjectsBulk(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language,
@@ -103,7 +101,7 @@ public class SubjectController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Fanni yangilash", description = "Fan ma'lumotlarini to'liq yangilash — nomi, kategoriyasi, tavsifi va boshqa maydonlar.")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<SubjectDto>> updateSubject(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal,
@@ -116,7 +114,7 @@ public class SubjectController {
 
     @PatchMapping("/{id}")
     @Operation(summary = "Fanni qisman yangilash", description = "Fanning faqat yuborilgan maydonlarini yangilash. Yuborilmagan maydonlar o'zgarmaydi.")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<SubjectDto>> patchSubject(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal,
@@ -129,7 +127,7 @@ public class SubjectController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Fanni o'chirish", description = "Fanni yumshoq o'chirish (soft delete). Ma'lumotlar bazadan o'chirilmaydi, faqat belgilanadi.")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<Void>> deleteSubject(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal,
@@ -141,7 +139,7 @@ public class SubjectController {
 
     @PostMapping("/{id}/archive")
     @Operation(summary = "Fanni arxivlash", description = "Fanni arxivga ko'chirish. Arxivlangan fan test generatsiyasida ishlatilmaydi.")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<SubjectDto>> archiveSubject(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal,
@@ -153,7 +151,7 @@ public class SubjectController {
 
     @PostMapping("/{id}/restore")
     @Operation(summary = "Arxivdan tiklash", description = "Arxivlangan fanni qaytadan faol holatga keltirish.")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<SubjectDto>> restoreSubject(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal,
@@ -163,16 +161,4 @@ public class SubjectController {
         return ResponseEntity.ok(ApiResponse.success(subject, messageService.get("subject.restored", language.toLocale())));
     }
 
-    @PostMapping("/{id}/fork")
-    @Operation(summary = "Shablon fanni nusxalash", description = "Shablon (template) fanni o'z hisobiga nusxalab olish. Barcha mavzular va savollar ham nusxalanadi.")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN', 'SUPER_ADMIN')")
-    public ResponseEntity<ApiResponse<SubjectDto>> forkTemplate(
-            @PathVariable UUID id,
-            @AuthenticationPrincipal UserPrincipal principal,
-            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
-
-        SubjectDto subject = subjectService.forkTemplate(id, principal.getId(), language);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(subject, messageService.get("subject.forked", language.toLocale())));
-    }
 }

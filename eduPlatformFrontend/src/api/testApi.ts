@@ -16,6 +16,9 @@ export const testApi = {
   generate: (data: GenerateTestRequest) =>
     api.post<ApiResponse<GenerateTestResponse>>(`${TESTS}/generate`, data),
 
+  preview: (data: GenerateTestRequest) =>
+    api.post<ApiResponse<GenerateTestResponse>>(`${TESTS}/generate/preview`, data),
+
   validate: (data: GenerateTestRequest) =>
     api.post<ApiResponse<void>>(`${TESTS}/generate/validate`, data),
 
@@ -47,11 +50,11 @@ export const testApi = {
   getHistoryById: (id: string) =>
     api.get<ApiResponse<TestHistoryDto>>(`${TESTS}/history/${id}`),
 
+  updateHistory: (id: string, data: Record<string, unknown>) =>
+    api.put<ApiResponse<TestHistoryDto>>(`${TESTS}/history/${id}`, data),
+
   deleteHistory: (id: string) =>
     api.delete<ApiResponse<void>>(`${TESTS}/history/${id}`),
-
-  duplicate: (id: string) =>
-    api.post<ApiResponse<GenerateTestResponse>>(`${TESTS}/history/${id}/duplicate`),
 
   regenerate: (id: string) =>
     api.post<ApiResponse<GenerateTestResponse>>(`${TESTS}/history/${id}/regenerate`),
@@ -79,4 +82,15 @@ export const testApi = {
       params: { format },
       responseType: 'blob',
     }),
+
+  publishTest: (id: string, durationMinutes?: number) =>
+    api.post<ApiResponse<TestHistoryDto>>(`${TESTS}/history/${id}/publish`, null, {
+      params: durationMinutes ? { durationMinutes } : undefined,
+    }),
+
+  unpublishTest: (id: string) =>
+    api.delete<ApiResponse<TestHistoryDto>>(`${TESTS}/history/${id}/publish`),
+
+  getPublicTest: (slug: string) =>
+    api.get<ApiResponse<TestHistoryDto>>(`/public-tests/${slug}`),
 };

@@ -4,8 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import uz.eduplatform.modules.content.domain.SubjectCategory;
-
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
@@ -24,12 +22,11 @@ public class SubjectDto {
     private Map<String, String> descriptionTranslations;
     private String icon;
     private String color;
-    private SubjectCategory category;
-    private Integer gradeLevel;
     private Boolean isTemplate;
     private UUID templateId;
     private Boolean isActive;
     private Boolean isArchived;
+    private Integer gradeLevel;
     private Integer topicCount;
     private Integer questionCount;
     private Integer testCount;

@@ -9,6 +9,8 @@ import uz.eduplatform.core.common.exception.ResourceNotFoundException;
 import uz.eduplatform.core.common.utils.MessageService;
 import uz.eduplatform.core.i18n.AcceptLanguage;
 import uz.eduplatform.core.i18n.TranslatedField;
+import uz.eduplatform.modules.auth.domain.User;
+import uz.eduplatform.modules.auth.repository.UserRepository;
 import uz.eduplatform.modules.content.domain.Subject;
 import uz.eduplatform.modules.content.domain.Topic;
 import uz.eduplatform.modules.content.dto.*;
@@ -23,18 +25,20 @@ public class TopicService {
 
     private final TopicRepository topicRepository;
     private final SubjectRepository subjectRepository;
+    private final UserRepository userRepository;
     private final SubjectService subjectService;
     private final AuditService auditService;
     private final MessageService messageService;
 
     @Transactional(readOnly = true)
-    public List<TopicTreeDto> getTopicTree(UUID subjectId, UUID userId, AcceptLanguage language) {
-        // Verify user owns the subject
-        subjectRepository.findByIdAndUserId(subjectId, userId)
+    public List<TopicTreeDto> getTopicTree(UUID subjectId, UUID userId, Integer gradeLevel, AcceptLanguage language) {
+        // Verify subject exists (no ownership check — anyone can access)
+        subjectRepository.findById(subjectId)
                 .orElseThrow(() -> new ResourceNotFoundException("Subject", "id", subjectId));
 
         String localeKey = language.toLocaleKey();
-        List<Topic> rootTopics = topicRepository.findBySubjectIdAndParentIsNullOrderBySortOrderAsc(subjectId);
+        List<Topic> rootTopics = topicRepository
+                .findBySubjectIdAndGradeLevelAndUserIdAndParentIsNullOrderBySortOrderAsc(subjectId, gradeLevel, userId);
         return rootTopics.stream()
                 .map(t -> buildTreeDto(t, localeKey))
                 .toList();
@@ -42,17 +46,23 @@ public class TopicService {
 
     @Transactional
     public TopicDto createTopic(UUID subjectId, UUID userId, CreateTopicRequest request, AcceptLanguage language) {
-        Subject subject = subjectRepository.findByIdAndUserId(subjectId, userId)
+        Subject subject = subjectRepository.findById(subjectId)
                 .orElseThrow(() -> new ResourceNotFoundException("Subject", "id", subjectId));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
 
         Topic parent = null;
         int level = 1;
+        Integer gradeLevel = request.getGradeLevel();
 
         if (request.getParentId() != null) {
             parent = topicRepository.findByIdAndSubjectId(request.getParentId(), subjectId)
                     .orElseThrow(() -> new ResourceNotFoundException("Parent topic", "id", request.getParentId()));
 
             level = parent.getLevel() + 1;
+            // Child topics inherit gradeLevel from parent
+            gradeLevel = parent.getGradeLevel();
 
             if (level > Topic.MAX_DEPTH) {
                 throw new BusinessException(messageService.get("topic.max.depth", language.toLocale()));
@@ -61,10 +71,10 @@ public class TopicService {
 
         int sortOrder;
         if (parent != null) {
-            sortOrder = topicRepository.findMaxSortOrderBySubjectAndParent(subjectId, parent.getId())
+            sortOrder = topicRepository.findMaxSortOrderBySubjectAndUserAndParent(subjectId, userId, parent.getId())
                     .orElse(-1) + 1;
         } else {
-            sortOrder = topicRepository.findMaxSortOrderBySubjectAndParentIsNull(subjectId)
+            sortOrder = topicRepository.findMaxSortOrderBySubjectAndUserAndGradeLevelAndParentIsNull(subjectId, userId, gradeLevel)
                     .orElse(-1) + 1;
         }
 
@@ -72,15 +82,17 @@ public class TopicService {
         Map<String, String> cleanedName = TranslatedField.clean(request.getName());
         Map<String, String> cleanedDesc = TranslatedField.clean(request.getDescription());
 
-        // Duplicate name check
+        // Duplicate name check (scoped to user)
         String defaultName = TranslatedField.defaultValue(cleanedName);
         UUID parentId = parent != null ? parent.getId() : null;
-        if (defaultName != null && topicRepository.existsBySubjectIdAndParentIdAndDefaultName(subjectId, parentId, defaultName)) {
+        if (defaultName != null && topicRepository.existsBySubjectIdAndUserIdAndParentIdAndDefaultName(subjectId, userId, parentId, defaultName)) {
             throw new BusinessException(messageService.get("topic.name.exists", language.toLocale()));
         }
 
         Topic topic = Topic.builder()
                 .subject(subject)
+                .user(user)
+                .gradeLevel(gradeLevel)
                 .parent(parent)
                 .name(cleanedName)
                 .description(cleanedDesc)
@@ -112,7 +124,7 @@ public class TopicService {
         int skipped = 0;
         List<String> errors = new ArrayList<>();
 
-        subjectRepository.findByIdAndUserId(subjectId, userId)
+        subjectRepository.findById(subjectId)
                 .orElseThrow(() -> new ResourceNotFoundException("Subject", "id", subjectId));
 
         for (int i = 0; i < request.getItems().size(); i++) {
@@ -121,7 +133,7 @@ public class TopicService {
                 Map<String, String> cleanedName = TranslatedField.clean(item.getName());
                 String defaultName = TranslatedField.defaultValue(cleanedName);
                 UUID parentId = item.getParentId();
-                if (defaultName != null && topicRepository.existsBySubjectIdAndParentIdAndDefaultName(subjectId, parentId, defaultName)) {
+                if (defaultName != null && topicRepository.existsBySubjectIdAndUserIdAndParentIdAndDefaultName(subjectId, userId, parentId, defaultName)) {
                     if (request.isSkipDuplicates()) {
                         skipped++;
                         continue;
@@ -148,10 +160,12 @@ public class TopicService {
         Topic topic = topicRepository.findById(topicId)
                 .orElseThrow(() -> new ResourceNotFoundException("Topic", "id", topicId));
 
-        // Verify ownership
+        // Verify ownership via topic's user
+        if (!topic.getUser().getId().equals(userId)) {
+            throw new ResourceNotFoundException("Topic", "id", topicId);
+        }
+
         UUID subjectId = topic.getSubject().getId();
-        subjectRepository.findByIdAndUserId(subjectId, userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Subject", "id", subjectId));
 
         if (request.getName() != null) {
             Map<String, String> cleanedName = TranslatedField.clean(request.getName());
@@ -159,7 +173,7 @@ public class TopicService {
             String currentDefaultName = TranslatedField.defaultValue(topic.getName());
             UUID parentId = topic.getParent() != null ? topic.getParent().getId() : null;
             if (newDefaultName != null && !newDefaultName.equals(currentDefaultName) &&
-                    topicRepository.existsBySubjectIdAndParentIdAndDefaultName(subjectId, parentId, newDefaultName)) {
+                    topicRepository.existsBySubjectIdAndUserIdAndParentIdAndDefaultName(subjectId, userId, parentId, newDefaultName)) {
                 throw new BusinessException(messageService.get("topic.name.exists", language.toLocale()));
             }
             topic.setName(TranslatedField.merge(topic.getName(), cleanedName));
@@ -184,9 +198,10 @@ public class TopicService {
         Topic topic = topicRepository.findById(topicId)
                 .orElseThrow(() -> new ResourceNotFoundException("Topic", "id", topicId));
 
-        // Verify ownership
-        Subject subject = subjectRepository.findByIdAndUserId(topic.getSubject().getId(), userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Subject", "id", topic.getSubject().getId()));
+        // Verify ownership via topic's user
+        if (!topic.getUser().getId().equals(userId)) {
+            throw new ResourceNotFoundException("Topic", "id", topicId);
+        }
 
         // Check for questions in this topic and its children
         int totalQuestions = countQuestionsRecursive(topic);
@@ -194,7 +209,7 @@ public class TopicService {
             throw new BusinessException(messageService.get("topic.has.questions", language.toLocale()));
         }
 
-        UUID subjectId = subject.getId();
+        UUID subjectId = topic.getSubject().getId();
         topicRepository.delete(topic); // Cascade deletes children
 
         // Update subject counters
@@ -210,9 +225,10 @@ public class TopicService {
             Topic topic = topicRepository.findById(item.getId())
                     .orElseThrow(() -> new ResourceNotFoundException("Topic", "id", item.getId()));
 
-            // Verify ownership
-            subjectRepository.findByIdAndUserId(topic.getSubject().getId(), userId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Subject", "id", topic.getSubject().getId()));
+            // Verify ownership via topic's user
+            if (!topic.getUser().getId().equals(userId)) {
+                throw new ResourceNotFoundException("Topic", "id", item.getId());
+            }
 
             topic.setSortOrder(item.getSortOrder());
             topicRepository.save(topic);
@@ -226,14 +242,16 @@ public class TopicService {
         Topic topic = topicRepository.findById(topicId)
                 .orElseThrow(() -> new ResourceNotFoundException("Topic", "id", topicId));
 
-        // Verify ownership of source
+        // Verify ownership via topic's user
+        if (!topic.getUser().getId().equals(userId)) {
+            throw new ResourceNotFoundException("Topic", "id", topicId);
+        }
+
         UUID oldSubjectId = topic.getSubject().getId();
-        subjectRepository.findByIdAndUserId(oldSubjectId, userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Subject", "id", oldSubjectId));
 
         // If moving to different subject
         if (request.getNewSubjectId() != null && !request.getNewSubjectId().equals(oldSubjectId)) {
-            Subject newSubject = subjectRepository.findByIdAndUserId(request.getNewSubjectId(), userId)
+            Subject newSubject = subjectRepository.findById(request.getNewSubjectId())
                     .orElseThrow(() -> new ResourceNotFoundException("Target subject", "id", request.getNewSubjectId()));
             topic.setSubject(newSubject);
         }
@@ -344,6 +362,8 @@ public class TopicService {
                 .id(topic.getId())
                 .subjectId(topic.getSubject().getId())
                 .parentId(topic.getParent() != null ? topic.getParent().getId() : null)
+                .userId(topic.getUser().getId())
+                .gradeLevel(topic.getGradeLevel())
                 .name(TranslatedField.resolve(topic.getName(), localeKey))
                 .description(TranslatedField.resolve(topic.getDescription(), localeKey))
                 .nameTranslations(TranslatedField.clean(topic.getName()))
@@ -370,6 +390,8 @@ public class TopicService {
                 .id(topic.getId())
                 .subjectId(topic.getSubject().getId())
                 .parentId(topic.getParent() != null ? topic.getParent().getId() : null)
+                .userId(topic.getUser().getId())
+                .gradeLevel(topic.getGradeLevel())
                 .name(TranslatedField.resolve(topic.getName(), localeKey))
                 .description(TranslatedField.resolve(topic.getDescription(), localeKey))
                 .nameTranslations(TranslatedField.clean(topic.getName()))

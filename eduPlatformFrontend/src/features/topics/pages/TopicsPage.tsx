@@ -5,6 +5,7 @@ import {
   TextField,
   MenuItem,
   Paper,
+  Chip,
   CircularProgress,
   Avatar,
   Alert,
@@ -16,10 +17,14 @@ import { useSubjects } from '@/features/subjects/hooks/useSubjects';
 import TopicTreeView from '../components/TopicTreeView';
 import { resolveTranslation } from '@/utils/i18nUtils';
 
+const GRADES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+
 export default function TopicsPage() {
   const { t } = useTranslation('topic');
+  const { t: tSubject } = useTranslation('subject');
   const { data: subjectsData, isLoading: subjectsLoading, isError: subjectsError } = useSubjects({ size: 100 });
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>('');
+  const [selectedGrade, setSelectedGrade] = useState<number | null>(null);
 
   const subjects = subjectsData?.content || [];
 
@@ -40,41 +45,55 @@ export default function TopicsPage() {
         ) : subjectsError ? (
           <Alert severity="error">{t('common:error')}</Alert>
         ) : subjects.length > 0 ? (
-          <TextField
-            select
-            label={t('selectSubject')}
-            value={selectedSubjectId}
-            onChange={(e) => setSelectedSubjectId(e.target.value)}
-            fullWidth
-            size="small"
-          >
-            {subjects.map((subject) => {
-              const name = resolveTranslation(subject.nameTranslations) || subject.name;
-              return (
-                <MenuItem key={subject.id} value={subject.id}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    {subject.icon ? (
-                      /^https?:\/\/.+/i.test(subject.icon) ? (
-                        <Avatar src={subject.icon} sx={{ width: 24, height: 24 }} variant="rounded" />
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <TextField
+              select
+              label={t('selectSubject')}
+              value={selectedSubjectId}
+              onChange={(e) => { setSelectedSubjectId(e.target.value); setSelectedGrade(null); }}
+              fullWidth
+              size="small"
+            >
+              {subjects.map((subject) => {
+                const name = resolveTranslation(subject.nameTranslations) || subject.name;
+                return (
+                  <MenuItem key={subject.id} value={subject.id}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      {subject.icon ? (
+                        /^https?:\/\/.+/i.test(subject.icon) ? (
+                          <Avatar src={subject.icon} sx={{ width: 24, height: 24 }} variant="rounded" />
+                        ) : (
+                          <Typography component="span" sx={{ fontSize: 18, lineHeight: 1 }}>
+                            {subject.icon}
+                          </Typography>
+                        )
                       ) : (
-                        <Typography component="span" sx={{ fontSize: 18, lineHeight: 1 }}>
-                          {subject.icon}
-                        </Typography>
-                      )
-                    ) : (
-                      <MenuBookIcon fontSize="small" color="action" />
-                    )}
-                    <Typography variant="body2">{name}</Typography>
-                    {subject.category && (
-                      <Typography variant="caption" color="text.secondary">
-                        ({subject.category})
-                      </Typography>
-                    )}
-                  </Box>
-                </MenuItem>
-              );
-            })}
-          </TextField>
+                        <MenuBookIcon fontSize="small" color="action" />
+                      )}
+                      <Typography variant="body2">{name}</Typography>
+                    </Box>
+                  </MenuItem>
+                );
+              })}
+            </TextField>
+            {selectedSubjectId && (
+              <Box>
+                <Typography variant="subtitle2" sx={{ mb: 1 }}>{tSubject('form.gradeLevel')}</Typography>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                  {GRADES.map((grade) => (
+                    <Chip
+                      key={grade}
+                      label={`${grade}`}
+                      color={selectedGrade === grade ? 'primary' : 'default'}
+                      variant={selectedGrade === grade ? 'filled' : 'outlined'}
+                      onClick={() => setSelectedGrade(grade)}
+                      sx={{ minWidth: 40 }}
+                    />
+                  ))}
+                </Box>
+              </Box>
+            )}
+          </Box>
         ) : (
           <Box sx={{ textAlign: 'center', py: 2 }}>
             <MenuBookIcon sx={{ fontSize: 40, color: 'text.disabled', mb: 1 }} />
@@ -84,10 +103,15 @@ export default function TopicsPage() {
       </Paper>
 
       {/* Topic tree */}
-      {selectedSubjectId ? (
+      {selectedSubjectId && selectedGrade !== null ? (
         <Paper sx={{ p: 2 }}>
-          <TopicTreeView subjectId={selectedSubjectId} />
+          <TopicTreeView subjectId={selectedSubjectId} gradeLevel={selectedGrade} />
         </Paper>
+      ) : selectedSubjectId ? (
+        <Box sx={{ textAlign: 'center', py: 8 }}>
+          <TopicIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
+          <Typography variant="h6" color="text.secondary">{t('selectGrade')}</Typography>
+        </Box>
       ) : subjects.length > 0 ? (
         <Box sx={{ textAlign: 'center', py: 8 }}>
           <TopicIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />

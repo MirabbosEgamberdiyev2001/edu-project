@@ -10,8 +10,17 @@ export function useSubjectMutations() {
   const queryClient = useQueryClient();
   const toast = useToast();
   const { t } = useTranslation('common');
+  const { t: tSubject } = useTranslation('subject');
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['subjects'] });
+
+  const handleError = (error: AxiosError<ApiError>) => {
+    if (error.response?.status === 409) {
+      toast.error(tSubject('duplicateError'));
+    } else {
+      toast.error(error.response?.data?.message || t('error'));
+    }
+  };
 
   const create = useMutation({
     mutationFn: (data: CreateSubjectRequest) => subjectApi.createSubject(data),
@@ -19,9 +28,7 @@ export function useSubjectMutations() {
       toast.success(resp.message);
       invalidate();
     },
-    onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || t('error'));
-    },
+    onError: handleError,
   });
 
   const update = useMutation({
@@ -31,9 +38,7 @@ export function useSubjectMutations() {
       toast.success(resp.message);
       invalidate();
     },
-    onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || t('error'));
-    },
+    onError: handleError,
   });
 
   const remove = useMutation({
@@ -69,16 +74,5 @@ export function useSubjectMutations() {
     },
   });
 
-  const fork = useMutation({
-    mutationFn: (id: string) => subjectApi.forkTemplate(id),
-    onSuccess: ({ data: resp }) => {
-      toast.success(resp.message);
-      invalidate();
-    },
-    onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || t('error'));
-    },
-  });
-
-  return { create, update, remove, archive, restore, fork };
+  return { create, update, remove, archive, restore };
 }

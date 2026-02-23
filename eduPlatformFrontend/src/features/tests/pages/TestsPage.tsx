@@ -24,7 +24,7 @@ export default function TestsPage() {
   const [page, setPage] = useState(0);
 
   const { data, isLoading } = useTestHistory({ page, size: 12 });
-  const { remove, duplicate } = useTestMutations();
+  const { remove } = useTestMutations();
 
   const [deleteTest, setDeleteTest] = useState<TestHistoryDto | null>(null);
 
@@ -36,10 +36,6 @@ export default function TestsPage() {
     if (deleteTest) {
       remove.mutate(deleteTest.id, { onSuccess: () => setDeleteTest(null) });
     }
-  };
-
-  const handleDuplicate = (id: string) => {
-    duplicate.mutate(id);
   };
 
   const tests = data?.content;
@@ -64,7 +60,6 @@ export default function TestsPage() {
               <Grid item xs={12} sm={6} md={4} lg={3} key={test.id}>
                 <TestHistoryCard
                   test={test}
-                  onDuplicate={handleDuplicate}
                   onDelete={handleDelete}
                 />
               </Grid>

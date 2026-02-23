@@ -6,18 +6,18 @@ import {
   DialogActions,
   Button,
   TextField,
-  MenuItem,
   Box,
   CircularProgress,
   Typography,
   Tabs,
   Tab,
   Alert,
+  MenuItem,
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import { useTranslation } from 'react-i18next';
-import { SubjectCategory, type SubjectDto, type CreateSubjectRequest, type UpdateSubjectRequest } from '@/types/subject';
+import { type SubjectDto, type CreateSubjectRequest, type UpdateSubjectRequest } from '@/types/subject';
 import { SUPPORTED_LANGUAGES, LANGUAGE_LABELS } from '@/config';
 
 interface SubjectFormDialogProps {
@@ -27,8 +27,6 @@ interface SubjectFormDialogProps {
   subject?: SubjectDto | null;
   isPending: boolean;
 }
-
-const CATEGORY_OPTIONS = Object.values(SubjectCategory);
 
 const COLORS = ['#1976d2', '#388e3c', '#f57c00', '#d32f2f', '#7b1fa2', '#0288d1', '#455a64'];
 
@@ -53,8 +51,7 @@ export default function SubjectFormDialog({ open, onClose, onSubmit, subject, is
   const [description, setDescription] = useState<Record<string, string>>({});
   const [icon, setIcon] = useState('');
   const [color, setColor] = useState('#1976d2');
-  const [category, setCategory] = useState<SubjectCategory | ''>('');
-  const [gradeLevel, setGradeLevel] = useState<string>('');
+  const [gradeLevel, setGradeLevel] = useState<number | ''>('');
 
   useEffect(() => {
     if (open) {
@@ -64,15 +61,13 @@ export default function SubjectFormDialog({ open, onClose, onSubmit, subject, is
         setDescription(subject.descriptionTranslations ? { ...subject.descriptionTranslations } : {});
         setIcon(subject.icon || '');
         setColor(subject.color || '#1976d2');
-        setCategory(subject.category || '');
-        setGradeLevel(subject.gradeLevel?.toString() || '');
+        setGradeLevel(subject.gradeLevel || '');
       } else {
         // Create mode: start fresh
         setName({});
         setDescription({});
         setIcon('');
         setColor('#1976d2');
-        setCategory('');
         setGradeLevel('');
       }
       setLangTab(0);
@@ -96,8 +91,7 @@ export default function SubjectFormDialog({ open, onClose, onSubmit, subject, is
       ...(Object.keys(cleanDesc).length > 0 && { description: cleanDesc }),
       ...(icon && { icon }),
       ...(color && { color }),
-      ...(category && { category: category as SubjectCategory }),
-      ...(gradeLevel && { gradeLevel: parseInt(gradeLevel) }),
+      ...(gradeLevel !== '' && { gradeLevel: Number(gradeLevel) }),
     };
     onSubmit(data);
   };
@@ -190,29 +184,20 @@ export default function SubjectFormDialog({ open, onClose, onSubmit, subject, is
           }}
         />
 
-        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-          <TextField
-            select
-            label={t('form.category')}
-            value={category}
-            onChange={(e) => setCategory(e.target.value as SubjectCategory)}
-            disabled={isPending}
-            sx={{ flexGrow: 1 }}
-          >
-            <MenuItem value="">{t('form.noCategory')}</MenuItem>
-            {CATEGORY_OPTIONS.map((cat) => (
-              <MenuItem key={cat} value={cat}>{t(`categories.${cat}`)}</MenuItem>
-            ))}
-          </TextField>
-          <TextField
-            label={t('form.gradeLevel')}
-            type="number"
-            value={gradeLevel}
-            onChange={(e) => setGradeLevel(e.target.value)}
-            disabled={isPending}
-            sx={{ width: 120 }}
-          />
-        </Box>
+        <TextField
+          select
+          label={t('form.gradeLevel')}
+          value={gradeLevel}
+          onChange={(e) => setGradeLevel(e.target.value === '' ? '' : Number(e.target.value))}
+          fullWidth
+          disabled={isPending}
+          sx={{ mb: 2 }}
+        >
+          <MenuItem value="">{t('form.noGrade', 'Not specified')}</MenuItem>
+          {Array.from({ length: 11 }, (_, i) => i + 1).map((g) => (
+            <MenuItem key={g} value={g}>{g}</MenuItem>
+          ))}
+        </TextField>
 
         <Box sx={{ mb: 1 }}>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>

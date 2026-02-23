@@ -37,5 +37,7 @@
   "submittedAt": "Topshirilgan vaqt",
   "reviewAnswers": "Javoblarni ko'rish",
   "yourAnswer": "Sizning javobingiz",
-  "correctAnswer": "To'g'ri javob"
+  "correctAnswer": "To'g'ri javob",
+  "answerPlaceholder": "Javobingiz...",
+  "essayPlaceholder": "Javobingizni yozing..."
 }

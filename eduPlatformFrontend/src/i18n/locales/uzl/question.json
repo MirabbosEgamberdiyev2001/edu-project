@@ -24,6 +24,7 @@
     "topic": "Mavzu",
     "selectSubject": "Fanni tanlang",
     "selectTopic": "Mavzuni tanlang",
+    "gradeLevel": "Sinf",
     "options": "Javob variantlari",
     "addOption": "Variant qo'shish",
     "correctAnswer": "To'g'ri javob",
@@ -85,9 +86,15 @@
   "filters": {
     "allTypes": "Barcha turlar",
     "allDifficulties": "Barcha darajalar",
-    "allStatuses": "Barcha holatlar"
+    "allStatuses": "Barcha holatlar",
+    "status": "Holat",
+    "clear": "Tozalash",
+    "pageSize": "O'lcham"
   },
   "bulkSubmit": "Tanlanganlarni yuborish",
   "bulkSubmitSuccess": "Savollar moderatsiyaga yuborildi",
-  "selectedCount": "{{count}} ta tanlandi"
+  "selectedCount": "{{count}} ta tanlandi",
+  "totalCount": "Jami {{count}} ta savol",
+  "emptyFiltered": "Filtrlar bo'yicha savollar topilmadi",
+  "emptyFilteredDescription": "Qidiruv yoki filtrlarni o'zgartirib ko'ring"
 }

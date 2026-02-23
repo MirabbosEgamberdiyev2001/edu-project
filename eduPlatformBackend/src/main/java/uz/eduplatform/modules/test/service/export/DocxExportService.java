@@ -10,6 +10,7 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.STPageOrientation;
 import org.springframework.stereotype.Service;
 import uz.eduplatform.core.common.exception.BusinessException;
 import uz.eduplatform.core.common.utils.MessageService;
+import uz.eduplatform.core.i18n.LocaleKeys;
 import uz.eduplatform.core.i18n.TranslatedField;
 import uz.eduplatform.modules.content.domain.Question;
 import uz.eduplatform.modules.content.domain.QuestionType;
@@ -85,8 +86,9 @@ public class DocxExportService implements TestExportService {
         try (XWPFDocument document = new XWPFDocument()) {
             setA4PageSize(document);
 
+            String localeKey = LocaleKeys.fromLocale(locale);
             addCenteredBoldParagraph(document, messageService.get("export.answer.key.title", locale), 18);
-            addCenteredParagraph(document, test.getTitle(), 12);
+            addCenteredParagraph(document, resolveTitle(test, localeKey), 12);
             addCenteredParagraph(document, messageService.get("export.created.date", locale,
                     LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))), 10);
             addEmptyLine(document);
@@ -97,7 +99,7 @@ public class DocxExportService implements TestExportService {
 
                 addCenteredBoldParagraph(document, messageService.get("export.variant.header", locale, code), 14);
                 addEmptyLine(document);
-                writeAnswerKeyTable(document, answerKey);
+                writeAnswerKeyTable(document, answerKey, locale);
                 addEmptyLine(document);
             }
 
@@ -161,8 +163,9 @@ public class DocxExportService implements TestExportService {
         try (XWPFDocument document = new XWPFDocument()) {
             setA4PageSize(document);
 
+            String localeKey = LocaleKeys.fromLocale(locale);
             addCenteredBoldParagraph(document, messageService.get("export.proofs.title", locale), 18);
-            addCenteredParagraph(document, test.getTitle(), 12);
+            addCenteredParagraph(document, resolveTitle(test, localeKey), 12);
             addEmptyLine(document);
 
             Map<String, Object> firstVariant = test.getVariants().get(0);
@@ -204,6 +207,28 @@ public class DocxExportService implements TestExportService {
         }
     }
 
+    // ===== Translation helpers =====
+
+    private String resolveTitle(TestHistory test, String localeKey) {
+        if (test.getTitleTranslations() != null && !test.getTitleTranslations().isEmpty()) {
+            String resolved = TranslatedField.resolve(test.getTitleTranslations(), localeKey);
+            if (resolved != null) return resolved;
+        }
+        return test.getTitle();
+    }
+
+    @SuppressWarnings("unchecked")
+    private String resolveHeaderField(Map<String, Object> header, String field, String localeKey) {
+        if (header == null) return "";
+        Object translations = header.get(field + "Translations");
+        if (translations instanceof Map) {
+            String resolved = TranslatedField.resolve((Map<String, String>) translations, localeKey);
+            if (resolved != null) return resolved;
+        }
+        Object plain = header.get(field);
+        return plain != null ? String.valueOf(plain) : "";
+    }
+
     // ===== Private helpers =====
 
     private void setA4PageSize(XWPFDocument document) {
@@ -216,14 +241,14 @@ public class DocxExportService implements TestExportService {
 
     private void writeTestHeader(XWPFDocument document, TestHistory test,
                                   String variantCode, Locale locale) {
+        String localeKey = LocaleKeys.fromLocale(locale);
         Map<String, Object> header = test.getHeaderConfig();
-        String schoolName = header != null && header.get("schoolName") != null
-                ? (String) header.get("schoolName") : "";
+        String schoolName = resolveHeaderField(header, "schoolName", localeKey);
         String className = header != null && header.get("className") != null
                 ? (String) header.get("className") : "";
 
         if (!schoolName.isEmpty()) addCenteredBoldParagraph(document, schoolName, 14);
-        addCenteredBoldParagraph(document, test.getTitle(), 13);
+        addCenteredBoldParagraph(document, resolveTitle(test, localeKey), 13);
         addCenteredBoldParagraph(document, messageService.get("export.variant", locale, variantCode), 16);
         addEmptyLine(document);
         addParagraph(document, messageService.get("export.student.name", locale), 11);
@@ -310,8 +335,9 @@ public class DocxExportService implements TestExportService {
 
     @SuppressWarnings("unchecked")
     private void writeAnswerKeyContent(XWPFDocument document, TestHistory test, Locale locale) {
+        String localeKey = LocaleKeys.fromLocale(locale);
         addCenteredBoldParagraph(document, messageService.get("export.answer.key.title", locale), 18);
-        addCenteredParagraph(document, test.getTitle(), 12);
+        addCenteredParagraph(document, resolveTitle(test, localeKey), 12);
         addCenteredParagraph(document, messageService.get("export.created.date", locale,
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))), 10);
         addEmptyLine(document);
@@ -321,7 +347,7 @@ public class DocxExportService implements TestExportService {
             List<Map<String, Object>> answerKey = (List<Map<String, Object>>) variant.get("answerKey");
             addCenteredBoldParagraph(document, messageService.get("export.variant.header", locale, code), 14);
             addEmptyLine(document);
-            writeAnswerKeyTable(document, answerKey);
+            writeAnswerKeyTable(document, answerKey, locale);
             addEmptyLine(document);
         }
 
@@ -333,30 +359,31 @@ public class DocxExportService implements TestExportService {
         }
     }
 
-    private void writeAnswerKeyTable(XWPFDocument document, List<Map<String, Object>> answerKey) {
-        int cols = 8;
+    private void writeAnswerKeyTable(XWPFDocument document, List<Map<String, Object>> answerKey, Locale locale) {
+        int groupCount = 4;
+        int cols = groupCount * 2;
         int totalQuestions = answerKey.size();
-        int rows = (int) Math.ceil((double) totalQuestions / 4);
+        int rows = (int) Math.ceil((double) totalQuestions / groupCount);
 
         XWPFTable table = document.createTable(rows + 1, cols);
         table.setWidth("100%");
 
         XWPFTableRow headerRow = table.getRow(0);
-        for (int c = 0; c < 4; c++) {
+        for (int c = 0; c < groupCount; c++) {
             setCellText(headerRow.getCell(c * 2), "#", true);
-            setCellText(headerRow.getCell(c * 2 + 1), "Ans", true);
+            setCellText(headerRow.getCell(c * 2 + 1), messageService.get("export.answer.column.short", locale), true);
         }
 
         for (int r = 0; r < rows; r++) {
             XWPFTableRow row = table.getRow(r + 1);
-            for (int c = 0; c < 4; c++) {
+            for (int c = 0; c < groupCount; c++) {
                 int idx = r + c * rows;
                 if (idx < totalQuestions) {
                     Map<String, Object> entry = answerKey.get(idx);
                     String numStr = String.valueOf(entry.get("questionNumber"));
                     String answer = String.valueOf(entry.get("answer"));
                     setCellText(row.getCell(c * 2), numStr, false);
-                    setCellText(row.getCell(c * 2 + 1), answer, false);
+                    setCellText(row.getCell(c * 2 + 1), answer, true);
                 }
             }
         }

@@ -92,7 +92,7 @@ export interface UpdateQuestionRequest {
   questionType?: QuestionType;
   difficulty?: Difficulty;
   points?: number;
-  timeLimitSeconds?: number;
+  timeLimitSeconds?: number | null;
   media?: Record<string, unknown>;
   options?: unknown;
   correctAnswer?: unknown;

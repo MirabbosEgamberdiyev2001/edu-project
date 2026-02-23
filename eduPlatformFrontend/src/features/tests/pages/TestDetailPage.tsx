@@ -13,10 +13,11 @@ import {
   Tooltip,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SendIcon from '@mui/icons-material/Send';
+import PublicIcon from '@mui/icons-material/Public';
 import { useTestDetail } from '../hooks/useTests';
 import { useTestMutations } from '../hooks/useTestMutations';
 import { useQuestionMutations } from '@/features/questions/hooks/useQuestionMutations';
@@ -24,7 +25,12 @@ import { useQuestionsByIds } from '@/features/questions/hooks/useQuestions';
 import { QuestionStatus } from '@/types/question';
 import TestExportButtons from '../components/TestExportButtons';
 import TestDeleteDialog from '../components/TestDeleteDialog';
+import TestEditDialog from '../components/TestEditDialog';
 import SubmitToModerationDialog from '../components/SubmitToModerationDialog';
+import PublishTestDialog from '../components/PublishTestDialog';
+import { testApi } from '@/api/testApi';
+import { resolveTranslation } from '@/utils/i18nUtils';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 const STATUS_COLORS: Record<string, 'default' | 'info' | 'success' | 'warning' | 'error'> = {
   CREATED: 'info',
@@ -38,13 +44,33 @@ export default function TestDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation('test');
+  const { t: tQ } = useTranslation('question');
 
   const { data: test, isLoading } = useTestDetail(id!);
-  const { remove, duplicate, regenerate } = useTestMutations();
+  const { update, remove, regenerate } = useTestMutations();
   const { bulkSubmit } = useQuestionMutations();
 
+  const queryClient = useQueryClient();
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const [submitOpen, setSubmitOpen] = useState(false);
+  const [publishOpen, setPublishOpen] = useState(false);
+
+  const publishMutation = useMutation({
+    mutationFn: (durationMinutes?: number) => testApi.publishTest(id!, durationMinutes),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tests', 'detail', id] });
+      setPublishOpen(false);
+    },
+  });
+
+  const unpublishMutation = useMutation({
+    mutationFn: () => testApi.unpublishTest(id!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tests', 'detail', id] });
+      setPublishOpen(false);
+    },
+  });
 
   const uniqueQuestionIds = useMemo(() => {
     if (!test?.variants) return [];
@@ -95,9 +121,19 @@ export default function TestDetailPage() {
           <ArrowBackIcon />
         </IconButton>
         <Typography variant="h5" fontWeight={700} sx={{ flex: 1 }}>
-          {test.title}
+          {resolveTranslation(test.titleTranslations) || test.title}
         </Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
+          <Tooltip title={t('edit.title')}>
+            <IconButton onClick={() => setEditOpen(true)}>
+              <EditIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title={t('publish.title')}>
+            <IconButton color={test.isPublic ? 'success' : 'default'} onClick={() => setPublishOpen(true)}>
+              <PublicIcon />
+            </IconButton>
+          </Tooltip>
           {uniqueQuestionIds.length > 0 && (
             <Tooltip title={t('submitToModeration')}>
               <IconButton color="primary" onClick={() => setSubmitOpen(true)} disabled={bulkSubmit.isPending}>
@@ -108,11 +144,6 @@ export default function TestDetailPage() {
           <Tooltip title={t('regenerate')}>
             <IconButton onClick={() => regenerate.mutate(test.id)} disabled={regenerate.isPending}>
               <RefreshIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title={t('duplicate')}>
-            <IconButton onClick={() => duplicate.mutate(test.id)} disabled={duplicate.isPending}>
-              <ContentCopyIcon />
             </IconButton>
           </Tooltip>
           <Tooltip title={t('delete.title')}>
@@ -190,12 +221,102 @@ export default function TestDetailPage() {
         </Paper>
       )}
 
+      {/* Questions List */}
+      <Paper sx={{ p: 3, mb: 3 }}>
+        <Typography variant="subtitle2" gutterBottom>
+          {t('detail.questionsList')} ({uniqueQuestionIds.length})
+        </Typography>
+        {questionsLoading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
+            <CircularProgress size={24} />
+            <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+              {t('detail.loadingQuestions')}
+            </Typography>
+          </Box>
+        ) : questionsData && questionsData.length > 0 ? (
+          <Box sx={{ maxHeight: 500, overflow: 'auto' }}>
+            {questionsData.map((q, idx) => {
+              const options = Array.isArray(q.options) ? q.options as Array<{ text?: string; isCorrect?: boolean }> : [];
+              return (
+                <Box
+                  key={q.id}
+                  sx={{
+                    py: 1.5,
+                    px: 1,
+                    borderBottom: idx < questionsData.length - 1 ? '1px solid' : 'none',
+                    borderColor: 'divider',
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 0.5 }}>
+                    <Typography variant="caption" color="text.disabled" sx={{ minWidth: 28, pt: 0.3 }}>
+                      {idx + 1}.
+                    </Typography>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600, wordBreak: 'break-word' }}>
+                        {resolveTranslation(q.questionTextTranslations) || q.questionText}
+                      </Typography>
+                      {options.length > 0 && (
+                        <Box sx={{ mt: 0.5, pl: 1 }}>
+                          {options.map((opt, oi) => (
+                            <Typography
+                              key={oi}
+                              variant="caption"
+                              sx={{
+                                display: 'block',
+                                color: opt.isCorrect ? 'success.main' : 'text.secondary',
+                                fontWeight: opt.isCorrect ? 700 : 400,
+                              }}
+                            >
+                              {String.fromCharCode(65 + oi)}) {opt.text}
+                              {opt.isCorrect && ` ✓`}
+                            </Typography>
+                          ))}
+                        </Box>
+                      )}
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 0.5, flexShrink: 0 }}>
+                      <Chip
+                        size="small"
+                        label={tQ(`difficulties.${q.difficulty}`)}
+                        color={q.difficulty === 'EASY' ? 'success' : q.difficulty === 'MEDIUM' ? 'warning' : 'error'}
+                      />
+                      <Chip
+                        size="small"
+                        label={tQ(`statuses.${q.status}`)}
+                        variant="outlined"
+                      />
+                    </Box>
+                  </Box>
+                </Box>
+              );
+            })}
+          </Box>
+        ) : (
+          <Typography variant="body2" color="text.secondary">
+            {t('detail.questions')}: 0
+          </Typography>
+        )}
+      </Paper>
+
       {/* Export */}
       <Paper sx={{ p: 3, mb: 3 }}>
         <TestExportButtons testId={test.id} />
       </Paper>
 
       <Divider sx={{ my: 2 }} />
+
+      {/* Edit Dialog */}
+      <TestEditDialog
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        onSave={(data) => {
+          update.mutate({ id: test.id, data }, {
+            onSuccess: () => setEditOpen(false),
+          });
+        }}
+        test={test}
+        isPending={update.isPending}
+      />
 
       {/* Delete Dialog */}
       <TestDeleteDialog
@@ -204,6 +325,16 @@ export default function TestDetailPage() {
         onConfirm={handleDeleteConfirm}
         test={test}
         isPending={remove.isPending}
+      />
+
+      {/* Publish Dialog */}
+      <PublishTestDialog
+        open={publishOpen}
+        onClose={() => setPublishOpen(false)}
+        test={test}
+        onPublish={(dur) => publishMutation.mutate(dur)}
+        onUnpublish={() => unpublishMutation.mutate()}
+        isPending={publishMutation.isPending || unpublishMutation.isPending}
       />
 
       {/* Submit to Moderation Dialog */}

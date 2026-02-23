@@ -27,11 +27,16 @@
     "date": "Date",
     "title": "Test Title",
     "titlePlaceholder": "Enter test title",
+    "category": "Category",
+    "noCategory": "No category",
     "generate": "Generate Test",
     "generating": "Generating...",
     "availableQuestions": "Available Questions",
     "totalAvailable": "Total Available",
-    "preview": "Preview"
+    "preview": "Preview",
+    "selectClass": "Select class",
+    "classLabel": "class",
+    "langHint": "Fill in at least the O'zbekcha (Latin) field. Other languages are optional."
   },
   "card": {
     "questions": "{{count}} questions",
@@ -51,7 +56,11 @@
     "questions": "Questions",
     "variantCount": "Variants",
     "seed": "Random Seed",
-    "shuffle": "Shuffle"
+    "shuffle": "Shuffle",
+    "questionsList": "Questions in this test",
+    "loadingQuestions": "Loading questions...",
+    "option": "Option",
+    "correct": "Correct"
   },
   "export": {
     "test": "Test",
@@ -60,7 +69,8 @@
     "proofs": "Proofs",
     "pdf": "PDF",
     "docx": "DOCX",
-    "downloading": "Downloading..."
+    "downloading": "Downloading...",
+    "error": "Export failed"
   },
   "status": {
     "CREATED": "Created",
@@ -73,6 +83,11 @@
     "title": "Delete Test",
     "confirm": "Are you sure you want to delete this test? This action cannot be undone.",
     "deleting": "Deleting..."
+  },
+  "edit": {
+    "title": "Edit Test",
+    "save": "Save",
+    "saving": "Saving..."
   },
   "duplicate": "Duplicate",
   "regenerate": "Regenerate",
@@ -96,7 +111,11 @@
     "noQuestionsFound": "No questions found for selected topics",
     "selectAtLeastOne": "Select at least one question",
     "questionsSelected": "questions selected",
-    "selectAllPage": "Select all on page"
+    "selectAllPage": "Select all on page",
+    "createQuestion": "Create Question",
+    "selectedQuestions": "Selected Questions",
+    "clearAll": "Clear all",
+    "noSelected": "No questions selected yet. Select questions from the list below."
   },
   "submitToModeration": "Submit to Moderation",
   "submitDialog": {
@@ -107,6 +126,37 @@
     "noneSubmittable": "No questions available for submission",
     "submitting": "Submitting...",
     "confirm": "Submit for Moderation"
+  },
+  "categories": {
+    "DTM": "DTM",
+    "SCHOOL": "School",
+    "OLYMPIAD": "Olympiad",
+    "CERTIFICATE": "Certificate",
+    "ATTESTATSIYA": "Attestation"
+  },
+  "publish": {
+    "title": "Publish Test",
+    "duration": "Time limit (minutes)",
+    "publish": "Publish",
+    "unpublish": "Unpublish",
+    "published": "Published",
+    "copyLink": "Copy link",
+    "linkCopied": "Copied!",
+    "shareLink": "Share link",
+    "publicBadge": "Public"
+  },
+  "preview": {
+    "title": "Test Preview",
+    "loading": "Loading preview...",
+    "error": "Failed to load preview",
+    "variant": "Variant",
+    "question": "Question",
+    "confirmCreate": "Confirm & Create",
+    "confirmTitle": "Confirm test creation?",
+    "confirmDesc": "The test will be created with the shown questions.",
+    "noQuestions": "No questions found for these parameters",
+    "questionsCount": "{{count}} questions",
+    "correctAnswer": "Correct answer"
   },
   "errors": {
     "noTopics": "Please select at least one topic",

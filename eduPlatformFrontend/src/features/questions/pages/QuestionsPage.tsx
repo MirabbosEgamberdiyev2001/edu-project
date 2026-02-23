@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -11,11 +11,16 @@ import {
   MenuItem,
   Button,
   Checkbox,
+  FormControl,
+  Select,
+  InputLabel,
+  SelectChangeEvent,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import QuizIcon from '@mui/icons-material/Quiz';
 import SendIcon from '@mui/icons-material/Send';
+import FilterListIcon from '@mui/icons-material/FilterList';
 import { useTranslation } from 'react-i18next';
 import { useQuestions } from '../hooks/useQuestions';
 import { useQuestionMutations } from '../hooks/useQuestionMutations';
@@ -26,14 +31,28 @@ import { QuestionType, Difficulty, QuestionStatus } from '@/types/question';
 import type { QuestionDto, CreateQuestionRequest, UpdateQuestionRequest, QuestionListParams } from '@/types/question';
 import { useDebounce } from '@/features/subjects/hooks/useDebounce';
 
+const PAGE_SIZES = [12, 24, 48];
+
+// ─── Selection state management ───────────────────────────────────────────────
+// Architecture:
+//   selectedIds: string[]          — SINGLE source of truth (ID-based, global across pages)
+//   selectedSet: Set<string>       — derived O(1) lookup (useMemo from selectedIds)
+//   statusCache: Record<id,status> — populated from page data as user browses pages
+//   submittableIds: string[]       — derived synchronously from selectedIds + statusCache
+//
+// No extra API calls. No async derivation. No stale state.
+// ──────────────────────────────────────────────────────────────────────────────
+
 export default function QuestionsPage() {
   const { t } = useTranslation('question');
 
+  // ── Filter state ──
   const [search, setSearch] = useState('');
   const [questionType, setQuestionType] = useState<QuestionType | ''>('');
   const [difficulty, setDifficulty] = useState<Difficulty | ''>('');
   const [status, setStatus] = useState<QuestionStatus | ''>('');
   const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(12);
 
   const debouncedSearch = useDebounce(search, 300);
 
@@ -43,46 +62,102 @@ export default function QuestionsPage() {
     ...(difficulty && { difficulty }),
     ...(status && { status }),
     page,
-    size: 12,
-  }), [debouncedSearch, questionType, difficulty, status, page]);
+    size: pageSize,
+  }), [debouncedSearch, questionType, difficulty, status, page, pageSize]);
 
   const { data, isLoading } = useQuestions(params);
   const { create, update, remove, submitForModeration, bulkSubmit } = useQuestionMutations();
 
-  const [formOpen, setFormOpen] = useState(false);
-  const [editQuestion, setEditQuestion] = useState<QuestionDto | null>(null);
-  const [deleteQuestion, setDeleteQuestion] = useState<QuestionDto | null>(null);
+  // ── Selection state (single source of truth) ──
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [statusCache, setStatusCache] = useState<Record<string, QuestionStatus>>({});
 
-  const toggleSelect = (id: string) => {
+  // O(1) lookup set — derived, never stored separately
+  const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
+
+  // Populate status cache from page data as user browses
+  useEffect(() => {
+    if (!data?.content) return;
+    setStatusCache(prev => {
+      let changed = false;
+      const updates: Record<string, QuestionStatus> = {};
+      for (const q of data.content) {
+        if (prev[q.id] !== q.status) {
+          updates[q.id] = q.status;
+          changed = true;
+        }
+      }
+      return changed ? { ...prev, ...updates } : prev;
+    });
+  }, [data?.content]);
+
+  // Clear selection when filters change (NOT on page change — cross-page selection is intentional)
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [debouncedSearch, questionType, difficulty, status]);
+
+  // Submittable IDs — synchronous derivation, no API call, no loading flash
+  const submittableIds = useMemo(() => {
+    return selectedIds.filter(id => {
+      const s = statusCache[id];
+      return s === QuestionStatus.DRAFT || s === QuestionStatus.REJECTED;
+    });
+  }, [selectedIds, statusCache]);
+
+  // ── Selection actions ──
+  const toggleSelect = useCallback((id: string) => {
     setSelectedIds(prev =>
       prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
     );
-  };
+  }, []);
 
-  const toggleSelectAll = () => {
+  const toggleSelectAllOnPage = useCallback(() => {
     if (!data?.content) return;
     const pageIds = data.content.map(q => q.id);
-    const allSelected = pageIds.every(id => selectedIds.includes(id));
-    if (allSelected) {
-      setSelectedIds(prev => prev.filter(id => !pageIds.includes(id)));
-    } else {
-      const newIds = pageIds.filter(id => !selectedIds.includes(id));
-      setSelectedIds(prev => [...prev, ...newIds]);
-    }
-  };
+    setSelectedIds(prev => {
+      const prevSet = new Set(prev);
+      const allPageSelected = pageIds.every(id => prevSet.has(id));
+      if (allPageSelected) {
+        // Deselect current page
+        return prev.filter(id => !pageIds.includes(id));
+      } else {
+        // Add missing current page IDs
+        const newIds = pageIds.filter(id => !prevSet.has(id));
+        return [...prev, ...newIds];
+      }
+    });
+  }, [data?.content]);
 
-  const submittableSelected = useMemo(() => {
-    if (!data?.content) return [];
-    return data.content
-      .filter(q => selectedIds.includes(q.id) && (q.status === QuestionStatus.DRAFT || q.status === QuestionStatus.REJECTED))
-      .map(q => q.id);
-  }, [data?.content, selectedIds]);
+  const clearSelection = useCallback(() => {
+    setSelectedIds([]);
+  }, []);
+
+  // ── Bulk action bar state — all derived from selectedSet ──
+  const pageIds = useMemo(
+    () => data?.content?.map(q => q.id) ?? [],
+    [data?.content]
+  );
+  const pageSelectedCount = useMemo(
+    () => pageIds.filter(id => selectedSet.has(id)).length,
+    [pageIds, selectedSet]
+  );
+  const allPageSelected = pageIds.length > 0 && pageSelectedCount === pageIds.length;
+  const somePageSelected = pageSelectedCount > 0 && !allPageSelected;
+
+  // ── Other UI state ──
+  const [formOpen, setFormOpen] = useState(false);
+  const [editQuestion, setEditQuestion] = useState<QuestionDto | null>(null);
+  const [deleteQuestion, setDeleteQuestion] = useState<QuestionDto | null>(null);
+
+  const hasActiveFilters = Boolean(questionType || difficulty || status || debouncedSearch);
 
   const handleBulkSubmit = () => {
-    if (submittableSelected.length === 0) return;
-    bulkSubmit.mutate(submittableSelected, {
-      onSuccess: () => setSelectedIds([]),
+    if (submittableIds.length === 0) return;
+    bulkSubmit.mutate(submittableIds, {
+      onSuccess: () => {
+        setSelectedIds([]);
+        setStatusCache({});
+      },
     });
   };
 
@@ -116,7 +191,13 @@ export default function QuestionsPage() {
 
   const handleDeleteConfirm = () => {
     if (deleteQuestion) {
-      remove.mutate(deleteQuestion.id, { onSuccess: () => setDeleteQuestion(null) });
+      remove.mutate(deleteQuestion.id, {
+        onSuccess: () => {
+          setDeleteQuestion(null);
+          // Remove deleted question from selection if present
+          setSelectedIds(prev => prev.filter(id => id !== deleteQuestion.id));
+        },
+      });
     }
   };
 
@@ -124,16 +205,34 @@ export default function QuestionsPage() {
     submitForModeration.mutate(question.id);
   };
 
+  const clearFilters = () => {
+    setQuestionType('');
+    setDifficulty('');
+    setStatus('');
+    setSearch('');
+    setPage(0);
+  };
+
   return (
     <Box>
+      {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Box>
           <Typography variant="h5" fontWeight={700}>{t('title')}</Typography>
           <Typography variant="body2" color="text.secondary">{t('subtitle')}</Typography>
         </Box>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={handleCreate}
+          sx={{ display: { xs: 'none', sm: 'flex' } }}
+        >
+          {t('create')}
+        </Button>
       </Box>
 
-      <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap', alignItems: 'center' }}>
+      {/* Filters */}
+      <Box sx={{ display: 'flex', gap: 1.5, mb: 3, flexWrap: 'wrap', alignItems: 'center' }}>
         <TextField
           size="small"
           placeholder={t('search')}
@@ -146,15 +245,16 @@ export default function QuestionsPage() {
               </InputAdornment>
             ),
           }}
-          sx={{ minWidth: 240 }}
+          sx={{ minWidth: 220, flex: { xs: 1, sm: 'none' } }}
         />
 
         <TextField
           select
           size="small"
+          label={t('form.questionType')}
           value={questionType}
           onChange={(e) => { setQuestionType(e.target.value as QuestionType | ''); setPage(0); }}
-          sx={{ minWidth: 160 }}
+          sx={{ minWidth: 150 }}
         >
           <MenuItem value="">{t('filters.allTypes')}</MenuItem>
           {Object.values(QuestionType).map((qt) => (
@@ -165,9 +265,10 @@ export default function QuestionsPage() {
         <TextField
           select
           size="small"
+          label={t('form.difficulty')}
           value={difficulty}
           onChange={(e) => { setDifficulty(e.target.value as Difficulty | ''); setPage(0); }}
-          sx={{ minWidth: 150 }}
+          sx={{ minWidth: 140 }}
         >
           <MenuItem value="">{t('filters.allDifficulties')}</MenuItem>
           {Object.values(Difficulty).map((d) => (
@@ -178,24 +279,41 @@ export default function QuestionsPage() {
         <TextField
           select
           size="small"
+          label={t('filters.status')}
           value={status}
           onChange={(e) => { setStatus(e.target.value as QuestionStatus | ''); setPage(0); }}
-          sx={{ minWidth: 150 }}
+          sx={{ minWidth: 140 }}
         >
           <MenuItem value="">{t('filters.allStatuses')}</MenuItem>
           {Object.values(QuestionStatus).map((s) => (
             <MenuItem key={s} value={s}>{t(`statuses.${s}`)}</MenuItem>
           ))}
         </TextField>
+
+        {hasActiveFilters && (
+          <Button size="small" onClick={clearFilters} startIcon={<FilterListIcon />}>
+            {t('filters.clear', 'Clear')}
+          </Button>
+        )}
       </Box>
 
-      {/* Bulk action bar */}
+      {/* Bulk action bar — shown ONLY when selectedIds has items */}
       {selectedIds.length > 0 && (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2, p: 1.5, bgcolor: 'action.selected', borderRadius: 1 }}>
+        <Box sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2,
+          mb: 2,
+          p: 1.5,
+          bgcolor: 'primary.50',
+          border: 1,
+          borderColor: 'primary.200',
+          borderRadius: 1,
+        }}>
           <Checkbox
-            checked={data?.content ? data.content.every(q => selectedIds.includes(q.id)) : false}
-            indeterminate={data?.content ? data.content.some(q => selectedIds.includes(q.id)) && !data.content.every(q => selectedIds.includes(q.id)) : false}
-            onChange={toggleSelectAll}
+            checked={allPageSelected}
+            indeterminate={somePageSelected}
+            onChange={toggleSelectAllOnPage}
             size="small"
           />
           <Typography variant="body2" fontWeight={600}>
@@ -206,11 +324,11 @@ export default function QuestionsPage() {
             size="small"
             startIcon={bulkSubmit.isPending ? <CircularProgress size={16} /> : <SendIcon />}
             onClick={handleBulkSubmit}
-            disabled={bulkSubmit.isPending || submittableSelected.length === 0}
+            disabled={bulkSubmit.isPending || submittableIds.length === 0}
           >
-            {t('bulkSubmit')}{submittableSelected.length < selectedIds.length ? ` (${submittableSelected.length})` : ''}
+            {t('bulkSubmit')}{submittableIds.length < selectedIds.length ? ` (${submittableIds.length})` : ''}
           </Button>
-          <Button size="small" onClick={() => setSelectedIds([])}>
+          <Button size="small" onClick={clearSelection}>
             {t('common:cancel', 'Cancel')}
           </Button>
         </Box>
@@ -222,53 +340,93 @@ export default function QuestionsPage() {
         </Box>
       ) : data && data.content.length > 0 ? (
         <>
-          <Grid container spacing={2.5}>
+          {/* Total count */}
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+            {t('totalCount', { count: data.totalElements, defaultValue: '{{count}} questions total' })}
+          </Typography>
+
+          <Grid container spacing={2}>
             {data.content.map((question) => (
               <Grid item xs={12} sm={6} md={4} lg={3} key={question.id}>
-                <Box sx={{ position: 'relative' }}>
-                  <Checkbox
-                    checked={selectedIds.includes(question.id)}
-                    onChange={() => toggleSelect(question.id)}
-                    size="small"
-                    sx={{ position: 'absolute', top: 4, left: 4, zIndex: 1 }}
-                  />
-                  <QuestionCard
-                    question={question}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                    onSubmit={handleSubmitForModeration}
-                  />
-                </Box>
+                <QuestionCard
+                  question={question}
+                  selected={selectedSet.has(question.id)}
+                  selectable
+                  onSelect={toggleSelect}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  onSubmit={handleSubmitForModeration}
+                />
               </Grid>
             ))}
           </Grid>
-          {data.totalPages > 1 && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+
+          {/* Pagination with total & page size */}
+          <Box sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: 2,
+            mt: 3,
+            flexWrap: 'wrap',
+          }}>
+            {data.totalPages > 1 && (
               <Pagination
                 count={data.totalPages}
                 page={page + 1}
                 onChange={(_, p) => setPage(p - 1)}
                 color="primary"
+                size="medium"
               />
-            </Box>
-          )}
+            )}
+            <FormControl size="small" sx={{ minWidth: 80 }}>
+              <InputLabel>{t('filters.pageSize', 'Size')}</InputLabel>
+              <Select
+                value={String(pageSize)}
+                label={t('filters.pageSize', 'Size')}
+                onChange={(e: SelectChangeEvent) => {
+                  setPageSize(Number(e.target.value));
+                  setPage(0);
+                }}
+              >
+                {PAGE_SIZES.map(s => (
+                  <MenuItem key={s} value={String(s)}>{s}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
         </>
       ) : (
         <Box sx={{ textAlign: 'center', py: 8 }}>
           <QuizIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
           <Typography variant="h6" color="text.secondary">
-            {t('empty')}
+            {hasActiveFilters ? t('emptyFiltered', 'No questions match your filters') : t('empty')}
           </Typography>
-          <Typography variant="body2" color="text.disabled">
-            {t('emptyDescription')}
+          <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
+            {hasActiveFilters ? t('emptyFilteredDescription', 'Try adjusting your filters') : t('emptyDescription')}
           </Typography>
+          {hasActiveFilters ? (
+            <Button variant="outlined" onClick={clearFilters} startIcon={<FilterListIcon />}>
+              {t('filters.clear', 'Clear filters')}
+            </Button>
+          ) : (
+            <Button variant="contained" startIcon={<AddIcon />} onClick={handleCreate}>
+              {t('create')}
+            </Button>
+          )}
         </Box>
       )}
 
+      {/* Mobile FAB */}
       <Fab
         color="primary"
         onClick={handleCreate}
-        sx={{ position: 'fixed', bottom: 32, right: 32 }}
+        sx={{
+          position: 'fixed',
+          bottom: 32,
+          right: 32,
+          display: { xs: 'flex', sm: 'none' },
+        }}
       >
         <AddIcon />
       </Fab>

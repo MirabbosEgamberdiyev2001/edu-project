@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uz.eduplatform.modules.test.domain.TestCategory;
 import uz.eduplatform.modules.test.domain.TestStatus;
 
 import java.time.LocalDateTime;
@@ -20,6 +21,8 @@ public class TestHistoryDto {
     private UUID id;
     private UUID userId;
     private String title;
+    private Map<String, String> titleTranslations;
+    private TestCategory category;
     private UUID subjectId;
     private String subjectName;
     private List<UUID> topicIds;
@@ -37,6 +40,9 @@ public class TestHistoryDto {
     private String proofsPdfUrl;
     private Integer downloadCount;
     private LocalDateTime lastDownloadedAt;
+    private Boolean isPublic;
+    private String publicSlug;
+    private Integer publicDurationMinutes;
     private TestStatus status;
     private LocalDateTime createdAt;
 }

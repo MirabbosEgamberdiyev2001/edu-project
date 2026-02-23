@@ -60,6 +60,9 @@ import AdminUserDetailPage from '@/features/admin/pages/AdminUserDetailPage';
 import AuditLogPage from '@/features/admin/pages/AuditLogPage';
 import ModerationPage from '@/features/admin/pages/ModerationPage';
 
+// Public test page
+import PublicTestPage from '@/features/tests/pages/PublicTestPage';
+
 export const router = createBrowserRouter([
   {
     path: '/',
@@ -175,6 +178,7 @@ export const router = createBrowserRouter([
   },
 
   // Public routes
+  { path: '/test/:slug', element: <PublicTestPage /> },
   { path: '/unauthorized', element: <UnauthorizedPage /> },
   { path: '*', element: <NotFoundPage /> },
 ]);

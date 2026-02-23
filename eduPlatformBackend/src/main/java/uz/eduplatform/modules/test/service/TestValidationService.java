@@ -88,8 +88,8 @@ public class TestValidationService {
         }
     }
 
-    public AvailableQuestionsResponse getAvailableQuestions(List<UUID> topicIds) {
-        List<Question> questions = questionRepository.findByTopicIdsAndStatus(topicIds, QuestionStatus.ACTIVE);
+    public AvailableQuestionsResponse getAvailableQuestions(List<UUID> topicIds, UUID userId) {
+        List<Question> questions = questionRepository.findByTopicIdsForTeacher(topicIds, userId);
 
         // Filter only valid MCQ questions with options for test generation
         List<Question> validMcq = questions.stream()
@@ -119,10 +119,26 @@ public class TestValidationService {
 
     public PagedResponse<QuestionDto> getQuestionsForSelection(
             List<UUID> topicIds, Difficulty difficulty, QuestionStatus status,
-            Pageable pageable, AcceptLanguage language) {
+            Pageable pageable, AcceptLanguage language, UUID userId) {
         String localeKey = language.toLocaleKey();
 
-        Page<Question> page = questionRepository.findByTopicIdsFiltered(topicIds, difficulty, status, pageable);
+        Page<Question> page;
+        if (status == null) {
+            // No status filter: ACTIVE/APPROVED + teacher's own DRAFT/PENDING
+            page = difficulty != null
+                    ? questionRepository.findByTopicIdsFilteredForTeacher(topicIds, userId, difficulty, pageable)
+                    : questionRepository.findByTopicIdsForTeacherPaged(topicIds, userId, pageable);
+        } else if (status == QuestionStatus.ACTIVE || status == QuestionStatus.APPROVED) {
+            // ACTIVE or APPROVED from everyone
+            page = difficulty != null
+                    ? questionRepository.findByTopicIdsFiltered(topicIds, difficulty, status, pageable)
+                    : questionRepository.findByTopicIdsFilteredNoDifficulty(topicIds, status, pageable);
+        } else {
+            // DRAFT or PENDING: only teacher's own
+            page = difficulty != null
+                    ? questionRepository.findByTopicIdsFilteredOwned(topicIds, userId, status, difficulty, pageable)
+                    : questionRepository.findByTopicIdsOwnedNoDifficulty(topicIds, userId, status, pageable);
+        }
 
         List<QuestionDto> dtos = page.getContent().stream()
                 .map(q -> questionService.mapToDto(q, localeKey))

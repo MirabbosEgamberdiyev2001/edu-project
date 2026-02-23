@@ -16,6 +16,7 @@
   "deleteConfirm": "\"{{name}}\" mavzusini o'chirishni xohlaysizmi? Barcha ichki mavzular ham o'chiriladi.",
   "addRoot": "Mavzu qo'shish",
   "addSubtopic": "Ichki mavzu qo'shish",
+  "selectGrade": "Mavzularni ko'rish uchun sinfni tanlang",
   "empty": "Mavzular topilmadi",
   "emptyDescription": "Birinchi mavzungizni yarating",
   "form": {

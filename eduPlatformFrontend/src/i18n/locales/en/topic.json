@@ -16,6 +16,7 @@
   "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? All subtopics will also be deleted.",
   "addRoot": "Add Topic",
   "addSubtopic": "Add subtopic",
+  "selectGrade": "Select a grade to view topics",
   "empty": "No topics found",
   "emptyDescription": "Create your first topic to get started",
   "form": {

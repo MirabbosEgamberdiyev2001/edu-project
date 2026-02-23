@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { AxiosError } from 'axios';
 import { useToast } from '@/hooks/useToast';
 import { testApi } from '@/api/testApi';
-import type { GenerateTestRequest } from '@/types/test';
+import type { GenerateTestRequest, HeaderConfig } from '@/types/test';
 import type { ApiError } from '@/types/api';
 
 export function useTestMutations() {
@@ -24,8 +24,9 @@ export function useTestMutations() {
     },
   });
 
-  const remove = useMutation({
-    mutationFn: (id: string) => testApi.deleteHistory(id),
+  const update = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: { title?: string; titleTranslations?: Record<string, string>; category?: string; headerConfig?: HeaderConfig } }) =>
+      testApi.updateHistory(id, data),
     onSuccess: ({ data: resp }) => {
       toast.success(resp.message);
       invalidate();
@@ -35,8 +36,8 @@ export function useTestMutations() {
     },
   });
 
-  const duplicate = useMutation({
-    mutationFn: (id: string) => testApi.duplicate(id),
+  const remove = useMutation({
+    mutationFn: (id: string) => testApi.deleteHistory(id),
     onSuccess: ({ data: resp }) => {
       toast.success(resp.message);
       invalidate();
@@ -57,5 +58,5 @@ export function useTestMutations() {
     },
   });
 
-  return { generate, remove, duplicate, regenerate };
+  return { generate, update, remove, regenerate };
 }

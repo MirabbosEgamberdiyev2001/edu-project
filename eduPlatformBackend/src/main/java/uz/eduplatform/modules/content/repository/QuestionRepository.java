@@ -78,13 +78,66 @@ public interface QuestionRepository extends JpaRepository<Question, UUID>, JpaSp
     @Query("SELECT q FROM Question q WHERE q.id IN :ids AND q.status = :status")
     List<Question> findByIdInAndStatus(@Param("ids") List<UUID> ids, @Param("status") QuestionStatus status);
 
+    @EntityGraph(attributePaths = {"topic", "topic.subject", "user"})
     @Query("SELECT q FROM Question q WHERE q.topic.id IN :topicIds " +
-           "AND (:difficulty IS NULL OR q.difficulty = :difficulty) " +
-           "AND (:status IS NULL OR q.status = :status)")
+           "AND (q.status IN ('ACTIVE', 'APPROVED') " +
+           "OR (q.user.id = :userId AND q.status IN ('DRAFT', 'PENDING', 'APPROVED')))")
+    List<Question> findByTopicIdsForTeacher(@Param("topicIds") List<UUID> topicIds,
+                                            @Param("userId") UUID userId);
+
+    // --- With difficulty filter ---
+
+    @EntityGraph(attributePaths = {"topic", "topic.subject", "user"})
+    @Query("SELECT q FROM Question q WHERE q.topic.id IN :topicIds " +
+           "AND q.user.id = :userId AND q.status = :status " +
+           "AND q.difficulty = :difficulty")
+    Page<Question> findByTopicIdsFilteredOwned(@Param("topicIds") List<UUID> topicIds,
+                                                @Param("userId") UUID userId,
+                                                @Param("status") QuestionStatus status,
+                                                @Param("difficulty") Difficulty difficulty,
+                                                Pageable pageable);
+
+    @EntityGraph(attributePaths = {"topic", "topic.subject", "user"})
+    @Query("SELECT q FROM Question q WHERE q.topic.id IN :topicIds " +
+           "AND q.difficulty = :difficulty " +
+           "AND (q.status IN ('ACTIVE', 'APPROVED') OR (q.user.id = :userId AND q.status IN ('DRAFT', 'PENDING', 'APPROVED')))")
+    Page<Question> findByTopicIdsFilteredForTeacher(@Param("topicIds") List<UUID> topicIds,
+                                                     @Param("userId") UUID userId,
+                                                     @Param("difficulty") Difficulty difficulty,
+                                                     Pageable pageable);
+
+    @EntityGraph(attributePaths = {"topic", "topic.subject", "user"})
+    @Query("SELECT q FROM Question q WHERE q.topic.id IN :topicIds " +
+           "AND q.difficulty = :difficulty " +
+           "AND q.status = :status")
     Page<Question> findByTopicIdsFiltered(@Param("topicIds") List<UUID> topicIds,
                                            @Param("difficulty") Difficulty difficulty,
                                            @Param("status") QuestionStatus status,
                                            Pageable pageable);
+
+    // --- Without difficulty filter (avoids Hibernate null enum bug with PostgreSQL) ---
+
+    @EntityGraph(attributePaths = {"topic", "topic.subject", "user"})
+    @Query("SELECT q FROM Question q WHERE q.topic.id IN :topicIds " +
+           "AND q.user.id = :userId AND q.status = :status")
+    Page<Question> findByTopicIdsOwnedNoDifficulty(@Param("topicIds") List<UUID> topicIds,
+                                                    @Param("userId") UUID userId,
+                                                    @Param("status") QuestionStatus status,
+                                                    Pageable pageable);
+
+    @EntityGraph(attributePaths = {"topic", "topic.subject", "user"})
+    @Query("SELECT q FROM Question q WHERE q.topic.id IN :topicIds " +
+           "AND (q.status IN ('ACTIVE', 'APPROVED') OR (q.user.id = :userId AND q.status IN ('DRAFT', 'PENDING', 'APPROVED')))")
+    Page<Question> findByTopicIdsForTeacherPaged(@Param("topicIds") List<UUID> topicIds,
+                                                  @Param("userId") UUID userId,
+                                                  Pageable pageable);
+
+    @EntityGraph(attributePaths = {"topic", "topic.subject", "user"})
+    @Query("SELECT q FROM Question q WHERE q.topic.id IN :topicIds " +
+           "AND q.status = :status")
+    Page<Question> findByTopicIdsFilteredNoDifficulty(@Param("topicIds") List<UUID> topicIds,
+                                                      @Param("status") QuestionStatus status,
+                                                      Pageable pageable);
 
     long countByDifficulty(Difficulty difficulty);
 

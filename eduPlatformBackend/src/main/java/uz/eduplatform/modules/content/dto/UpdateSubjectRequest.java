@@ -5,8 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import uz.eduplatform.modules.content.domain.SubjectCategory;
-
 import java.util.Map;
 
 @Data
@@ -25,9 +23,7 @@ public class UpdateSubjectRequest {
     @Size(max = 7, message = "Color must be at most 7 characters")
     private String color;
 
-    private SubjectCategory category;
+    private Boolean isActive;
 
     private Integer gradeLevel;
-
-    private Boolean isActive;
 }

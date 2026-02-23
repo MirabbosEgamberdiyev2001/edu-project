@@ -11,6 +11,7 @@
   "deleteConfirm": "\"{{name}}\" fanini o'chirishni xohlaysizmi? Bu amalni qaytarib bo'lmaydi.",
   "archive": "Arxivlash",
   "restore": "Tiklash",
+  "fork": "Nusxalash",
   "search": "Fanlarni qidirish...",
   "activeTab": "Faol fanlar",
   "archivedTab": "Arxivlangan fanlar",
@@ -37,6 +38,12 @@
     "CERTIFICATE": "Sertifikat",
     "ATTESTATSIYA": "Attestatsiya"
   },
+  "duplicateError": "Bu nomdagi fan allaqachon mavjud",
+  "testCount": "testlar",
+  "allGrades": "Barcha sinflar",
+  "clearFilters": "Tozalash",
+  "emptyFiltered": "Filtrlar bo'yicha fanlar topilmadi",
+  "emptyFilteredDescription": "Qidiruv yoki filtrlarni o'zgartirib ko'ring",
   "form": {
     "name": "Fan nomi",
     "namePlaceholder": "Fan nomini kiriting",
@@ -48,6 +55,7 @@
     "color": "Rang",
     "category": "Turkum",
     "gradeLevel": "Sinf",
+    "noGrade": "Ko'rsatilmagan",
     "noCategory": "Tanlanmagan",
     "langHint": "Barcha tillarni to'ldiring. Kamida o'zbekcha (lotin) majburiy.",
     "filled": "to'ldirilgan",

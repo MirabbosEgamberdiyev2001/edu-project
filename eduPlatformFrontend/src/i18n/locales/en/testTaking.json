@@ -37,5 +37,7 @@
   "submittedAt": "Submitted At",
   "reviewAnswers": "Review Answers",
   "yourAnswer": "Your Answer",
-  "correctAnswer": "Correct Answer"
+  "correctAnswer": "Correct Answer",
+  "answerPlaceholder": "Your answer...",
+  "essayPlaceholder": "Write your answer..."
 }

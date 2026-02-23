@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import uz.eduplatform.modules.content.domain.Subject;
-import uz.eduplatform.modules.content.domain.SubjectCategory;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,20 +19,27 @@ public interface SubjectRepository extends JpaRepository<Subject, UUID> {
 
     Page<Subject> findByUserIdAndIsArchivedTrue(UUID userId, Pageable pageable);
 
-    Page<Subject> findByUserIdAndCategoryAndIsArchivedFalse(UUID userId, SubjectCategory category, Pageable pageable);
-
     List<Subject> findByIsTemplateTrueAndIsActiveTrueOrderBySortOrderAsc();
 
     Optional<Subject> findByIdAndUserId(UUID id, UUID userId);
 
+    @Query("SELECT s FROM Subject s WHERE s.id = :id AND s.isArchived = false AND " +
+           "(s.user.id = :userId OR s.isTemplate = true)")
+    Optional<Subject> findAccessibleByIdAndUserId(@Param("id") UUID id, @Param("userId") UUID userId);
+
     @Query(value = "SELECT EXISTS(SELECT 1 FROM subjects " +
-            "WHERE user_id = :userId AND name ->> 'uz_latn' = :name AND deleted_at IS NULL)",
+            "WHERE user_id = :userId AND LOWER(name ->> 'uz_latn') = LOWER(:name) AND deleted_at IS NULL)",
             nativeQuery = true)
     boolean existsByUserIdAndDefaultName(@Param("userId") UUID userId, @Param("name") String name);
 
+    @Query(value = "SELECT * FROM subjects " +
+            "WHERE user_id = :userId AND LOWER(name ->> 'uz_latn') = LOWER(:name) AND deleted_at IS NULL LIMIT 1",
+            nativeQuery = true)
+    Optional<Subject> findByUserIdAndDefaultName(@Param("userId") UUID userId, @Param("name") String name);
+
     @Query(value = "SELECT EXISTS(SELECT 1 FROM subjects WHERE user_id = :userId AND deleted_at IS NULL AND " +
-            "(name ->> 'uz_latn' = :name OR name ->> 'uz_cyrl' = :name OR " +
-            " name ->> 'en' = :name OR name ->> 'ru' = :name))",
+            "(LOWER(name ->> 'uz_latn') = LOWER(:name) OR LOWER(name ->> 'uz_cyrl') = LOWER(:name) OR " +
+            " LOWER(name ->> 'en') = LOWER(:name) OR LOWER(name ->> 'ru') = LOWER(:name)))",
             nativeQuery = true)
     boolean existsByUserIdAndNameInAnyLocale(@Param("userId") UUID userId, @Param("name") String name);
 

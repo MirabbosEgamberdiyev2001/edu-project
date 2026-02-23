@@ -27,11 +27,16 @@
     "date": "Sana",
     "title": "Test nomi",
     "titlePlaceholder": "Test nomini kiriting",
+    "category": "Kategoriya",
+    "noCategory": "Kategoriyasiz",
     "generate": "Test yaratish",
     "generating": "Yaratilmoqda...",
     "availableQuestions": "Mavjud savollar",
     "totalAvailable": "Jami mavjud",
-    "preview": "Ko'rish"
+    "preview": "Ko'rish",
+    "selectClass": "Sinfni tanlang",
+    "classLabel": "sinf",
+    "langHint": "Kamida O'zbekcha (Lotin) maydonini to'ldiring. Boshqa tillar ixtiyoriy."
   },
   "card": {
     "questions": "{{count}} ta savol",
@@ -51,7 +56,11 @@
     "questions": "Savollar",
     "variantCount": "Variantlar",
     "seed": "Tasodifiy raqam",
-    "shuffle": "Aralashtirish"
+    "shuffle": "Aralashtirish",
+    "questionsList": "Bu testdagi savollar",
+    "loadingQuestions": "Savollar yuklanmoqda...",
+    "option": "Variant",
+    "correct": "To'g'ri"
   },
   "export": {
     "test": "Test",
@@ -60,7 +69,8 @@
     "proofs": "Isbotlar",
     "pdf": "PDF",
     "docx": "DOCX",
-    "downloading": "Yuklanmoqda..."
+    "downloading": "Yuklanmoqda...",
+    "error": "Eksport qilishda xatolik yuz berdi"
   },
   "status": {
     "CREATED": "Yaratilgan",
@@ -73,6 +83,11 @@
     "title": "Testni o'chirish",
     "confirm": "Bu testni o'chirishni xohlaysizmi? Bu amalni qaytarib bo'lmaydi.",
     "deleting": "O'chirilmoqda..."
+  },
+  "edit": {
+    "title": "Testni tahrirlash",
+    "save": "Saqlash",
+    "saving": "Saqlanmoqda..."
   },
   "duplicate": "Nusxalash",
   "regenerate": "Qayta yaratish",
@@ -96,7 +111,11 @@
     "noQuestionsFound": "Tanlangan mavzular uchun savollar topilmadi",
     "selectAtLeastOne": "Kamida bitta savol tanlang",
     "questionsSelected": "ta savol tanlandi",
-    "selectAllPage": "Barchasini tanlash"
+    "selectAllPage": "Barchasini tanlash",
+    "createQuestion": "Savol yaratish",
+    "selectedQuestions": "Tanlangan savollar",
+    "clearAll": "Barchasini tozalash",
+    "noSelected": "Hali savol tanlanmadi. Quyidagi ro'yxatdan savollarni tanlang."
   },
   "submitToModeration": "Moderatsiyaga yuborish",
   "submitDialog": {
@@ -107,6 +126,37 @@
     "noneSubmittable": "Yuborish uchun savollar mavjud emas",
     "submitting": "Yuborilmoqda...",
     "confirm": "Moderatsiyaga yuborish"
+  },
+  "categories": {
+    "DTM": "DTM",
+    "SCHOOL": "Maktab",
+    "OLYMPIAD": "Olimpiada",
+    "CERTIFICATE": "Sertifikat",
+    "ATTESTATSIYA": "Attestatsiya"
+  },
+  "publish": {
+    "title": "Testni e'lon qilish",
+    "duration": "Vaqt chegarasi (daqiqa)",
+    "publish": "E'lon qilish",
+    "unpublish": "Yopish",
+    "published": "E'lon qilingan",
+    "copyLink": "Havolani nusxalash",
+    "linkCopied": "Nusxalandi!",
+    "shareLink": "Ulashish havolasi",
+    "publicBadge": "Ochiq"
+  },
+  "preview": {
+    "title": "Test ko'rinishi",
+    "loading": "Ko'rinish yuklanmoqda...",
+    "error": "Ko'rinishni yuklashda xatolik",
+    "variant": "Variant",
+    "question": "Savol",
+    "confirmCreate": "Tasdiqlash va yaratish",
+    "confirmTitle": "Testni yaratishni tasdiqlaysizmi?",
+    "confirmDesc": "Ko'rsatilgan savollar bilan test yaratiladi.",
+    "noQuestions": "Bu parametrlar uchun savollar topilmadi",
+    "questionsCount": "{{count}} ta savol",
+    "correctAnswer": "To'g'ri javob"
   },
   "errors": {
     "noTopics": "Kamida bitta mavzuni tanlang",

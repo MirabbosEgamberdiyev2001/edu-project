@@ -203,7 +203,8 @@ public class QuestionService {
     }
 
     @Transactional
-    public QuestionDto updateQuestion(UUID questionId, UUID userId, UpdateQuestionRequest request, AcceptLanguage language) {
+    public QuestionDto updateQuestion(UUID questionId, UUID userId, UpdateQuestionRequest request,
+                                       AcceptLanguage language, boolean fullUpdate) {
         String localeKey = language.toLocaleKey();
         Question question = questionRepository.findById(questionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Question", "id", questionId));
@@ -220,8 +221,14 @@ public class QuestionService {
         saveVersion(question, userId, request.getChangeReason());
 
         // Update fields
+        // PUT (fullUpdate=true): replace all fields, null clears the value
+        // PATCH (fullUpdate=false): skip null fields (only update what was sent)
         if (request.getQuestionText() != null) {
-            question.setQuestionText(TranslatedField.merge(question.getQuestionText(), TranslatedField.clean(request.getQuestionText())));
+            if (fullUpdate) {
+                question.setQuestionText(TranslatedField.clean(request.getQuestionText()));
+            } else {
+                question.setQuestionText(TranslatedField.merge(question.getQuestionText(), TranslatedField.clean(request.getQuestionText())));
+            }
         }
         if (request.getQuestionType() != null) {
             question.setQuestionType(request.getQuestionType());
@@ -232,7 +239,7 @@ public class QuestionService {
         if (request.getPoints() != null) {
             question.setPoints(request.getPoints());
         }
-        if (request.getTimeLimitSeconds() != null) {
+        if (fullUpdate || request.getTimeLimitSeconds() != null) {
             question.setTimeLimitSeconds(request.getTimeLimitSeconds());
         }
         if (request.getMedia() != null) {
@@ -244,7 +251,11 @@ public class QuestionService {
         if (request.getCorrectAnswer() != null) {
             question.setCorrectAnswer(toJson(request.getCorrectAnswer()));
         }
-        if (request.getProof() != null) {
+        if (fullUpdate) {
+            Map<String, String> cleanedProof = request.getProof() != null
+                    ? TranslatedField.clean(request.getProof()) : Map.of();
+            question.setProof(cleanedProof);
+        } else if (request.getProof() != null) {
             question.setProof(TranslatedField.merge(question.getProof(), TranslatedField.clean(request.getProof())));
         }
 

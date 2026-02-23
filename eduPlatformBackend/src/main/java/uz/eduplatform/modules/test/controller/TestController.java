@@ -58,30 +58,43 @@ public class TestController {
                 .body(ApiResponse.success(response, messageService.get("success.test.generated", language.toLocale())));
     }
 
+    @PostMapping("/generate/preview")
+    @Operation(summary = "Test preview ko'rish", description = "Tanlangan parametrlar asosida test preview yaratish — savollar va variantlarni ko'rish, lekin saqlash yo'q.")
+    public ResponseEntity<ApiResponse<GenerateTestResponse>> previewTest(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @Valid @RequestBody GenerateTestRequest request) {
+
+        GenerateTestResponse response = generationService.previewTest(principal.getId(), request);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
     @PostMapping("/generate/validate")
     @Operation(summary = "Test parametrlarini tekshirish", description = "Test yaratishdan oldin parametrlarni tekshirish — yetarli savol bormi, sozlamalar to'g'rimi.")
     public ResponseEntity<ApiResponse<AvailableQuestionsResponse>> validateParameters(
+            @AuthenticationPrincipal UserPrincipal principal,
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language,
             @Valid @RequestBody GenerateTestRequest request) {
 
         validationService.validateRequest(request);
-        AvailableQuestionsResponse available = validationService.getAvailableQuestions(request.getTopicIds());
+        AvailableQuestionsResponse available = validationService.getAvailableQuestions(request.getTopicIds(), principal.getId());
         return ResponseEntity.ok(ApiResponse.success(available, messageService.get("test.parameters.valid", language.toLocale())));
     }
 
     @GetMapping("/generate/available")
     @Operation(summary = "Mavzulardagi mavjud savollar statistikasi", description = "Tanlangan mavzulardagi savollar soni, qiyinlik darajalari bo'yicha taqsimotni olish.")
     public ResponseEntity<ApiResponse<AvailableQuestionsResponse>> getAvailableQuestions(
+            @AuthenticationPrincipal UserPrincipal principal,
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language,
             @RequestParam List<UUID> topicIds) {
 
-        AvailableQuestionsResponse response = validationService.getAvailableQuestions(topicIds);
+        AvailableQuestionsResponse response = validationService.getAvailableQuestions(topicIds, principal.getId());
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @GetMapping("/generate/questions")
     @Operation(summary = "Qo'lda tanlash uchun savollar", description = "Test uchun savollarni qo'lda tanlash. Mavzu, qiyinlik va holat bo'yicha filtrlash mumkin.")
     public ResponseEntity<ApiResponse<PagedResponse<QuestionDto>>> getQuestionsForSelection(
+            @AuthenticationPrincipal UserPrincipal principal,
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language,
             @RequestParam List<UUID> topicIds,
             @RequestParam(required = false) Difficulty difficulty,
@@ -92,7 +105,7 @@ public class TestController {
         PagedResponse<QuestionDto> response = validationService.getQuestionsForSelection(
                 topicIds, difficulty, status,
                 PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")),
-                language);
+                language, principal.getId());
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
@@ -119,6 +132,18 @@ public class TestController {
 
         TestHistoryDto test = historyService.getTestById(id, principal.getId(), language);
         return ResponseEntity.ok(ApiResponse.success(test));
+    }
+
+    @PutMapping("/history/{id}")
+    @Operation(summary = "Testni yangilash", description = "Test sarlavhasi, kategoriyasi va sarlavha sozlamalarini yangilash.")
+    public ResponseEntity<ApiResponse<TestHistoryDto>> updateTest(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language,
+            @Valid @RequestBody UpdateTestRequest request) {
+
+        TestHistoryDto dto = historyService.updateTest(id, principal.getId(), request, language);
+        return ResponseEntity.ok(ApiResponse.success(dto, messageService.get("success.test.updated", language.toLocale())));
     }
 
     @DeleteMapping("/history/{id}")
@@ -154,6 +179,31 @@ public class TestController {
         GenerateTestResponse response = historyService.regenerateTest(id, principal.getId());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(response, messageService.get("success.test.regenerated", language.toLocale())));
+    }
+
+    // ===== Publish Endpoints =====
+
+    @PostMapping("/history/{id}/publish")
+    @Operation(summary = "Testni ochiq qilish", description = "Testni public qilish, slug generatsiya qilish va davomiylik (daqiqa) belgilash.")
+    public ResponseEntity<ApiResponse<TestHistoryDto>> publishTest(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language,
+            @RequestParam(required = false) Integer durationMinutes) {
+
+        TestHistoryDto dto = historyService.publishTest(id, principal.getId(), durationMinutes, language);
+        return ResponseEntity.ok(ApiResponse.success(dto));
+    }
+
+    @DeleteMapping("/history/{id}/publish")
+    @Operation(summary = "Testni yopish", description = "Testni public holatidan olib tashlash.")
+    public ResponseEntity<ApiResponse<TestHistoryDto>> unpublishTest(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
+
+        TestHistoryDto dto = historyService.unpublishTest(id, principal.getId(), language);
+        return ResponseEntity.ok(ApiResponse.success(dto));
     }
 
     // ===== Unified Export Endpoints =====

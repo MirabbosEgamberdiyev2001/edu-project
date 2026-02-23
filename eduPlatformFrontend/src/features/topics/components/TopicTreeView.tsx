@@ -34,11 +34,13 @@ import TopicDeleteDialog from './TopicDeleteDialog';
 
 interface TopicTreeViewProps {
   subjectId: string;
+  gradeLevel: number;
+  readOnly?: boolean;
 }
 
-export default function TopicTreeView({ subjectId }: TopicTreeViewProps) {
+export default function TopicTreeView({ subjectId, gradeLevel, readOnly = false }: TopicTreeViewProps) {
   const { t } = useTranslation('topic');
-  const { data: tree, isLoading, isError } = useTopicTree(subjectId);
+  const { data: tree, isLoading, isError } = useTopicTree(subjectId, gradeLevel);
   const { create, update, remove } = useTopicMutations(subjectId);
 
   const [formOpen, setFormOpen] = useState(false);
@@ -62,7 +64,8 @@ export default function TopicTreeView({ subjectId }: TopicTreeViewProps) {
     if (editTopic) {
       update.mutate({ id: editTopic.id, data: formData as UpdateTopicRequest }, { onSuccess: () => setFormOpen(false) });
     } else {
-      create.mutate(formData as CreateTopicRequest, { onSuccess: () => setFormOpen(false) });
+      const createData = { ...formData, gradeLevel } as CreateTopicRequest;
+      create.mutate(createData, { onSuccess: () => setFormOpen(false) });
     }
   };
 
@@ -88,14 +91,16 @@ export default function TopicTreeView({ subjectId }: TopicTreeViewProps) {
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h6" fontWeight={600}>{t('title')}</Typography>
-        <Button
-          variant="outlined"
-          size="small"
-          startIcon={<AddIcon />}
-          onClick={() => handleCreate()}
-        >
-          {t('addRoot')}
-        </Button>
+        {!readOnly && (
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<AddIcon />}
+            onClick={() => handleCreate()}
+          >
+            {t('addRoot')}
+          </Button>
+        )}
       </Box>
 
       {tree && tree.length > 0 ? (
@@ -104,6 +109,7 @@ export default function TopicTreeView({ subjectId }: TopicTreeViewProps) {
             <TopicNode
               key={topic.id}
               topic={topic}
+              readOnly={readOnly}
               onEdit={handleEdit}
               onDelete={(t) => setDeleteTopic(t)}
               onAddChild={(parentId) => handleCreate(parentId)}
@@ -142,12 +148,13 @@ export default function TopicTreeView({ subjectId }: TopicTreeViewProps) {
 
 interface TopicNodeProps {
   topic: TopicTreeDto;
+  readOnly?: boolean;
   onEdit: (topic: TopicTreeDto) => void;
   onDelete: (topic: TopicTreeDto) => void;
   onAddChild: (parentId: string) => void;
 }
 
-function TopicNode({ topic, onEdit, onDelete, onAddChild }: TopicNodeProps) {
+function TopicNode({ topic, readOnly, onEdit, onDelete, onAddChild }: TopicNodeProps) {
   const { t } = useTranslation('topic');
   const [expanded, setExpanded] = useState(true);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -205,26 +212,30 @@ function TopicNode({ topic, onEdit, onDelete, onAddChild }: TopicNodeProps) {
         )}
 
         {/* Actions */}
-        <Tooltip title={t('addSubtopic')}>
-          <IconButton size="small" onClick={() => onAddChild(topic.id)} sx={{ width: 28, height: 28 }}>
-            <AddIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
+        {!readOnly && (
+          <>
+            <Tooltip title={t('addSubtopic')}>
+              <IconButton size="small" onClick={() => onAddChild(topic.id)} sx={{ width: 28, height: 28 }}>
+                <AddIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
 
-        <IconButton size="small" onClick={(e) => setAnchorEl(e.currentTarget)} sx={{ width: 28, height: 28 }}>
-          <MoreVertIcon fontSize="small" />
-        </IconButton>
+            <IconButton size="small" onClick={(e) => setAnchorEl(e.currentTarget)} sx={{ width: 28, height: 28 }}>
+              <MoreVertIcon fontSize="small" />
+            </IconButton>
 
-        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
-          <MenuItem onClick={() => { setAnchorEl(null); onEdit(topic); }}>
-            <ListItemIcon><EditIcon fontSize="small" /></ListItemIcon>
-            <ListItemText>{t('edit')}</ListItemText>
-          </MenuItem>
-          <MenuItem onClick={() => { setAnchorEl(null); onDelete(topic); }} sx={{ color: 'error.main' }}>
-            <ListItemIcon><DeleteIcon fontSize="small" color="error" /></ListItemIcon>
-            <ListItemText>{t('delete')}</ListItemText>
-          </MenuItem>
-        </Menu>
+            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
+              <MenuItem onClick={() => { setAnchorEl(null); onEdit(topic); }}>
+                <ListItemIcon><EditIcon fontSize="small" /></ListItemIcon>
+                <ListItemText>{t('edit')}</ListItemText>
+              </MenuItem>
+              <MenuItem onClick={() => { setAnchorEl(null); onDelete(topic); }} sx={{ color: 'error.main' }}>
+                <ListItemIcon><DeleteIcon fontSize="small" color="error" /></ListItemIcon>
+                <ListItemText>{t('delete')}</ListItemText>
+              </MenuItem>
+            </Menu>
+          </>
+        )}
       </Box>
 
       {/* Children */}
@@ -234,6 +245,7 @@ function TopicNode({ topic, onEdit, onDelete, onAddChild }: TopicNodeProps) {
             <TopicNode
               key={child.id}
               topic={child}
+              readOnly={readOnly}
               onEdit={onEdit}
               onDelete={onDelete}
               onAddChild={onAddChild}

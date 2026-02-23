@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import uz.eduplatform.modules.content.domain.SubjectCategory;
 
 import java.util.Map;
 
@@ -26,8 +25,6 @@ public class CreateSubjectRequest {
 
     @Size(max = 7, message = "{content.validation.color.size}")
     private String color;
-
-    private SubjectCategory category;
 
     private Integer gradeLevel;
 }

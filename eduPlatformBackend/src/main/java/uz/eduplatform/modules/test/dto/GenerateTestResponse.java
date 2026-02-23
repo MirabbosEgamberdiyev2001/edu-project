@@ -18,6 +18,7 @@ public class GenerateTestResponse {
 
     private UUID testId;
     private String title;
+    private Map<String, String> titleTranslations;
     private Integer questionCount;
     private Integer variantCount;
     private Map<String, Integer> difficultyDistribution;

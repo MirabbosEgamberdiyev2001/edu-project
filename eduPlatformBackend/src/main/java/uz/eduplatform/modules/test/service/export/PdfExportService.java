@@ -13,6 +13,7 @@ import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.springframework.stereotype.Service;
 import uz.eduplatform.core.common.exception.BusinessException;
 import uz.eduplatform.core.common.utils.MessageService;
+import uz.eduplatform.core.i18n.LocaleKeys;
 import uz.eduplatform.core.i18n.TranslatedField;
 import uz.eduplatform.modules.content.domain.Question;
 import uz.eduplatform.modules.content.domain.QuestionType;
@@ -119,10 +120,11 @@ public class PdfExportService implements TestExportService {
             document.addPage(page);
             PDPageContentStream cs = new PDPageContentStream(document, page);
 
+            String localeKey = LocaleKeys.fromLocale(locale);
             float y = PAGE_HEIGHT - MARGIN;
             y = drawCenteredText(cs, fontBold, 18, messageService.get("export.answer.key.title", locale), y);
             y -= 10;
-            y = drawCenteredText(cs, fontRegular, 12, test.getTitle(), y);
+            y = drawCenteredText(cs, fontRegular, 12, resolveTitle(test, localeKey), y);
             y -= 5;
             y = drawCenteredText(cs, fontRegular, 10,
                     messageService.get("export.created.date", locale,
@@ -196,10 +198,11 @@ public class PdfExportService implements TestExportService {
             document.addPage(page);
             PDPageContentStream cs = new PDPageContentStream(document, page);
 
+            String localeKey = LocaleKeys.fromLocale(locale);
             float y = PAGE_HEIGHT - MARGIN;
             y = drawCenteredText(cs, fontBold, 18, messageService.get("export.proofs.title", locale), y);
             y -= 10;
-            y = drawCenteredText(cs, fontRegular, 12, test.getTitle(), y);
+            y = drawCenteredText(cs, fontRegular, 12, resolveTitle(test, localeKey), y);
             y -= 25;
 
             Map<String, Object> firstVariant = test.getVariants().get(0);
@@ -271,6 +274,28 @@ public class PdfExportService implements TestExportService {
         }
     }
 
+    // ===== Translation helpers =====
+
+    private String resolveTitle(TestHistory test, String localeKey) {
+        if (test.getTitleTranslations() != null && !test.getTitleTranslations().isEmpty()) {
+            String resolved = TranslatedField.resolve(test.getTitleTranslations(), localeKey);
+            if (resolved != null) return resolved;
+        }
+        return test.getTitle();
+    }
+
+    @SuppressWarnings("unchecked")
+    private String resolveHeaderField(Map<String, Object> header, String field, String localeKey) {
+        if (header == null) return "";
+        Object translations = header.get(field + "Translations");
+        if (translations instanceof Map) {
+            String resolved = TranslatedField.resolve((Map<String, String>) translations, localeKey);
+            if (resolved != null) return resolved;
+        }
+        Object plain = header.get(field);
+        return plain != null ? String.valueOf(plain) : "";
+    }
+
     // ===== Font loading =====
 
     private PDFont loadFont(PDDocument document, boolean bold) throws IOException {
@@ -293,9 +318,9 @@ public class PdfExportService implements TestExportService {
     private float drawHeader(PDPageContentStream cs, PDFont fontBold,
                              PDFont fontRegular, TestHistory test,
                              String variantCode, float y, Locale locale) throws IOException {
+        String localeKey = LocaleKeys.fromLocale(locale);
         Map<String, Object> header = test.getHeaderConfig();
-        String schoolName = header != null && header.get("schoolName") != null
-                ? (String) header.get("schoolName") : "";
+        String schoolName = resolveHeaderField(header, "schoolName", localeKey);
         String className = header != null && header.get("className") != null
                 ? (String) header.get("className") : "";
 
@@ -304,7 +329,8 @@ public class PdfExportService implements TestExportService {
             y -= 5;
         }
 
-        y = drawCenteredText(cs, fontBold, 13, test.getTitle(), y);
+        String title = resolveTitle(test, localeKey);
+        y = drawCenteredText(cs, fontBold, 13, title, y);
         y -= 5;
         y = drawCenteredText(cs, fontBold, 16, messageService.get("export.variant", locale, variantCode), y);
         y -= 15;
@@ -407,44 +433,113 @@ public class PdfExportService implements TestExportService {
                                       PDFont fontRegular,
                                       List<Map<String, Object>> answerKey, float y,
                                       Locale locale) throws IOException {
-        int cols = 4;
-        float colWidth = CONTENT_WIDTH / cols;
-        int rows = (int) Math.ceil((double) answerKey.size() / cols);
+        // Table with 4 question-answer pairs per row (8 visual columns: #, Ans, #, Ans, ...)
+        int groupCount = 4;
+        int totalQuestions = answerKey.size();
+        int rows = (int) Math.ceil((double) totalQuestions / groupCount);
 
-        for (int c = 0; c < cols; c++) {
-            float x = MARGIN + c * colWidth;
+        float numColWidth = 30;
+        float ansColWidth = (CONTENT_WIDTH - numColWidth * groupCount) / groupCount;
+        float rowHeight = LINE_HEIGHT + 4;
+
+        // Draw header row
+        float headerY = y;
+        for (int c = 0; c < groupCount; c++) {
+            float xNum = MARGIN + c * (numColWidth + ansColWidth);
+            float xAns = xNum + numColWidth;
+
+            // Header text
             cs.beginText();
             cs.setFont(fontBold, 9);
-            cs.newLineAtOffset(x + 5, y);
-            cs.showText("  " + messageService.get("export.answer.column", locale));
+            cs.newLineAtOffset(xNum + 4, headerY - 12);
+            cs.showText("#");
+            cs.endText();
+
+            cs.beginText();
+            cs.setFont(fontBold, 9);
+            cs.newLineAtOffset(xAns + 4, headerY - 12);
+            cs.showText(messageService.get("export.answer.column.short", locale));
             cs.endText();
         }
-        y -= LINE_HEIGHT;
 
-        cs.moveTo(MARGIN, y + 3);
-        cs.lineTo(PAGE_WIDTH - MARGIN, y + 3);
-        cs.stroke();
+        // Draw header row border
+        float tableWidth = groupCount * (numColWidth + ansColWidth);
+        drawRect(cs, MARGIN, headerY - rowHeight, tableWidth, rowHeight);
 
+        // Draw vertical lines in header
+        for (int c = 0; c < groupCount; c++) {
+            float xNum = MARGIN + c * (numColWidth + ansColWidth);
+            float xAns = xNum + numColWidth;
+            if (c > 0) {
+                cs.moveTo(xNum, headerY);
+                cs.lineTo(xNum, headerY - rowHeight);
+                cs.stroke();
+            }
+            cs.moveTo(xAns, headerY);
+            cs.lineTo(xAns, headerY - rowHeight);
+            cs.stroke();
+        }
+
+        y = headerY - rowHeight;
+
+        // Draw data rows
         for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
+            float rowTop = y;
+            for (int c = 0; c < groupCount; c++) {
                 int idx = r + c * rows;
-                if (idx >= answerKey.size()) continue;
+                if (idx >= totalQuestions) continue;
 
                 Map<String, Object> entry = answerKey.get(idx);
-                String answer = String.valueOf(entry.get("answer"));
                 String numStr = String.valueOf(entry.get("questionNumber"));
+                String answer = String.valueOf(entry.get("answer"));
 
-                float x = MARGIN + c * colWidth;
+                float xNum = MARGIN + c * (numColWidth + ansColWidth);
+                float xAns = xNum + numColWidth;
+
                 cs.beginText();
                 cs.setFont(fontRegular, 10);
-                cs.newLineAtOffset(x + 5, y);
-                cs.showText(String.format("  %-4s  %s", numStr, answer));
+                cs.newLineAtOffset(xNum + 4, rowTop - 12);
+                cs.showText(numStr);
+                cs.endText();
+
+                cs.beginText();
+                cs.setFont(fontBold, 10);
+                cs.newLineAtOffset(xAns + 4, rowTop - 12);
+                cs.showText(answer);
                 cs.endText();
             }
-            y -= LINE_HEIGHT;
+
+            // Row border
+            drawRect(cs, MARGIN, rowTop - rowHeight, tableWidth, rowHeight);
+
+            // Vertical lines
+            for (int c = 0; c < groupCount; c++) {
+                float xNum = MARGIN + c * (numColWidth + ansColWidth);
+                float xAns = xNum + numColWidth;
+                if (c > 0) {
+                    cs.moveTo(xNum, rowTop);
+                    cs.lineTo(xNum, rowTop - rowHeight);
+                    cs.stroke();
+                }
+                cs.moveTo(xAns, rowTop);
+                cs.lineTo(xAns, rowTop - rowHeight);
+                cs.stroke();
+            }
+
+            y = rowTop - rowHeight;
         }
 
         return y;
+    }
+
+    private void drawRect(PDPageContentStream cs, float x, float y,
+                           float width, float height) throws IOException {
+        cs.moveTo(x, y);
+        cs.lineTo(x + width, y);
+        cs.lineTo(x + width, y + height);
+        cs.lineTo(x, y + height);
+        cs.closePath();
+        cs.stroke();
     }
 
     private float drawCenteredText(PDPageContentStream cs, PDFont font,

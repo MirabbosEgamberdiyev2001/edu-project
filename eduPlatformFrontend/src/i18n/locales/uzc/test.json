@@ -27,11 +27,16 @@
     "date": "Сана",
     "title": "Тест номи",
     "titlePlaceholder": "Тест номини киритинг",
+    "category": "Категория",
+    "noCategory": "Категориясиз",
     "generate": "Тест яратиш",
     "generating": "Яратилмоқда...",
     "availableQuestions": "Мавжуд саволлар",
     "totalAvailable": "Жами мавжуд",
-    "preview": "Кўриш"
+    "preview": "Кўриш",
+    "selectClass": "Синфни танланг",
+    "classLabel": "синф",
+    "langHint": "Камида Ўзбекча (Лотин) майдонини тўлдиринг. Бошқа тиллар ихтиёрий."
   },
   "card": {
     "questions": "{{count}} та савол",
@@ -51,7 +56,11 @@
     "questions": "Саволлар",
     "variantCount": "Вариантлар",
     "seed": "Тасодифий рақам",
-    "shuffle": "Аралаштириш"
+    "shuffle": "Аралаштириш",
+    "questionsList": "Бу тестдаги саволлар",
+    "loadingQuestions": "Саволлар юкланмоқда...",
+    "option": "Вариант",
+    "correct": "Тўғри"
   },
   "export": {
     "test": "Тест",
@@ -60,7 +69,8 @@
     "proofs": "Исботлар",
     "pdf": "PDF",
     "docx": "DOCX",
-    "downloading": "Юкланмоқда..."
+    "downloading": "Юкланмоқда...",
+    "error": "Экспорт қилишда хатолик юз берди"
   },
   "status": {
     "CREATED": "Яратилган",
@@ -73,6 +83,11 @@
     "title": "Тестни ўчириш",
     "confirm": "Бу тестни ўчиришни хоҳлайсизми? Бу амални қайтариб бўлмайди.",
     "deleting": "Ўчирилмоқда..."
+  },
+  "edit": {
+    "title": "Тестни таҳрирлаш",
+    "save": "Сақлаш",
+    "saving": "Сақланмоқда..."
   },
   "duplicate": "Нусхалаш",
   "regenerate": "Қайта яратиш",
@@ -96,7 +111,11 @@
     "noQuestionsFound": "Танланган мавзулар учун саволлар топилмади",
     "selectAtLeastOne": "Камида битта савол танланг",
     "questionsSelected": "та савол танланди",
-    "selectAllPage": "Барчасини танлаш"
+    "selectAllPage": "Барчасини танлаш",
+    "createQuestion": "Савол яратиш",
+    "selectedQuestions": "Танланган саволлар",
+    "clearAll": "Барчасини тозалаш",
+    "noSelected": "Ҳали савол танланмади. Қуйидаги рўйхатдан саволларни танланг."
   },
   "submitToModeration": "Модератсияга юбориш",
   "submitDialog": {
@@ -107,6 +126,37 @@
     "noneSubmittable": "Юбориш учун саволлар мавжуд эмас",
     "submitting": "Юборилмоқда...",
     "confirm": "Модератсияга юбориш"
+  },
+  "categories": {
+    "DTM": "ДТМ",
+    "SCHOOL": "Мактаб",
+    "OLYMPIAD": "Олимпиада",
+    "CERTIFICATE": "Сертификат",
+    "ATTESTATSIYA": "Аттестация"
+  },
+  "publish": {
+    "title": "Тестни эълон қилиш",
+    "duration": "Вақт чегараси (дақиқа)",
+    "publish": "Эълон қилиш",
+    "unpublish": "Ёпиш",
+    "published": "Эълон қилинган",
+    "copyLink": "Ҳаволани нусхалаш",
+    "linkCopied": "Нусхаланди!",
+    "shareLink": "Улашиш ҳаволаси",
+    "publicBadge": "Очиқ"
+  },
+  "preview": {
+    "title": "Тест кўриниши",
+    "loading": "Кўриниш юкланмоқда...",
+    "error": "Кўринишни юклашда хатолик",
+    "variant": "Вариант",
+    "question": "Савол",
+    "confirmCreate": "Тасдиқлаш ва яратиш",
+    "confirmTitle": "Тестни яратишни тасдиқлайсизми?",
+    "confirmDesc": "Кўрсатилган саволлар билан тест яратилади.",
+    "noQuestions": "Бу параметрлар учун саволлар топилмади",
+    "questionsCount": "{{count}} та савол",
+    "correctAnswer": "Тўғри жавоб"
   },
   "errors": {
     "noTopics": "Камида битта мавзуни танланг",

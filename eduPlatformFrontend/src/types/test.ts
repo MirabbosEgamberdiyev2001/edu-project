@@ -2,6 +2,14 @@ export type TestStatus = 'CREATED' | 'GENERATING' | 'READY' | 'DOWNLOADED' | 'DE
 
 export type ExportFormat = 'PDF' | 'DOCX';
 
+export enum TestCategory {
+  DTM = 'DTM',
+  SCHOOL = 'SCHOOL',
+  OLYMPIAD = 'OLYMPIAD',
+  CERTIFICATE = 'CERTIFICATE',
+  ATTESTATSIYA = 'ATTESTATSIYA',
+}
+
 export interface DifficultyDistribution {
   easy: number;
   medium: number;
@@ -10,8 +18,10 @@ export interface DifficultyDistribution {
 
 export interface HeaderConfig {
   schoolName?: string;
+  schoolNameTranslations?: Record<string, string>;
   className?: string;
   teacherName?: string;
+  teacherNameTranslations?: Record<string, string>;
   logoUrl?: string;
   date?: string;
 }
@@ -20,6 +30,8 @@ export type TestGenerationMode = 'auto' | 'manual';
 
 export interface GenerateTestRequest {
   title: string;
+  titleTranslations?: Record<string, string>;
+  category?: TestCategory;
   subjectId: string;
   topicIds: string[];
   questionCount?: number;
@@ -42,6 +54,7 @@ export interface VariantDto {
 export interface GenerateTestResponse {
   testId: string;
   title: string;
+  titleTranslations?: Record<string, string>;
   questionCount: number;
   variantCount: number;
   difficultyDistribution: Record<string, number>;
@@ -54,6 +67,8 @@ export interface TestHistoryDto {
   id: string;
   userId: string;
   title: string;
+  titleTranslations?: Record<string, string>;
+  category: TestCategory | null;
   subjectId: string;
   subjectName: string;
   topicIds: string[];
@@ -71,6 +86,9 @@ export interface TestHistoryDto {
   proofsPdfUrl: string | null;
   downloadCount: number;
   lastDownloadedAt: string | null;
+  isPublic: boolean;
+  publicSlug: string | null;
+  publicDurationMinutes: number | null;
   status: TestStatus;
   createdAt: string;
 }

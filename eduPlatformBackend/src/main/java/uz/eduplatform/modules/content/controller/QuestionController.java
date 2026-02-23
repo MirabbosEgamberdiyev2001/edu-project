@@ -120,7 +120,7 @@ public class QuestionController {
             @Valid @RequestBody UpdateQuestionRequest request,
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
 
-        QuestionDto question = questionService.updateQuestion(id, principal.getId(), request, language);
+        QuestionDto question = questionService.updateQuestion(id, principal.getId(), request, language, true);
         return ResponseEntity.ok(ApiResponse.success(question, messageService.get("question.updated", language.toLocale())));
     }
 
@@ -133,7 +133,7 @@ public class QuestionController {
             @Valid @RequestBody UpdateQuestionRequest request,
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
 
-        QuestionDto question = questionService.updateQuestion(id, principal.getId(), request, language);
+        QuestionDto question = questionService.updateQuestion(id, principal.getId(), request, language, false);
         return ResponseEntity.ok(ApiResponse.success(question, messageService.get("question.updated", language.toLocale())));
     }
 

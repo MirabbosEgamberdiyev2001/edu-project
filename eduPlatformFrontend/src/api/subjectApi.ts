@@ -5,13 +5,11 @@ import type {
   CreateSubjectRequest,
   UpdateSubjectRequest,
   PagedResponse,
-  SubjectCategory,
 } from '@/types/subject';
 
 const SUBJECTS = '/subjects';
 
 export interface SubjectListParams {
-  category?: SubjectCategory;
   search?: string;
   page?: number;
   size?: number;
@@ -43,9 +41,6 @@ export const subjectApi = {
 
   restoreSubject: (id: string) =>
     api.post<ApiResponse<SubjectDto>>(`${SUBJECTS}/${id}/restore`),
-
-  forkTemplate: (id: string) =>
-    api.post<ApiResponse<SubjectDto>>(`${SUBJECTS}/${id}/fork`),
 
   createBulk: (data: { items: CreateSubjectRequest[]; skipDuplicates?: boolean }) =>
     api.post<ApiResponse<{ created: number; skipped: number; errors: string[] }>>(`${SUBJECTS}/bulk`, data),

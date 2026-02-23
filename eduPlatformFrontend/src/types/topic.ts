@@ -2,6 +2,8 @@ export interface TopicDto {
   id: string;
   subjectId: string;
   parentId: string | null;
+  userId: string;
+  gradeLevel: number;
   name: string;
   description: string | null;
   nameTranslations: Record<string, string> | null;
@@ -19,6 +21,8 @@ export interface TopicTreeDto {
   id: string;
   subjectId: string;
   parentId: string | null;
+  userId: string;
+  gradeLevel: number;
   name: string;
   description: string | null;
   nameTranslations: Record<string, string> | null;
@@ -34,6 +38,7 @@ export interface CreateTopicRequest {
   name: Record<string, string>;
   description?: Record<string, string>;
   parentId?: string;
+  gradeLevel: number;
 }
 
 export interface UpdateTopicRequest {

@@ -8,12 +8,6 @@ import {
   Button,
   CircularProgress,
   Avatar,
-  Divider,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableRow,
   IconButton,
   Tooltip,
 } from '@mui/material';
@@ -31,20 +25,13 @@ import { useTranslation } from 'react-i18next';
 import { useSubject } from '../hooks/useSubject';
 import { useSubjectMutations } from '../hooks/useSubjectMutations';
 import { resolveTranslation } from '@/utils/i18nUtils';
-import { LANGUAGE_LABELS } from '@/config';
 import SubjectFormDialog from '../components/SubjectFormDialog';
 import SubjectDeleteDialog from '../components/SubjectDeleteDialog';
 import TopicTreeView from '@/features/topics/components/TopicTreeView';
-import type { SubjectDto, CreateSubjectRequest, UpdateSubjectRequest } from '@/types/subject';
+import type { CreateSubjectRequest, UpdateSubjectRequest } from '@/types/subject';
+import { useAuthStore } from '@/stores/authStore';
 
-const LOCALE_KEY_TO_FRONTEND: Record<string, string> = {
-  uz_latn: 'uzl',
-  uz_cyrl: 'uzc',
-  en: 'en',
-  ru: 'ru',
-};
-
-const LOCALE_KEYS = ['uz_latn', 'uz_cyrl', 'en', 'ru'] as const;
+const GRADES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 
 function isImageUrl(value: string | null): boolean {
   if (!value) return false;
@@ -55,11 +42,15 @@ export default function SubjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation('subject');
+  const { t: tTopic } = useTranslation('topic');
   const { data: subject, isLoading, isError } = useSubject(id);
   const { update, remove, archive, restore } = useSubjectMutations();
+  const user = useAuthStore((s) => s.user);
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
 
   const [formOpen, setFormOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [selectedGrade, setSelectedGrade] = useState<number | null>(null);
 
   if (isLoading) {
     return (
@@ -137,12 +128,14 @@ export default function SubjectDetailPage() {
           </Box>
         </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <Tooltip title={t('edit')}>
-            <IconButton color="primary" onClick={() => setFormOpen(true)}>
-              <EditIcon />
-            </IconButton>
-          </Tooltip>
-          {subject.isArchived ? (
+          {isAdmin && (
+            <Tooltip title={t('edit')}>
+              <IconButton color="primary" onClick={() => setFormOpen(true)}>
+                <EditIcon />
+              </IconButton>
+            </Tooltip>
+          )}
+          {isAdmin && (subject.isArchived ? (
             <Tooltip title={t('restore')}>
               <IconButton color="success" onClick={handleRestore}>
                 <UnarchiveIcon />
@@ -154,23 +147,19 @@ export default function SubjectDetailPage() {
                 <ArchiveIcon />
               </IconButton>
             </Tooltip>
+          ))}
+          {isAdmin && (
+            <Tooltip title={t('delete')}>
+              <IconButton color="error" onClick={() => setDeleteOpen(true)}>
+                <DeleteIcon />
+              </IconButton>
+            </Tooltip>
           )}
-          <Tooltip title={t('delete')}>
-            <IconButton color="error" onClick={() => setDeleteOpen(true)}>
-              <DeleteIcon />
-            </IconButton>
-          </Tooltip>
         </Box>
       </Box>
 
       {/* Stats */}
       <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
-        {subject.category && (
-          <Chip label={t(`categories.${subject.category}`)} color="primary" variant="outlined" />
-        )}
-        {subject.gradeLevel && (
-          <Chip label={`${t('form.gradeLevel')}: ${subject.gradeLevel}`} variant="outlined" />
-        )}
         <Chip
           icon={subject.isActive ? <CheckCircleIcon /> : <CancelIcon />}
           label={subject.isActive ? t('statusActive') : t('statusInactive')}
@@ -184,56 +173,29 @@ export default function SubjectDetailPage() {
         <Chip icon={<QuizIcon />} label={`${t('questionCount')}: ${subject.questionCount}`} variant="outlined" />
       </Box>
 
-      {/* Translations table */}
-      <Paper sx={{ mb: 3 }}>
-        <Box sx={{ p: 2, pb: 1 }}>
-          <Typography variant="h6" fontWeight={600}>{t('translations')}</Typography>
-          <Typography variant="body2" color="text.secondary">{t('translationsHint')}</Typography>
-        </Box>
-        <Divider />
-        <TableContainer>
-          <Table>
-            <TableBody>
-              {LOCALE_KEYS.map((localeKey) => {
-                const frontendLang = LOCALE_KEY_TO_FRONTEND[localeKey] || localeKey;
-                const langLabel = LANGUAGE_LABELS[frontendLang] || localeKey;
-                const nameVal = subject.nameTranslations?.[localeKey];
-                const descVal = subject.descriptionTranslations?.[localeKey];
-                const isFilled = Boolean(nameVal?.trim());
-
-                return (
-                  <TableRow key={localeKey}>
-                    <TableCell sx={{ width: 160, fontWeight: 600 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        {isFilled ? (
-                          <CheckCircleIcon sx={{ fontSize: 16, color: 'success.main' }} />
-                        ) : (
-                          <CancelIcon sx={{ fontSize: 16, color: 'text.disabled' }} />
-                        )}
-                        {langLabel}
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body1" fontWeight={500}>
-                        {nameVal || <Typography component="span" color="text.disabled" fontStyle="italic">{t('form.notFilled')}</Typography>}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" color="text.secondary">
-                        {descVal || <Typography component="span" color="text.disabled" fontStyle="italic">{t('form.notFilled')}</Typography>}
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
-
-      {/* Topics Tree */}
+      {/* Grade Selector + Topics Tree */}
       <Paper sx={{ p: 2, mb: 3 }}>
-        <TopicTreeView subjectId={subject.id} />
+        <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>{tTopic('title')}</Typography>
+        <Typography variant="subtitle2" sx={{ mb: 1 }}>{t('form.gradeLevel')}</Typography>
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
+          {GRADES.map((grade) => (
+            <Chip
+              key={grade}
+              label={`${grade}`}
+              color={selectedGrade === grade ? 'primary' : 'default'}
+              variant={selectedGrade === grade ? 'filled' : 'outlined'}
+              onClick={() => setSelectedGrade(grade)}
+              sx={{ minWidth: 40 }}
+            />
+          ))}
+        </Box>
+        {selectedGrade !== null ? (
+          <TopicTreeView subjectId={subject.id} gradeLevel={selectedGrade} />
+        ) : (
+          <Box sx={{ textAlign: 'center', py: 3 }}>
+            <Typography variant="body2" color="text.secondary">{tTopic('selectGrade')}</Typography>
+          </Box>
+        )}
       </Paper>
 
       {/* Details */}

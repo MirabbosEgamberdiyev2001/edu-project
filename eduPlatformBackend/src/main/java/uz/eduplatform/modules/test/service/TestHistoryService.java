@@ -9,6 +9,7 @@ import uz.eduplatform.core.audit.AuditService;
 import uz.eduplatform.core.common.dto.PagedResponse;
 import uz.eduplatform.core.common.exception.ResourceNotFoundException;
 import uz.eduplatform.core.i18n.AcceptLanguage;
+import uz.eduplatform.core.i18n.LocaleKeys;
 import uz.eduplatform.core.i18n.TranslatedField;
 import uz.eduplatform.modules.content.domain.Subject;
 import uz.eduplatform.modules.content.repository.SubjectRepository;
@@ -71,6 +72,8 @@ public class TestHistoryService {
 
         GenerateTestRequest request = GenerateTestRequest.builder()
                 .title(original.getTitle() + " (Copy)")
+                .titleTranslations(original.getTitleTranslations())
+                .category(original.getCategory())
                 .subjectId(original.getSubjectId())
                 .topicIds(original.getTopicIds())
                 .questionCount(original.getQuestionCount())
@@ -92,6 +95,8 @@ public class TestHistoryService {
 
         GenerateTestRequest request = GenerateTestRequest.builder()
                 .title(original.getTitle())
+                .titleTranslations(original.getTitleTranslations())
+                .category(original.getCategory())
                 .subjectId(original.getSubjectId())
                 .topicIds(original.getTopicIds())
                 .questionCount(original.getQuestionCount())
@@ -120,15 +125,23 @@ public class TestHistoryService {
                 .build();
     }
 
+    @SuppressWarnings("unchecked")
     private HeaderConfig toHeaderConfig(Map<String, Object> map) {
         if (map == null) return null;
-        return HeaderConfig.builder()
+        HeaderConfig.HeaderConfigBuilder builder = HeaderConfig.builder()
                 .schoolName((String) map.get("schoolName"))
                 .className((String) map.get("className"))
                 .teacherName((String) map.get("teacherName"))
                 .logoUrl((String) map.get("logoUrl"))
-                .date((String) map.get("date"))
-                .build();
+                .date((String) map.get("date"));
+
+        Object snt = map.get("schoolNameTranslations");
+        if (snt instanceof Map) builder.schoolNameTranslations((Map<String, String>) snt);
+
+        Object tnt = map.get("teacherNameTranslations");
+        if (tnt instanceof Map) builder.teacherNameTranslations((Map<String, String>) tnt);
+
+        return builder.build();
     }
 
     @SuppressWarnings("unchecked")
@@ -169,6 +182,8 @@ public class TestHistoryService {
                 .id(h.getId())
                 .userId(h.getUserId())
                 .title(h.getTitle())
+                .titleTranslations(h.getTitleTranslations())
+                .category(h.getCategory())
                 .subjectId(h.getSubjectId())
                 .subjectName(subjectName)
                 .topicIds(h.getTopicIds())
@@ -186,8 +201,88 @@ public class TestHistoryService {
                 .proofsPdfUrl(h.getProofsPdfUrl())
                 .downloadCount(h.getDownloadCount())
                 .lastDownloadedAt(h.getLastDownloadedAt())
+                .isPublic(h.getIsPublic())
+                .publicSlug(h.getPublicSlug())
+                .publicDurationMinutes(h.getPublicDurationMinutes())
                 .status(h.getStatus())
                 .createdAt(h.getCreatedAt())
                 .build();
+    }
+
+    @Transactional
+    public TestHistoryDto updateTest(UUID testId, UUID userId, UpdateTestRequest request, AcceptLanguage language) {
+        TestHistory history = testHistoryRepository.findByIdAndUserIdAndDeletedAtIsNull(testId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Test", "id", testId));
+
+        if (request.getTitleTranslations() != null && !request.getTitleTranslations().isEmpty()) {
+            history.setTitleTranslations(request.getTitleTranslations());
+            String resolved = TranslatedField.resolve(request.getTitleTranslations());
+            if (resolved != null) history.setTitle(resolved);
+        } else if (request.getTitle() != null && !request.getTitle().isBlank()) {
+            history.setTitle(request.getTitle());
+        }
+        if (request.getCategory() != null) {
+            history.setCategory(request.getCategory());
+        }
+        if (request.getHeaderConfig() != null) {
+            HeaderConfig hc = request.getHeaderConfig();
+            Map<String, Object> headerMap = new HashMap<>();
+            if (hc.getSchoolName() != null) headerMap.put("schoolName", hc.getSchoolName());
+            if (hc.getSchoolNameTranslations() != null) headerMap.put("schoolNameTranslations", hc.getSchoolNameTranslations());
+            if (hc.getClassName() != null) headerMap.put("className", hc.getClassName());
+            if (hc.getTeacherName() != null) headerMap.put("teacherName", hc.getTeacherName());
+            if (hc.getTeacherNameTranslations() != null) headerMap.put("teacherNameTranslations", hc.getTeacherNameTranslations());
+            if (hc.getLogoUrl() != null) headerMap.put("logoUrl", hc.getLogoUrl());
+            if (hc.getDate() != null) headerMap.put("date", hc.getDate());
+            history.setHeaderConfig(headerMap);
+        }
+
+        testHistoryRepository.save(history);
+
+        auditService.log(userId, null, "TEST_UPDATED", "TEST",
+                "TestHistory", testId);
+
+        return mapToDto(history, language);
+    }
+
+    @Transactional
+    public TestHistoryDto publishTest(UUID testId, UUID userId, Integer durationMinutes, AcceptLanguage language) {
+        TestHistory history = testHistoryRepository.findByIdAndUserIdAndDeletedAtIsNull(testId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Test", "id", testId));
+
+        history.setIsPublic(true);
+        history.setPublicDurationMinutes(durationMinutes);
+        if (history.getPublicSlug() == null) {
+            history.setPublicSlug(generateSlug());
+        }
+        testHistoryRepository.save(history);
+        return mapToDto(history, language);
+    }
+
+    @Transactional
+    public TestHistoryDto unpublishTest(UUID testId, UUID userId, AcceptLanguage language) {
+        TestHistory history = testHistoryRepository.findByIdAndUserIdAndDeletedAtIsNull(testId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Test", "id", testId));
+
+        history.setIsPublic(false);
+        testHistoryRepository.save(history);
+        return mapToDto(history, language);
+    }
+
+    @Transactional(readOnly = true)
+    public TestHistoryDto getPublicTestBySlug(String slug) {
+        TestHistory history = testHistoryRepository.findByPublicSlugAndIsPublicTrueAndDeletedAtIsNull(slug)
+                .orElseThrow(() -> new ResourceNotFoundException("Test", "slug", slug));
+        return mapToDto(history, AcceptLanguage.UZL);
+    }
+
+    private String generateSlug() {
+        String chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+        StringBuilder sb = new StringBuilder(8);
+        java.util.Random rnd = new java.security.SecureRandom();
+        for (int i = 0; i < 8; i++) {
+            sb.append(chars.charAt(rnd.nextInt(chars.length())));
+        }
+        return sb.toString();
     }
 }

@@ -46,5 +46,8 @@ export const ROUTES = {
   ADMIN_AUDIT_LOGS: '/admin/audit-logs',
   ADMIN_MODERATION: '/admin/moderation',
 
+  // Public test
+  PUBLIC_TEST: '/test/:slug',
+
   UNAUTHORIZED: '/unauthorized',
 } as const;

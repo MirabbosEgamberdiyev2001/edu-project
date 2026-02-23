@@ -31,13 +31,6 @@ spring:
     locations: classpath:db/migration
     out-of-order: true
 
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
-      timeout: 5000
-
   jackson:
     default-property-inclusion: non_null
     serialization:

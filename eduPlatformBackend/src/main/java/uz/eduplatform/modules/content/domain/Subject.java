@@ -48,13 +48,6 @@ public class Subject {
     @Column(length = 7)
     private String color;
 
-    @Enumerated(EnumType.STRING)
-    @Column(length = 50)
-    private SubjectCategory category;
-
-    @Column(name = "grade_level")
-    private Integer gradeLevel;
-
     @Builder.Default
     @Column(name = "is_template")
     private Boolean isTemplate = false;
@@ -81,6 +74,9 @@ public class Subject {
     @Builder.Default
     @Column(name = "test_count")
     private Integer testCount = 0;
+
+    @Column(name = "grade_level")
+    private Integer gradeLevel;
 
     @Builder.Default
     @Column(name = "sort_order")

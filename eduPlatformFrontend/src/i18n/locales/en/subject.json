@@ -11,6 +11,7 @@
   "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
   "archive": "Archive",
   "restore": "Restore",
+  "fork": "Fork",
   "search": "Search subjects...",
   "activeTab": "Active subjects",
   "archivedTab": "Archived subjects",
@@ -37,6 +38,12 @@
     "CERTIFICATE": "Certificate",
     "ATTESTATSIYA": "Attestation"
   },
+  "duplicateError": "A subject with this name already exists",
+  "testCount": "tests",
+  "allGrades": "All grades",
+  "clearFilters": "Clear",
+  "emptyFiltered": "No subjects match your filters",
+  "emptyFilteredDescription": "Try adjusting your search or filters",
   "form": {
     "name": "Subject name",
     "namePlaceholder": "Enter subject name",
@@ -48,6 +55,7 @@
     "color": "Color",
     "category": "Category",
     "gradeLevel": "Grade",
+    "noGrade": "Not specified",
     "noCategory": "None",
     "langHint": "Fill in all languages. At least Uzbek (Latin) is required.",
     "filled": "filled",

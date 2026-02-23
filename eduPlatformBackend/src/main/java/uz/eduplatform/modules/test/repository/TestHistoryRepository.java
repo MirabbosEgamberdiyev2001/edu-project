@@ -20,6 +20,8 @@ public interface TestHistoryRepository extends JpaRepository<TestHistory, UUID> 
 
     Optional<TestHistory> findByIdAndUserIdAndDeletedAtIsNull(UUID id, UUID userId);
 
+    Optional<TestHistory> findByPublicSlugAndIsPublicTrueAndDeletedAtIsNull(String publicSlug);
+
     long countByDeletedAtIsNull();
 
     long countByCreatedAtAfterAndDeletedAtIsNull(LocalDateTime date);

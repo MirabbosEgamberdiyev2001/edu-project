@@ -1,5 +1,7 @@
 package uz.eduplatform.modules.content.dto;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,4 +23,9 @@ public class CreateTopicRequest {
     private Map<String, String> description;
 
     private UUID parentId;
+
+    @NotNull(message = "Grade level is required")
+    @Min(1)
+    @Max(11)
+    private Integer gradeLevel;
 }

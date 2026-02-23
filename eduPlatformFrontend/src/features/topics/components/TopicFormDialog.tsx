@@ -67,11 +67,11 @@ export default function TopicFormDialog({ open, onClose, onSubmit, topic, parent
       };
       onSubmit(data);
     } else {
-      const data: CreateTopicRequest = {
+      const data = {
         name: cleanName,
         ...(Object.keys(cleanDesc).length > 0 && { description: cleanDesc }),
         ...(parentId && { parentId }),
-      };
+      } as CreateTopicRequest;
       onSubmit(data);
     }
   };

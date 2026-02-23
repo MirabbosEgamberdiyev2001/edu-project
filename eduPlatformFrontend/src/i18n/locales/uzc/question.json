@@ -24,6 +24,7 @@
     "topic": "Мавзу",
     "selectSubject": "Фанни танланг",
     "selectTopic": "Мавзуни танланг",
+    "gradeLevel": "Синф",
     "options": "Жавоб вариантлари",
     "addOption": "Вариант қўшиш",
     "correctAnswer": "Тўғри жавоб",
@@ -85,9 +86,15 @@
   "filters": {
     "allTypes": "Барча турлар",
     "allDifficulties": "Барча даражалар",
-    "allStatuses": "Барча ҳолатлар"
+    "allStatuses": "Барча ҳолатлар",
+    "status": "Ҳолат",
+    "clear": "Тозалаш",
+    "pageSize": "Ўлчам"
   },
   "bulkSubmit": "Танланганларни юбориш",
   "bulkSubmitSuccess": "Саволлар модератсияга юборилди",
-  "selectedCount": "{{count}} та танланди"
+  "selectedCount": "{{count}} та танланди",
+  "totalCount": "Жами {{count}} та савол",
+  "emptyFiltered": "Филтрлар бўйича саволлар топилмади",
+  "emptyFilteredDescription": "Қидирув ёки филтрларни ўзгартириб кўринг"
 }

@@ -5,14 +5,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import uz.eduplatform.modules.auth.domain.UserSession;
 import uz.eduplatform.modules.auth.repository.UserSessionRepository;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -23,61 +20,59 @@ class TokenBlacklistServiceTest {
     @Mock
     private UserSessionRepository userSessionRepository;
 
-    @Mock
-    private StringRedisTemplate redisTemplate;
-
-    @Mock
-    private ValueOperations<String, String> valueOperations;
-
     private TokenBlacklistService tokenBlacklistService;
 
     @BeforeEach
     void setUp() {
-        tokenBlacklistService = new TokenBlacklistService(redisTemplate, userSessionRepository);
+        tokenBlacklistService = new TokenBlacklistService(userSessionRepository);
     }
 
     @Test
     void blacklist_storesKey() {
         String jti = "test-jti-123";
         long ttl = 900000;
-        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
 
         tokenBlacklistService.blacklist(jti, ttl);
 
-        verify(valueOperations).set("bl:" + jti, "1", ttl, TimeUnit.MILLISECONDS);
+        assertTrue(tokenBlacklistService.isBlacklisted(jti));
     }
 
     @Test
     void blacklist_ignoresNullJti() {
         tokenBlacklistService.blacklist(null, 900000);
-
-        verifyNoInteractions(valueOperations);
+        assertFalse(tokenBlacklistService.isBlacklisted(null));
     }
 
     @Test
     void blacklist_ignoresNonPositiveTtl() {
         tokenBlacklistService.blacklist("jti", 0);
-
-        verifyNoInteractions(valueOperations);
+        assertFalse(tokenBlacklistService.isBlacklisted("jti"));
     }
 
     @Test
     void isBlacklisted_returnsTrueWhenKeyExists() {
-        when(redisTemplate.hasKey("bl:test-jti")).thenReturn(true);
-
+        tokenBlacklistService.blacklist("test-jti", 900000);
         assertTrue(tokenBlacklistService.isBlacklisted("test-jti"));
     }
 
     @Test
     void isBlacklisted_returnsFalseWhenKeyDoesNotExist() {
-        when(redisTemplate.hasKey("bl:test-jti")).thenReturn(false);
-
         assertFalse(tokenBlacklistService.isBlacklisted("test-jti"));
     }
 
     @Test
     void isBlacklisted_returnsFalseForNullJti() {
         assertFalse(tokenBlacklistService.isBlacklisted(null));
+    }
+
+    @Test
+    void isBlacklisted_returnsFalseAfterExpiry() {
+        tokenBlacklistService.blacklist("expired-jti", 1);
+
+        // Wait for token to expire
+        try { Thread.sleep(10); } catch (InterruptedException ignored) {}
+
+        assertFalse(tokenBlacklistService.isBlacklisted("expired-jti"));
     }
 
     @Test
@@ -90,13 +85,26 @@ class TokenBlacklistServiceTest {
 
         when(userSessionRepository.findByUserIdAndIsActiveTrue(userId))
                 .thenReturn(List.of(session1, session2));
-        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
 
         tokenBlacklistService.blacklistAllForUser(userId, 900000);
 
-        verify(valueOperations).set("bl:access-1", "1", 900000, TimeUnit.MILLISECONDS);
-        verify(valueOperations).set("bl:refresh-1", "1", 900000, TimeUnit.MILLISECONDS);
-        verify(valueOperations).set("bl:access-2", "1", 900000, TimeUnit.MILLISECONDS);
-        verify(valueOperations).set("bl:refresh-2", "1", 900000, TimeUnit.MILLISECONDS);
+        assertTrue(tokenBlacklistService.isBlacklisted("access-1"));
+        assertTrue(tokenBlacklistService.isBlacklisted("refresh-1"));
+        assertTrue(tokenBlacklistService.isBlacklisted("access-2"));
+        assertTrue(tokenBlacklistService.isBlacklisted("refresh-2"));
+    }
+
+    @Test
+    void cleanupExpired_removesExpiredTokens() {
+        tokenBlacklistService.blacklist("expired-1", 1);
+        tokenBlacklistService.blacklist("valid-1", 900000);
+
+        // Wait for expired token
+        try { Thread.sleep(10); } catch (InterruptedException ignored) {}
+
+        tokenBlacklistService.cleanupExpired();
+
+        assertFalse(tokenBlacklistService.isBlacklisted("expired-1"));
+        assertTrue(tokenBlacklistService.isBlacklisted("valid-1"));
     }
 }

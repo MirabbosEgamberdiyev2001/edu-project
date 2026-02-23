@@ -113,6 +113,7 @@ public class SecurityConfig {
                             .requestMatchers(PAYMENT_CALLBACK_URLS).permitAll()
                             .requestMatchers(HttpMethod.GET, FILE_URLS).permitAll()
                             .requestMatchers(HttpMethod.GET, "/api/v1/subscription-plans", "/api/v1/subscription-plans/*").permitAll()
+                            .requestMatchers(HttpMethod.GET, "/api/v1/public-tests/*").permitAll()
                             .requestMatchers(SYSTEM_URLS).permitAll()
                             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                             .anyRequest().authenticated();

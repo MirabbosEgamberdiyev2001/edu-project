@@ -30,7 +30,8 @@ export default function TestExportButtons({ testId }: TestExportButtonsProps) {
       }[type];
 
       const response = await exportFn(testId, format);
-      const blob = new Blob([response.data]);
+      const contentType = response.headers['content-type'] || (format === 'PDF' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+      const blob = new Blob([response.data], { type: contentType });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -39,8 +40,19 @@ export default function TestExportButtons({ testId }: TestExportButtonsProps) {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-    } catch {
-      toast.error(t('errors.generateFailed'));
+    } catch (error: unknown) {
+      const axiosErr = error as { response?: { data?: Blob } };
+      if (axiosErr.response?.data instanceof Blob) {
+        try {
+          const text = await axiosErr.response.data.text();
+          const json = JSON.parse(text);
+          toast.error(json.message || t('export.error'));
+        } catch {
+          toast.error(t('export.error'));
+        }
+      } else {
+        toast.error(t('export.error'));
+      }
     } finally {
       setLoading(null);
     }

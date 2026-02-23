@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.eduplatform.core.audit.AuditService;
 import uz.eduplatform.core.common.exception.BusinessException;
+import uz.eduplatform.core.i18n.TranslatedField;
 import uz.eduplatform.modules.content.domain.Difficulty;
 import uz.eduplatform.modules.content.domain.Question;
 import uz.eduplatform.modules.content.domain.QuestionStatus;
@@ -44,16 +45,30 @@ public class TestGenerationService {
 
     @Transactional
     public GenerateTestResponse generateTest(UUID userId, GenerateTestRequest request) {
+        return doGenerateTest(userId, request, true);
+    }
+
+    @Transactional(readOnly = true)
+    public GenerateTestResponse previewTest(UUID userId, GenerateTestRequest request) {
+        return doGenerateTest(userId, request, false);
+    }
+
+    private GenerateTestResponse doGenerateTest(UUID userId, GenerateTestRequest request, boolean persist) {
         // 1. Validate input
         validationService.validateRequest(request);
 
-        // 1.1 Validate topic ownership - teacher must own all topics via their subjects
+        // 1.1 Validate topic ownership
+        // - Subject owner: full access to all topics
+        // - Template subject: teacher can use only their own topics
         if (request.getTopicIds() != null && !request.getTopicIds().isEmpty()) {
             for (UUID topicId : request.getTopicIds()) {
                 Topic topic = topicRepository.findById(topicId)
                         .orElseThrow(() -> BusinessException.ofKey("test.topic.not.found"));
                 Subject subject = topic.getSubject();
-                if (!subject.getUser().getId().equals(userId)) {
+                boolean isSubjectOwner = subject.getUser().getId().equals(userId);
+                boolean isTemplateWithOwnTopic = Boolean.TRUE.equals(subject.getIsTemplate())
+                        && topic.getUser().getId().equals(userId);
+                if (!isSubjectOwner && !isTemplateWithOwnTopic) {
                     throw BusinessException.ofKey("test.topic.not.owned");
                 }
             }
@@ -104,9 +119,9 @@ public class TestGenerationService {
             request.setQuestionCount(questionCount);
         } else {
             // Auto mode: original flow
-            // 2. Fetch ACTIVE questions by topics
-            List<Question> candidates = questionRepository.findByTopicIdsAndStatus(
-                    request.getTopicIds(), QuestionStatus.ACTIVE);
+            // 2. Fetch ACTIVE questions + teacher's own DRAFT/PENDING
+            List<Question> candidates = questionRepository.findByTopicIdsForTeacher(
+                    request.getTopicIds(), userId);
 
             if (candidates.isEmpty()) {
                 throw BusinessException.ofKey("test.no.active.questions");
@@ -186,70 +201,101 @@ public class TestGenerationService {
             headerConfigMap = new LinkedHashMap<>();
             HeaderConfig hc = request.getHeaderConfig();
             if (hc.getSchoolName() != null) headerConfigMap.put("schoolName", hc.getSchoolName());
+            if (hc.getSchoolNameTranslations() != null) headerConfigMap.put("schoolNameTranslations", hc.getSchoolNameTranslations());
             if (hc.getClassName() != null) headerConfigMap.put("className", hc.getClassName());
             if (hc.getTeacherName() != null) headerConfigMap.put("teacherName", hc.getTeacherName());
+            if (hc.getTeacherNameTranslations() != null) headerConfigMap.put("teacherNameTranslations", hc.getTeacherNameTranslations());
             if (hc.getLogoUrl() != null) headerConfigMap.put("logoUrl", hc.getLogoUrl());
             if (hc.getDate() != null) headerConfigMap.put("date", hc.getDate());
         }
 
-        // Save to history
-        TestHistory history = TestHistory.builder()
-                .userId(userId)
-                .title(request.getTitle())
-                .subjectId(request.getSubjectId())
-                .topicIds(request.getTopicIds())
-                .questionCount(questionCount)
-                .variantCount(variantCount)
-                .difficultyDistribution(actualDistribution)
-                .shuffleQuestions(request.getShuffleQuestions())
-                .shuffleOptions(request.getShuffleOptions())
-                .randomSeed(seed)
-                .headerConfig(headerConfigMap)
-                .variants(variantMaps)
-                .status(TestStatus.READY)
-                .build();
-
-        history = testHistoryRepository.save(history);
-
-        // Save test questions (batch)
-        Map<UUID, Question> selectedMap = selected.stream()
-                .collect(Collectors.toMap(Question::getId, q -> q, (a, b) -> a));
-        List<TestQuestion> allTestQuestions = new ArrayList<>();
-        for (VariantDto variant : variantDtos) {
-            for (int qi = 0; qi < variant.getQuestionIds().size(); qi++) {
-                UUID qId = variant.getQuestionIds().get(qi);
-                Question q = selectedMap.get(qId);
-
-                allTestQuestions.add(TestQuestion.builder()
-                        .testId(history.getId())
-                        .questionId(qId)
-                        .questionVersion(q != null ? q.getVersion() : 1)
-                        .variantCode(variant.getCode())
-                        .questionOrder(qi + 1)
-                        .optionsOrder(variant.getOptionsOrder() != null && qi < variant.getOptionsOrder().size()
-                                ? variant.getOptionsOrder().get(qi) : null)
-                        .build());
-            }
+        // Resolve title from translations if available
+        Map<String, String> titleTranslations = request.getTitleTranslations();
+        String resolvedTitle = request.getTitle();
+        if (titleTranslations != null && !titleTranslations.isEmpty()) {
+            String fromTranslations = TranslatedField.resolve(titleTranslations);
+            if (fromTranslations != null) resolvedTitle = fromTranslations;
         }
-        testQuestionRepository.saveAll(allTestQuestions);
+        if (resolvedTitle == null || resolvedTitle.isBlank()) {
+            resolvedTitle = "Test";
+        }
 
-        // Update question stats (times_used)
-        List<UUID> selectedIds = selected.stream().map(Question::getId).toList();
-        questionRepository.incrementTimesUsed(selectedIds);
+        if (persist) {
+            // Save to history
+            TestHistory history = TestHistory.builder()
+                    .userId(userId)
+                    .title(resolvedTitle)
+                    .titleTranslations(titleTranslations)
+                    .category(request.getCategory())
+                    .subjectId(request.getSubjectId())
+                    .topicIds(request.getTopicIds())
+                    .questionCount(questionCount)
+                    .variantCount(variantCount)
+                    .difficultyDistribution(actualDistribution)
+                    .shuffleQuestions(request.getShuffleQuestions())
+                    .shuffleOptions(request.getShuffleOptions())
+                    .randomSeed(seed)
+                    .headerConfig(headerConfigMap)
+                    .variants(variantMaps)
+                    .status(TestStatus.READY)
+                    .build();
 
-        auditService.log(userId, null, "TEST_GENERATED", "TEST",
-                "TestHistory", history.getId());
+            history = testHistoryRepository.save(history);
 
-        return GenerateTestResponse.builder()
-                .testId(history.getId())
-                .title(history.getTitle())
-                .questionCount(history.getQuestionCount())
-                .variantCount(history.getVariantCount())
-                .difficultyDistribution(actualDistribution)
-                .randomSeed(seed)
-                .variants(variantDtos)
-                .createdAt(history.getCreatedAt())
-                .build();
+            // Save test questions (batch)
+            Map<UUID, Question> selectedMap = selected.stream()
+                    .collect(Collectors.toMap(Question::getId, q -> q, (a, b) -> a));
+            List<TestQuestion> allTestQuestions = new ArrayList<>();
+            for (VariantDto variant : variantDtos) {
+                for (int qi = 0; qi < variant.getQuestionIds().size(); qi++) {
+                    UUID qId = variant.getQuestionIds().get(qi);
+                    Question q = selectedMap.get(qId);
+
+                    allTestQuestions.add(TestQuestion.builder()
+                            .testId(history.getId())
+                            .questionId(qId)
+                            .questionVersion(q != null ? q.getVersion() : 1)
+                            .variantCode(variant.getCode())
+                            .questionOrder(qi + 1)
+                            .optionsOrder(variant.getOptionsOrder() != null && qi < variant.getOptionsOrder().size()
+                                    ? variant.getOptionsOrder().get(qi) : null)
+                            .build());
+                }
+            }
+            testQuestionRepository.saveAll(allTestQuestions);
+
+            // Update question stats (times_used)
+            List<UUID> selectedIds = selected.stream().map(Question::getId).toList();
+            questionRepository.incrementTimesUsed(selectedIds);
+
+            auditService.log(userId, null, "TEST_GENERATED", "TEST",
+                    "TestHistory", history.getId());
+
+            return GenerateTestResponse.builder()
+                    .testId(history.getId())
+                    .title(history.getTitle())
+                    .titleTranslations(history.getTitleTranslations())
+                    .questionCount(history.getQuestionCount())
+                    .variantCount(history.getVariantCount())
+                    .difficultyDistribution(actualDistribution)
+                    .randomSeed(seed)
+                    .variants(variantDtos)
+                    .createdAt(history.getCreatedAt())
+                    .build();
+        } else {
+            // Preview mode: return response without persisting
+            return GenerateTestResponse.builder()
+                    .testId(null)
+                    .title(resolvedTitle)
+                    .titleTranslations(titleTranslations)
+                    .questionCount(questionCount)
+                    .variantCount(variantCount)
+                    .difficultyDistribution(actualDistribution)
+                    .randomSeed(seed)
+                    .variants(variantDtos)
+                    .createdAt(null)
+                    .build();
+        }
     }
 
     @SuppressWarnings("unchecked")

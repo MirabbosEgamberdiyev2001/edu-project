@@ -6,7 +6,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import uz.eduplatform.modules.test.domain.TestCategory;
+
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -15,9 +18,12 @@ import java.util.UUID;
 @AllArgsConstructor
 public class GenerateTestRequest {
 
-    @NotBlank(message = "{test.validation.title.required}")
     @Size(max = 255, message = "{test.validation.title.size}")
     private String title;
+
+    private Map<String, String> titleTranslations;
+
+    private TestCategory category;
 
     @NotNull(message = "{test.validation.subject.id.required}")
     private UUID subjectId;

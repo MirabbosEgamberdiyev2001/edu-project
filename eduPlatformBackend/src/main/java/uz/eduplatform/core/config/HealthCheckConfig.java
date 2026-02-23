@@ -5,31 +5,13 @@ import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
 import uz.eduplatform.modules.subscription.config.PaymentProperties;
 
 @Configuration
 @RequiredArgsConstructor
 public class HealthCheckConfig {
 
-    private final RedisConnectionFactory redisConnectionFactory;
     private final PaymentProperties paymentProperties;
-
-    @Bean
-    public HealthIndicator redisHealthIndicator() {
-        return () -> {
-            try {
-                redisConnectionFactory.getConnection().ping();
-                return Health.up()
-                        .withDetail("connection", "active")
-                        .build();
-            } catch (Exception e) {
-                return Health.down()
-                        .withDetail("error", e.getMessage())
-                        .build();
-            }
-        };
-    }
 
     @Bean
     public HealthIndicator paymeHealthIndicator() {

@@ -36,6 +36,14 @@ public class TestHistory {
     @Column(nullable = false)
     private String title;
 
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "title_translations", columnDefinition = "jsonb")
+    private Map<String, String> titleTranslations;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 50)
+    private TestCategory category;
+
     @Column(name = "subject_id", nullable = false)
     private UUID subjectId;
 
@@ -91,6 +99,16 @@ public class TestHistory {
 
     @Column(name = "last_downloaded_at")
     private LocalDateTime lastDownloadedAt;
+
+    @Builder.Default
+    @Column(name = "is_public")
+    private Boolean isPublic = false;
+
+    @Column(name = "public_slug", unique = true, length = 32)
+    private String publicSlug;
+
+    @Column(name = "public_duration_minutes")
+    private Integer publicDurationMinutes;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)

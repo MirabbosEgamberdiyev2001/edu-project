@@ -21,19 +21,23 @@ import {
   RadioGroup,
   FormControlLabel,
   Checkbox,
+  Chip,
   Paper,
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
 import { useTranslation } from 'react-i18next';
 import type { QuestionDto, CreateQuestionRequest, UpdateQuestionRequest } from '@/types/question';
 import { QuestionType, Difficulty } from '@/types/question';
 import { useSubjects } from '@/features/subjects/hooks/useSubjects';
 import { useTopicTree } from '@/features/topics/hooks/useTopicTree';
+import { useTopicMutations } from '@/features/topics/hooks/useTopicMutations';
+import TopicFormDialog from '@/features/topics/components/TopicFormDialog';
 import { resolveTranslation } from '@/utils/i18nUtils';
 import { SUPPORTED_LANGUAGES, LANGUAGE_LABELS } from '@/config';
-import type { TopicTreeDto } from '@/types/topic';
+import type { TopicTreeDto, CreateTopicRequest } from '@/types/topic';
 
 interface QuestionFormDialogProps {
   open: boolean;
@@ -41,6 +45,8 @@ interface QuestionFormDialogProps {
   onSubmit: (data: CreateQuestionRequest | UpdateQuestionRequest) => void;
   question?: QuestionDto | null;
   isPending: boolean;
+  defaultSubjectId?: string;
+  defaultTopicId?: string;
 }
 
 // Maps frontend language codes to backend JSONB keys
@@ -101,15 +107,22 @@ export default function QuestionFormDialog({
   onSubmit,
   question,
   isPending,
+  defaultSubjectId,
+  defaultTopicId,
 }: QuestionFormDialogProps) {
   const { t } = useTranslation('question');
+  const { t: tTopic } = useTranslation('topic');
   const isEdit = Boolean(question);
 
   // Stepper
   const [activeStep, setActiveStep] = useState(0);
 
-  // Step 1: Subject & Topic
+  // Inline topic creation
+  const [topicFormOpen, setTopicFormOpen] = useState(false);
+
+  // Step 1: Subject & Topic & Grade
   const [subjectId, setSubjectId] = useState('');
+  const [gradeLevel, setGradeLevel] = useState<number | null>(null);
   const [topicId, setTopicId] = useState('');
 
   // Step 2: Question Type
@@ -142,8 +155,9 @@ export default function QuestionFormDialog({
   const { data: subjectsData } = useSubjects({ size: 100 });
   const subjects = subjectsData?.content || [];
 
-  // Load topics for selected subject
-  const { data: topicTree } = useTopicTree(subjectId || undefined);
+  // Load topics for selected subject + grade
+  const { data: topicTree } = useTopicTree(subjectId || undefined, gradeLevel);
+  const { create: createTopic } = useTopicMutations(subjectId || undefined);
 
   const flatTopics = useMemo(() => {
     if (!topicTree) return [];
@@ -214,9 +228,10 @@ export default function QuestionFormDialog({
           ]);
         }
       } else {
-        // Create mode: start fresh
-        setSubjectId('');
-        setTopicId('');
+        // Create mode: start fresh (use defaults if provided)
+        setSubjectId(defaultSubjectId || '');
+        setGradeLevel(null);
+        setTopicId(defaultTopicId || '');
         setQuestionType('');
         setQuestionText({});
         setMcqOptions([
@@ -236,14 +251,22 @@ export default function QuestionFormDialog({
       setOptionsLangTab(0);
       setProofLangTab(0);
     }
-  }, [open, question]);
+  }, [open, question, defaultSubjectId, defaultTopicId]);
 
-  // Clear topic when subject changes (only in create mode)
+  // Clear grade+topic when subject changes (only in create mode)
+  useEffect(() => {
+    if (!isEdit) {
+      setGradeLevel(null);
+      setTopicId('');
+    }
+  }, [subjectId, isEdit]);
+
+  // Clear topic when grade changes (only in create mode)
   useEffect(() => {
     if (!isEdit) {
       setTopicId('');
     }
-  }, [subjectId, isEdit]);
+  }, [gradeLevel, isEdit]);
 
   // -- Helpers --
 
@@ -268,7 +291,8 @@ export default function QuestionFormDialog({
   function isStepValid(step: number): boolean {
     switch (step) {
       case 0:
-        return Boolean(subjectId) && Boolean(topicId);
+        if (isEdit) return Boolean(subjectId) && Boolean(topicId);
+        return Boolean(subjectId) && gradeLevel !== null && Boolean(topicId);
       case 1:
         return Boolean(questionType);
       case 2:
@@ -359,10 +383,10 @@ export default function QuestionFormDialog({
         questionType: questionType as QuestionType,
         difficulty,
         points,
-        ...(timeLimitSeconds ? { timeLimitSeconds: parseInt(timeLimitSeconds) } : {}),
+        timeLimitSeconds: timeLimitSeconds ? parseInt(timeLimitSeconds) : null,
         options: finalOptions ?? [],
         correctAnswer: finalCorrectAnswer ?? '',
-        ...(Object.keys(cleanProof).length > 0 ? { proof: cleanProof } : {}),
+        proof: cleanProof,
         ...(changeReason.trim() ? { changeReason: changeReason.trim() } : {}),
       };
       onSubmit(data);
@@ -430,6 +454,7 @@ export default function QuestionFormDialog({
   // -- Render Steps --
 
   function renderStepSubjectTopic() {
+    const grades = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
     return (
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <TextField
@@ -449,25 +474,77 @@ export default function QuestionFormDialog({
           ))}
         </TextField>
 
-        <TextField
-          select
-          label={t('form.selectTopic')}
-          value={topicId}
-          onChange={(e) => setTopicId(e.target.value)}
-          fullWidth
-          required
-          disabled={isEdit || !subjectId}
-        >
-          <MenuItem value="">{t('form.selectTopic')}</MenuItem>
-          {flatTopics.map((topic) => (
-            <MenuItem key={topic.id} value={topic.id}>
-              <Box component="span" sx={{ pl: topic.depth * 2 }}>
-                {topic.depth > 0 ? '-- ' : ''}
-                {resolveTranslation(topic.nameTranslations) || topic.name}
-              </Box>
-            </MenuItem>
-          ))}
-        </TextField>
+        {subjectId && !isEdit && (
+          <Box>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>{t('form.gradeLevel')}</Typography>
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+              {grades.map((grade) => (
+                <Chip
+                  key={grade}
+                  label={`${grade}`}
+                  color={gradeLevel === grade ? 'primary' : 'default'}
+                  variant={gradeLevel === grade ? 'filled' : 'outlined'}
+                  onClick={() => setGradeLevel(grade)}
+                  sx={{ minWidth: 40 }}
+                />
+              ))}
+            </Box>
+          </Box>
+        )}
+
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+          <TextField
+            select
+            label={t('form.selectTopic')}
+            value={topicId}
+            onChange={(e) => setTopicId(e.target.value)}
+            fullWidth
+            required
+            disabled={isEdit || !subjectId || gradeLevel === null}
+          >
+            <MenuItem value="">{t('form.selectTopic')}</MenuItem>
+            {flatTopics.map((topic) => (
+              <MenuItem key={topic.id} value={topic.id}>
+                <Box component="span" sx={{ pl: topic.depth * 2 }}>
+                  {topic.depth > 0 ? '-- ' : ''}
+                  {resolveTranslation(topic.nameTranslations) || topic.name}
+                </Box>
+              </MenuItem>
+            ))}
+          </TextField>
+          {!isEdit && subjectId && gradeLevel !== null && (
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => setTopicFormOpen(true)}
+              sx={{ mt: 1, minWidth: 'auto', whiteSpace: 'nowrap' }}
+              startIcon={<AddIcon />}
+            >
+              {tTopic('create')}
+            </Button>
+          )}
+        </Box>
+
+        {!isEdit && subjectId && gradeLevel !== null && flatTopics.length === 0 && (
+          <Alert severity="info" sx={{ py: 0.5 }}>
+            {tTopic('empty')}
+          </Alert>
+        )}
+
+        <TopicFormDialog
+          open={topicFormOpen}
+          onClose={() => setTopicFormOpen(false)}
+          onSubmit={(data) => {
+            const createData = { ...data, gradeLevel: gradeLevel! } as CreateTopicRequest;
+            createTopic.mutate(createData, {
+              onSuccess: (response) => {
+                setTopicFormOpen(false);
+                setTopicId(response.data.data.id);
+              },
+            });
+          }}
+          isPending={createTopic.isPending}
+        />
       </Box>
     );
   }

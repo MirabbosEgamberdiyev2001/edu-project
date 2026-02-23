@@ -29,13 +29,14 @@ public class TopicController {
     private final MessageService messageService;
 
     @GetMapping("/api/v1/subjects/{subjectId}/topics")
-    @Operation(summary = "Fan mavzulari daraxtini olish", description = "Berilgan fan bo'yicha barcha mavzularni ierarxik daraxt ko'rinishida olish. Ota-bola munosabatlari saqlanadi.")
+    @Operation(summary = "Fan mavzulari daraxtini olish", description = "Berilgan fan va sinf bo'yicha barcha mavzularni ierarxik daraxt ko'rinishida olish.")
     public ResponseEntity<ApiResponse<List<TopicTreeDto>>> getTopicTree(
             @PathVariable UUID subjectId,
+            @RequestParam Integer gradeLevel,
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
 
-        List<TopicTreeDto> tree = topicService.getTopicTree(subjectId, principal.getId(), language);
+        List<TopicTreeDto> tree = topicService.getTopicTree(subjectId, principal.getId(), gradeLevel, language);
         return ResponseEntity.ok(ApiResponse.success(tree));
     }
 

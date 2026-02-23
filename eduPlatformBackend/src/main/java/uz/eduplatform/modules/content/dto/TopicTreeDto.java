@@ -19,6 +19,8 @@ public class TopicTreeDto {
     private UUID id;
     private UUID subjectId;
     private UUID parentId;
+    private UUID userId;
+    private Integer gradeLevel;
     private String name;
     private String description;
     private Map<String, String> nameTranslations;

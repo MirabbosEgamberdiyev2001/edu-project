@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.eduplatform.core.audit.AuditService;
 import uz.eduplatform.core.common.dto.PagedResponse;
+import org.springframework.http.HttpStatus;
 import uz.eduplatform.core.common.exception.BusinessException;
 import uz.eduplatform.core.common.exception.ResourceNotFoundException;
 import uz.eduplatform.core.common.utils.MessageService;
@@ -15,7 +16,6 @@ import uz.eduplatform.core.i18n.TranslatedField;
 import uz.eduplatform.modules.auth.domain.User;
 import uz.eduplatform.modules.auth.repository.UserRepository;
 import uz.eduplatform.modules.content.domain.Subject;
-import uz.eduplatform.modules.content.domain.SubjectCategory;
 import uz.eduplatform.modules.content.domain.Topic;
 import uz.eduplatform.modules.content.dto.*;
 import uz.eduplatform.modules.content.repository.SubjectRepository;
@@ -34,18 +34,15 @@ public class SubjectService {
     private final MessageService messageService;
 
     @Transactional(readOnly = true)
-    public PagedResponse<SubjectDto> getSubjects(UUID userId, SubjectCategory category,
-                                                  String search, Pageable pageable,
+    public PagedResponse<SubjectDto> getSubjects(UUID userId, String search, Pageable pageable,
                                                   AcceptLanguage language) {
         Page<Subject> page;
         String localeKey = language.toLocaleKey();
 
         if (search != null && !search.isBlank()) {
             page = subjectRepository.searchByUser(userId, search.trim(), pageable);
-        } else if (category != null) {
-            page = subjectRepository.findByUserIdAndCategoryAndIsArchivedFalse(userId, category, pageable);
         } else {
-            page = subjectRepository.findByUserIdAndIsArchivedFalse(userId, pageable);
+            page = subjectRepository.findAllAccessibleByUser(userId, pageable);
         }
 
         List<SubjectDto> dtos = page.getContent().stream()
@@ -87,7 +84,7 @@ public class SubjectService {
 
         String defaultName = TranslatedField.defaultValue(cleanedName);
         if (defaultName != null && subjectRepository.existsByUserIdAndDefaultName(userId, defaultName)) {
-            throw new BusinessException(messageService.get("subject.name.exists", language.toLocale()));
+            throw new BusinessException(messageService.get("subject.name.exists", language.toLocale()), HttpStatus.CONFLICT);
         }
 
         Subject subject = Subject.builder()
@@ -96,7 +93,6 @@ public class SubjectService {
                 .description(cleanedDesc)
                 .icon(request.getIcon())
                 .color(request.getColor())
-                .category(request.getCategory())
                 .gradeLevel(request.getGradeLevel())
                 .build();
 
@@ -137,8 +133,6 @@ public class SubjectService {
                         .description(TranslatedField.clean(item.getDescription()))
                         .icon(item.getIcon())
                         .color(item.getColor())
-                        .category(item.getCategory())
-                        .gradeLevel(item.getGradeLevel())
                         .build();
                 subjectRepository.save(subject);
                 created++;
@@ -163,9 +157,9 @@ public class SubjectService {
             Map<String, String> cleanedName = TranslatedField.clean(request.getName());
             String newDefaultName = TranslatedField.defaultValue(cleanedName);
             String currentDefaultName = TranslatedField.defaultValue(subject.getName());
-            if (newDefaultName != null && !newDefaultName.equals(currentDefaultName) &&
+            if (newDefaultName != null && !newDefaultName.equalsIgnoreCase(currentDefaultName) &&
                     subjectRepository.existsByUserIdAndDefaultName(userId, newDefaultName)) {
-                throw new BusinessException(messageService.get("subject.name.exists", language.toLocale()));
+                throw new BusinessException(messageService.get("subject.name.exists", language.toLocale()), HttpStatus.CONFLICT);
             }
             subject.setName(TranslatedField.merge(subject.getName(), cleanedName));
         }
@@ -178,14 +172,11 @@ public class SubjectService {
         if (request.getColor() != null) {
             subject.setColor(request.getColor());
         }
-        if (request.getCategory() != null) {
-            subject.setCategory(request.getCategory());
+        if (request.getIsActive() != null) {
+            subject.setIsActive(request.getIsActive());
         }
         if (request.getGradeLevel() != null) {
             subject.setGradeLevel(request.getGradeLevel());
-        }
-        if (request.getIsActive() != null) {
-            subject.setIsActive(request.getIsActive());
         }
 
         subject = subjectRepository.save(subject);
@@ -240,69 +231,6 @@ public class SubjectService {
     }
 
     @Transactional
-    public SubjectDto forkTemplate(UUID templateId, UUID userId, AcceptLanguage language) {
-        Subject template = subjectRepository.findById(templateId)
-                .orElseThrow(() -> new ResourceNotFoundException("Subject template", "id", templateId));
-
-        if (!template.getIsTemplate()) {
-            throw new BusinessException(messageService.get("subject.not.template", language.toLocale()));
-        }
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
-
-        Subject forked = Subject.builder()
-                .user(user)
-                .name(template.getName() != null ? new HashMap<>(template.getName()) : null)
-                .description(template.getDescription() != null ? new HashMap<>(template.getDescription()) : null)
-                .icon(template.getIcon())
-                .color(template.getColor())
-                .category(template.getCategory())
-                .gradeLevel(template.getGradeLevel())
-                .templateId(template.getId())
-                .build();
-
-        forked = subjectRepository.save(forked);
-
-        // Deep copy topics
-        List<Topic> templateTopics = topicRepository.findBySubjectIdAndParentIsNullOrderBySortOrderAsc(templateId);
-        for (Topic rootTopic : templateTopics) {
-            copyTopicTree(rootTopic, null, forked);
-        }
-
-        // Update topic count
-        long topicCount = topicRepository.countBySubjectId(forked.getId());
-        forked.setTopicCount((int) topicCount);
-        forked = subjectRepository.save(forked);
-
-        auditService.log(userId, null, "SUBJECT_FORKED", "CONTENT",
-                "Subject", forked.getId());
-
-        return mapToDto(forked, language.toLocaleKey());
-    }
-
-    private void copyTopicTree(Topic source, Topic newParent, Subject newSubject) {
-        Topic copy = Topic.builder()
-                .subject(newSubject)
-                .parent(newParent)
-                .name(source.getName() != null ? new HashMap<>(source.getName()) : null)
-                .description(source.getDescription() != null ? new HashMap<>(source.getDescription()) : null)
-                .level(source.getLevel())
-                .sortOrder(source.getSortOrder())
-                .build();
-
-        copy = topicRepository.save(copy);
-
-        // Build path
-        copy.setPath(newParent != null ? newParent.getPath() + "." + copy.getId() : copy.getId().toString());
-        topicRepository.save(copy);
-
-        for (Topic child : source.getChildren()) {
-            copyTopicTree(child, copy, newSubject);
-        }
-    }
-
-    @Transactional
     public void updateSubjectCounters(UUID subjectId) {
         Subject subject = subjectRepository.findById(subjectId)
                 .orElseThrow(() -> new ResourceNotFoundException("Subject", "id", subjectId));
@@ -317,7 +245,7 @@ public class SubjectService {
     }
 
     private Subject findSubjectForUser(UUID subjectId, UUID userId) {
-        return subjectRepository.findByIdAndUserId(subjectId, userId)
+        return subjectRepository.findAccessibleByIdAndUserId(subjectId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Subject", "id", subjectId));
     }
 
@@ -331,12 +259,11 @@ public class SubjectService {
                 .descriptionTranslations(TranslatedField.clean(subject.getDescription()))
                 .icon(subject.getIcon())
                 .color(subject.getColor())
-                .category(subject.getCategory())
-                .gradeLevel(subject.getGradeLevel())
                 .isTemplate(subject.getIsTemplate())
                 .templateId(subject.getTemplateId())
                 .isActive(subject.getIsActive())
                 .isArchived(subject.getIsArchived())
+                .gradeLevel(subject.getGradeLevel())
                 .topicCount(subject.getTopicCount())
                 .questionCount(subject.getQuestionCount())
                 .testCount(subject.getTestCount())
