@@ -6,6 +6,8 @@ import uz.eduplatform.core.common.exception.BusinessException;
 import uz.eduplatform.modules.test.domain.TestHistory;
 import uz.eduplatform.modules.test.service.ExportHelper;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -48,6 +50,30 @@ public class TestExportFacade {
     public byte[] exportProofs(UUID testId, UUID userId, ExportFormat format, Locale locale) {
         TestHistory test = exportHelper.getTestHistory(testId, userId);
         return getService(format).exportProofs(test, format, locale);
+    }
+
+    // ===== Streaming methods =====
+
+    public void streamExportTest(UUID testId, UUID userId, ExportFormat format, Locale locale, OutputStream out) throws IOException {
+        TestHistory test = exportHelper.getTestHistory(testId, userId);
+        getService(format).exportTestToStream(test, format, locale, out);
+        exportHelper.updateDownloadCount(test);
+    }
+
+    public void streamExportAnswerKey(UUID testId, UUID userId, ExportFormat format, Locale locale, OutputStream out) throws IOException {
+        TestHistory test = exportHelper.getTestHistory(testId, userId);
+        getService(format).exportAnswerKeyToStream(test, format, locale, out);
+    }
+
+    public void streamExportCombined(UUID testId, UUID userId, ExportFormat format, Locale locale, OutputStream out) throws IOException {
+        TestHistory test = exportHelper.getTestHistory(testId, userId);
+        getService(format).exportCombinedToStream(test, format, locale, out);
+        exportHelper.updateDownloadCount(test);
+    }
+
+    public void streamExportProofs(UUID testId, UUID userId, ExportFormat format, Locale locale, OutputStream out) throws IOException {
+        TestHistory test = exportHelper.getTestHistory(testId, userId);
+        getService(format).exportProofsToStream(test, format, locale, out);
     }
 
     private TestExportService getService(ExportFormat format) {

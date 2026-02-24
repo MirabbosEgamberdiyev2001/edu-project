@@ -22,11 +22,11 @@ export const assignmentApi = {
   createAssignment: (data: CreateAssignmentRequest) =>
     api.post<ApiResponse<AssignmentDto>>(ASSIGNMENTS, data),
 
-  getAssignments: (params?: AssignmentListParams) =>
-    api.get<ApiResponse<PagedResponse<AssignmentDto>>>(ASSIGNMENTS, { params }),
+  getAssignments: (params?: AssignmentListParams, signal?: AbortSignal) =>
+    api.get<ApiResponse<PagedResponse<AssignmentDto>>>(ASSIGNMENTS, { params, signal }),
 
-  getAssignment: (id: string) =>
-    api.get<ApiResponse<AssignmentDto>>(`${ASSIGNMENTS}/${id}`),
+  getAssignment: (id: string, signal?: AbortSignal) =>
+    api.get<ApiResponse<AssignmentDto>>(`${ASSIGNMENTS}/${id}`, { signal }),
 
   updateAssignment: (id: string, data: UpdateAssignmentRequest) =>
     api.put<ApiResponse<AssignmentDto>>(`${ASSIGNMENTS}/${id}`, data),
@@ -40,11 +40,11 @@ export const assignmentApi = {
   deleteAssignment: (id: string) =>
     api.delete<ApiResponse<void>>(`${ASSIGNMENTS}/${id}`),
 
-  getLiveMonitoring: (id: string) =>
-    api.get<ApiResponse<LiveMonitoringDto>>(`${ASSIGNMENTS}/${id}/live`),
+  getLiveMonitoring: (id: string, signal?: AbortSignal) =>
+    api.get<ApiResponse<LiveMonitoringDto>>(`${ASSIGNMENTS}/${id}/live`, { signal }),
 
-  getResults: (id: string) =>
-    api.get<ApiResponse<AssignmentResultDto>>(`${ASSIGNMENTS}/${id}/results`),
+  getResults: (id: string, signal?: AbortSignal) =>
+    api.get<ApiResponse<AssignmentResultDto>>(`${ASSIGNMENTS}/${id}/results`, { signal }),
 
   exportResults: (id: string, format: 'CSV' | 'EXCEL') =>
     api.get(`${ASSIGNMENTS}/${id}/results/export`, {

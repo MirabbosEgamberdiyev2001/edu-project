@@ -34,13 +34,20 @@ public class SubjectService {
     private final MessageService messageService;
 
     @Transactional(readOnly = true)
-    public PagedResponse<SubjectDto> getSubjects(UUID userId, String search, Pageable pageable,
-                                                  AcceptLanguage language) {
+    public PagedResponse<SubjectDto> getSubjects(UUID userId, String search, Integer gradeLevel,
+                                                  Pageable pageable, AcceptLanguage language) {
         Page<Subject> page;
         String localeKey = language.toLocaleKey();
 
-        if (search != null && !search.isBlank()) {
+        boolean hasSearch = search != null && !search.isBlank();
+        boolean hasGrade = gradeLevel != null;
+
+        if (hasSearch && hasGrade) {
+            page = subjectRepository.searchByUserAndGradeLevel(userId, search.trim(), gradeLevel, pageable);
+        } else if (hasSearch) {
             page = subjectRepository.searchByUser(userId, search.trim(), pageable);
+        } else if (hasGrade) {
+            page = subjectRepository.findAllAccessibleByUserAndGradeLevel(userId, gradeLevel, pageable);
         } else {
             page = subjectRepository.findAllAccessibleByUser(userId, pageable);
         }

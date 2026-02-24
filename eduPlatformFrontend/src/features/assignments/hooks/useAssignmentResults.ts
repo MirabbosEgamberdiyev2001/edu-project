@@ -6,8 +6,8 @@ import { useToast } from '@/hooks/useToast';
 export function useAssignmentResults(assignmentId: string) {
   return useQuery({
     queryKey: ['assignments', assignmentId, 'results'],
-    queryFn: async () => {
-      const { data } = await assignmentApi.getResults(assignmentId);
+    queryFn: async ({ signal }) => {
+      const { data } = await assignmentApi.getResults(assignmentId, signal);
       return data.data;
     },
     enabled: !!assignmentId,

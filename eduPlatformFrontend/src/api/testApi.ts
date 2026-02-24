@@ -22,33 +22,37 @@ export const testApi = {
   validate: (data: GenerateTestRequest) =>
     api.post<ApiResponse<void>>(`${TESTS}/generate/validate`, data),
 
-  getAvailableQuestions: (topicIds: string[]) =>
+  getAvailableQuestions: (topicIds: string[], signal?: AbortSignal) =>
     api.get<ApiResponse<AvailableQuestionsResponse>>(`${TESTS}/generate/available`, {
       params: { topicIds: topicIds.join(',') },
+      signal,
     }),
 
   getQuestionsForSelection: (params: {
     topicIds: string[];
     difficulty?: string;
     status?: string;
+    search?: string;
     page?: number;
     size?: number;
-  }) =>
+  }, signal?: AbortSignal) =>
     api.get<ApiResponse<PagedResponse<QuestionDto>>>(`${TESTS}/generate/questions`, {
       params: {
         topicIds: params.topicIds.join(','),
         difficulty: params.difficulty || undefined,
         status: params.status || undefined,
+        search: params.search || undefined,
         page: params.page ?? 0,
         size: params.size ?? 50,
       },
+      signal,
     }),
 
-  getHistory: (params?: { page?: number; size?: number }) =>
-    api.get<ApiResponse<PagedResponse<TestHistoryDto>>>(`${TESTS}/history`, { params }),
+  getHistory: (params?: { page?: number; size?: number }, signal?: AbortSignal) =>
+    api.get<ApiResponse<PagedResponse<TestHistoryDto>>>(`${TESTS}/history`, { params, signal }),
 
-  getHistoryById: (id: string) =>
-    api.get<ApiResponse<TestHistoryDto>>(`${TESTS}/history/${id}`),
+  getHistoryById: (id: string, signal?: AbortSignal) =>
+    api.get<ApiResponse<TestHistoryDto>>(`${TESTS}/history/${id}`, { signal }),
 
   updateHistory: (id: string, data: Record<string, unknown>) =>
     api.put<ApiResponse<TestHistoryDto>>(`${TESTS}/history/${id}`, data),

@@ -70,6 +70,7 @@
     "pdf": "PDF",
     "docx": "DOCX",
     "downloading": "Yuklanmoqda...",
+    "downloaded": "Muvaffaqiyatli yuklandi",
     "error": "Eksport qilishda xatolik yuz berdi"
   },
   "status": {
@@ -157,6 +158,13 @@
     "noQuestions": "Bu parametrlar uchun savollar topilmadi",
     "questionsCount": "{{count}} ta savol",
     "correctAnswer": "To'g'ri javob"
+  },
+  "back": "Orqaga",
+  "modeSwitchWarning": {
+    "title": "Rejimni almashtirasizmi?",
+    "message": "Rejimni almashtirish barcha forma ma'lumotlarini o'chiradi. Saqlanmagan o'zgarishlar yo'qoladi.",
+    "confirm": "Almashtirish",
+    "cancel": "Bekor qilish"
   },
   "errors": {
     "noTopics": "Kamida bitta mavzuni tanlang",

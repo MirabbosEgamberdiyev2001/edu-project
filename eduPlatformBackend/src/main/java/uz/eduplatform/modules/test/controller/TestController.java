@@ -10,6 +10,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +29,8 @@ import uz.eduplatform.modules.test.service.TestValidationService;
 import uz.eduplatform.modules.test.service.export.ExportFormat;
 import uz.eduplatform.modules.test.service.export.TestExportFacade;
 
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.UUID;
 
@@ -85,25 +88,26 @@ public class TestController {
     public ResponseEntity<ApiResponse<AvailableQuestionsResponse>> getAvailableQuestions(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language,
-            @RequestParam List<UUID> topicIds) {
+            @RequestParam @NotEmpty @Size(max = 50) List<UUID> topicIds) {
 
         AvailableQuestionsResponse response = validationService.getAvailableQuestions(topicIds, principal.getId());
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @GetMapping("/generate/questions")
-    @Operation(summary = "Qo'lda tanlash uchun savollar", description = "Test uchun savollarni qo'lda tanlash. Mavzu, qiyinlik va holat bo'yicha filtrlash mumkin.")
+    @Operation(summary = "Qo'lda tanlash uchun savollar", description = "Test uchun savollarni qo'lda tanlash. Mavzu, qiyinlik, holat va matn bo'yicha filtrlash mumkin.")
     public ResponseEntity<ApiResponse<PagedResponse<QuestionDto>>> getQuestionsForSelection(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language,
-            @RequestParam List<UUID> topicIds,
+            @RequestParam @NotEmpty @Size(max = 50) List<UUID> topicIds,
             @RequestParam(required = false) Difficulty difficulty,
             @RequestParam(required = false) QuestionStatus status,
+            @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int size) {
 
         PagedResponse<QuestionDto> response = validationService.getQuestionsForSelection(
-                topicIds, difficulty, status,
+                topicIds, difficulty, status, search,
                 PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")),
                 language, principal.getId());
         return ResponseEntity.ok(ApiResponse.success(response));
@@ -210,53 +214,58 @@ public class TestController {
 
     @GetMapping("/history/{id}/export/test")
     @Operation(summary = "Testni eksport qilish", description = "Testni PDF yoki DOCX formatida yuklab olish. Faqat savollar va variantlar chiqariladi.")
-    public ResponseEntity<byte[]> exportTest(
+    public ResponseEntity<StreamingResponseBody> exportTest(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language,
             @RequestParam(defaultValue = "PDF") ExportFormat format) {
 
-        byte[] data = exportFacade.exportTest(id, principal.getId(), format, language.toLocale());
-        return buildExportResponse(data, "test_" + id, format);
+        StreamingResponseBody body = out -> exportFacade.streamExportTest(
+                id, principal.getId(), format, language.toLocale(), out);
+        return buildStreamingResponse(body, "test_" + id, format);
     }
 
     @GetMapping("/history/{id}/export/answer-key")
     @Operation(summary = "Javoblar kalitini eksport qilish", description = "Test javoblari kalitini PDF yoki DOCX formatida yuklab olish.")
-    public ResponseEntity<byte[]> exportAnswerKey(
+    public ResponseEntity<StreamingResponseBody> exportAnswerKey(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language,
             @RequestParam(defaultValue = "PDF") ExportFormat format) {
 
-        byte[] data = exportFacade.exportAnswerKey(id, principal.getId(), format, language.toLocale());
-        return buildExportResponse(data, "answer_key_" + id, format);
+        StreamingResponseBody body = out -> exportFacade.streamExportAnswerKey(
+                id, principal.getId(), format, language.toLocale(), out);
+        return buildStreamingResponse(body, "answer_key_" + id, format);
     }
 
     @GetMapping("/history/{id}/export/combined")
     @Operation(summary = "Test + javoblar kalitini birga eksport qilish", description = "Test va javoblar kalitini bitta faylda PDF yoki DOCX formatida yuklab olish.")
-    public ResponseEntity<byte[]> exportCombined(
+    public ResponseEntity<StreamingResponseBody> exportCombined(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language,
             @RequestParam(defaultValue = "PDF") ExportFormat format) {
 
-        byte[] data = exportFacade.exportCombined(id, principal.getId(), format, language.toLocale());
-        return buildExportResponse(data, "combined_" + id, format);
+        StreamingResponseBody body = out -> exportFacade.streamExportCombined(
+                id, principal.getId(), format, language.toLocale(), out);
+        return buildStreamingResponse(body, "combined_" + id, format);
     }
 
     @GetMapping("/history/{id}/export/proofs")
     @Operation(summary = "Yechimlar (proof) ni eksport qilish", description = "Savollarning batafsil yechimlari va izohlarini PDF yoki DOCX formatida yuklab olish.")
-    public ResponseEntity<byte[]> exportProofs(
+    public ResponseEntity<StreamingResponseBody> exportProofs(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language,
             @RequestParam(defaultValue = "PDF") ExportFormat format) {
 
-        byte[] data = exportFacade.exportProofs(id, principal.getId(), format, language.toLocale());
-        return buildExportResponse(data, "proofs_" + id, format);
+        StreamingResponseBody body = out -> exportFacade.streamExportProofs(
+                id, principal.getId(), format, language.toLocale(), out);
+        return buildStreamingResponse(body, "proofs_" + id, format);
     }
 
-    private ResponseEntity<byte[]> buildExportResponse(byte[] data, String filename, ExportFormat format) {
+    private ResponseEntity<StreamingResponseBody> buildStreamingResponse(
+            StreamingResponseBody body, String filename, ExportFormat format) {
         String extension = format == ExportFormat.PDF ? ".pdf" : ".docx";
         MediaType mediaType = format == ExportFormat.PDF
                 ? MediaType.APPLICATION_PDF
@@ -265,6 +274,6 @@ public class TestController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename + extension)
                 .contentType(mediaType)
-                .body(data);
+                .body(body);
     }
 }

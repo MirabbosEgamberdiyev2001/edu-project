@@ -19,6 +19,7 @@ import uz.eduplatform.modules.assessment.repository.TestAssignmentRepository;
 import uz.eduplatform.modules.assessment.repository.TestAttemptRepository;
 import uz.eduplatform.modules.auth.repository.UserRepository;
 import uz.eduplatform.modules.parent.service.ParentNotificationService;
+import uz.eduplatform.modules.test.repository.TestHistoryRepository;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -41,6 +42,7 @@ public class TestTakingService {
     private final GradingService gradingService;
     private final LiveMonitoringService liveMonitoringService;
     private final ParentNotificationService parentNotificationService;
+    private final TestHistoryRepository testHistoryRepository;
     private final ObjectMapper objectMapper;
 
     @Transactional
@@ -90,10 +92,20 @@ public class TestTakingService {
             throw BusinessException.ofKey("test.taking.max.attempts.reached");
         }
 
-        // Determine variant index (round-robin or random based on shuffle setting)
-        int variantIndex = assignment.getShufflePerStudent()
-                ? (int) (Math.random() * 10) % 4  // Will be clamped to available variants
-                : (int) (attemptCount % 4);
+        // Determine variant count from the linked test history
+        int availableVariants = testHistoryRepository.findById(assignment.getTestHistoryId())
+                .map(th -> th.getVariantCount() != null ? th.getVariantCount() : 1)
+                .orElse(1);
+
+        // Determine variant index: deterministic seed from student+assignment for reproducibility
+        int variantIndex;
+        if (assignment.getShufflePerStudent()) {
+            long seed = studentId.getMostSignificantBits() ^ assignmentId.getLeastSignificantBits()
+                    ^ (attemptCount * 31);
+            variantIndex = Math.abs(Long.hashCode(seed)) % availableVariants;
+        } else {
+            variantIndex = (int) (attemptCount % availableVariants);
+        }
 
         TestAttempt attempt = TestAttempt.builder()
                 .assignment(assignment)

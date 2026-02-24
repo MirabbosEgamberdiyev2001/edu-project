@@ -39,8 +39,8 @@ spring:
   mail:
     host: ${MAIL_HOST:smtp.mail.ru}
     port: ${MAIL_PORT:465}
-    username: ${MAIL_USERNAME:mirabbosegamberdiyev7@mail.ru}
-    password: ${MAIL_PASSWORD:r2CePkKRjrebdGl5oR1s}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
     default-encoding: UTF-8
     properties:
       mail:
@@ -61,6 +61,10 @@ spring:
     multipart:
       max-file-size: 5MB
       max-request-size: 10MB
+
+  mvc:
+    async:
+      request-timeout: 120000
 
   lifecycle:
     timeout-per-shutdown-phase: 30s
@@ -89,7 +93,7 @@ app:
   cors:
     allowed-origins: ${CORS_ORIGINS:http://localhost:3000,http://localhost:5173,http://localhost:5174}
   mail:
-    from: ${MAIL_FROM:mirabbosegamberdiyev7@mail.ru}
+    from: ${MAIL_FROM:}
     enabled: ${MAIL_ENABLED:true}
   storage:
     upload-dir: ${UPLOAD_DIR:./uploads}

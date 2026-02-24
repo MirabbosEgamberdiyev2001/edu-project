@@ -15,8 +15,8 @@ import type { AssignmentDto } from '@/types/assignment';
 const TEST_TAKING = '/test-taking';
 
 export const testTakingApi = {
-  getAvailableAssignments: (params?: { page?: number; size?: number }) =>
-    api.get<ApiResponse<PagedResponse<AssignmentDto>>>(`${TEST_TAKING}/assignments`, { params }),
+  getAvailableAssignments: (params?: { page?: number; size?: number }, signal?: AbortSignal) =>
+    api.get<ApiResponse<PagedResponse<AssignmentDto>>>(`${TEST_TAKING}/assignments`, { params, signal }),
 
   startAttempt: (assignmentId: string, data?: StartAttemptRequest) =>
     api.post<ApiResponse<AttemptDto>>(`${TEST_TAKING}/assignments/${assignmentId}/start`, data || {}),
@@ -33,11 +33,11 @@ export const testTakingApi = {
   reportTabSwitch: (attemptId: string) =>
     api.post<ApiResponse<AttemptDto>>(`${TEST_TAKING}/attempts/${attemptId}/tab-switch`),
 
-  getAttempt: (attemptId: string) =>
-    api.get<ApiResponse<AttemptDto>>(`${TEST_TAKING}/attempts/${attemptId}`),
+  getAttempt: (attemptId: string, signal?: AbortSignal) =>
+    api.get<ApiResponse<AttemptDto>>(`${TEST_TAKING}/attempts/${attemptId}`, { signal }),
 
-  getMyAttempts: (params?: { page?: number; size?: number }) =>
-    api.get<ApiResponse<PagedResponse<AttemptDto>>>(`${TEST_TAKING}/my-attempts`, { params }),
+  getMyAttempts: (params?: { page?: number; size?: number }, signal?: AbortSignal) =>
+    api.get<ApiResponse<PagedResponse<AttemptDto>>>(`${TEST_TAKING}/my-attempts`, { params, signal }),
 
   gradeAnswer: (data: GradeAnswerRequest) =>
     api.post<ApiResponse<void>>(`${TEST_TAKING}/grade`, data),

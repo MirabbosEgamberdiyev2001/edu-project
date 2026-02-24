@@ -10,8 +10,8 @@ import type {
 } from '@/types/topic';
 
 export const topicApi = {
-  getTopicTree: (subjectId: string, gradeLevel: number) =>
-    api.get<ApiResponse<TopicTreeDto[]>>(`/subjects/${subjectId}/topics`, { params: { gradeLevel } }),
+  getTopicTree: (subjectId: string, gradeLevel: number, signal?: AbortSignal) =>
+    api.get<ApiResponse<TopicTreeDto[]>>(`/subjects/${subjectId}/topics`, { params: { gradeLevel }, signal }),
 
   createTopic: (subjectId: string, data: CreateTopicRequest) =>
     api.post<ApiResponse<TopicDto>>(`/subjects/${subjectId}/topics`, data),

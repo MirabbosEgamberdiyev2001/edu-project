@@ -19,7 +19,7 @@ export default function ExamPage() {
   const navigate = useNavigate();
   const { t } = useTranslation('testTaking');
   const { data: attempt, isLoading } = useAttempt(attemptId!);
-  const { submitAnswer, submitAttempt, reportTabSwitch } = useAttemptMutations();
+  const { submitAttempt, reportTabSwitch } = useAttemptMutations();
   const { addAnswer, flush } = useAutoSave(attemptId!, !!attempt);
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -79,12 +79,9 @@ export default function ExamPage() {
   const handleAnswerChange = useCallback((value: unknown) => {
     if (!currentQuestion) return;
     setLocalAnswers((prev) => ({ ...prev, [currentQuestion.id]: value }));
+    // Single save path: debounced batch save via auto-save queue (flushes after 2s)
     addAnswer({ questionId: currentQuestion.id, response: value });
-    submitAnswer.mutate({
-      attemptId: attemptId!,
-      data: { questionId: currentQuestion.id, response: value },
-    });
-  }, [currentQuestion, attemptId, addAnswer, submitAnswer]);
+  }, [currentQuestion, addAnswer]);
 
   const handleTimeUp = useCallback(async () => {
     await flush();

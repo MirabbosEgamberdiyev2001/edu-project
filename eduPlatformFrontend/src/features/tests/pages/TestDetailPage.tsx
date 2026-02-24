@@ -31,6 +31,7 @@ import PublishTestDialog from '../components/PublishTestDialog';
 import { testApi } from '@/api/testApi';
 import { resolveTranslation } from '@/utils/i18nUtils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import PageBreadcrumbs from '@/components/PageBreadcrumbs';
 
 const STATUS_COLORS: Record<string, 'default' | 'info' | 'success' | 'warning' | 'error'> = {
   CREATED: 'info',
@@ -113,15 +114,22 @@ export default function TestDetailPage() {
     });
   };
 
+  const displayTitle = resolveTranslation(test.titleTranslations) || test.title;
+
   return (
     <Box>
+      <PageBreadcrumbs items={[
+        { label: t('common:tests'), href: '/tests' },
+        { label: displayTitle },
+      ]} />
+
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-        <IconButton onClick={() => navigate('/tests')}>
+        <IconButton onClick={() => navigate('/tests')} aria-label={t('common:back')}>
           <ArrowBackIcon />
         </IconButton>
         <Typography variant="h5" fontWeight={700} sx={{ flex: 1 }}>
-          {resolveTranslation(test.titleTranslations) || test.title}
+          {displayTitle}
         </Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Tooltip title={t('edit.title')}>

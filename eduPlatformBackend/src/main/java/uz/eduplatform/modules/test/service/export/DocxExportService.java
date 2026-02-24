@@ -20,6 +20,7 @@ import uz.eduplatform.modules.test.service.ExportHelper;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -77,6 +78,40 @@ public class DocxExportService implements TestExportService {
 
         } catch (IOException e) {
             throw new BusinessException(messageService.get("export.docx.fail", locale, e.getMessage()));
+        }
+    }
+
+    @Override
+    public void exportTestToStream(TestHistory test, ExportFormat format, Locale locale, OutputStream out) throws IOException {
+        try (XWPFDocument document = new XWPFDocument()) {
+            setA4PageSize(document);
+
+            boolean firstVariant = true;
+            for (Map<String, Object> variant : test.getVariants()) {
+                if (!firstVariant) addPageBreak(document);
+                firstVariant = false;
+
+                String variantCode = (String) variant.get("code");
+                List<UUID> questionIds = exportHelper.parseQuestionIds(variant.get("questionIds"));
+                List<List<String>> optionsOrder = exportHelper.parseOptionsOrder(variant.get("optionsOrder"));
+
+                writeTestHeader(document, test, variantCode, locale);
+
+                Map<UUID, Question> questionMap = questionRepository.findAllById(questionIds).stream()
+                        .collect(Collectors.toMap(Question::getId, Function.identity(), (a, b) -> a));
+
+                int questionNum = 1;
+                for (int qi = 0; qi < questionIds.size(); qi++) {
+                    Question q = questionMap.get(questionIds.get(qi));
+                    if (q == null) continue;
+
+                    List<String> optOrder = (optionsOrder != null && qi < optionsOrder.size())
+                            ? optionsOrder.get(qi) : null;
+                    writeQuestion(document, q, questionNum++, optOrder, locale);
+                }
+            }
+
+            document.write(out);
         }
     }
 

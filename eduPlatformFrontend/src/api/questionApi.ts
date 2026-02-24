@@ -13,11 +13,11 @@ import type {
 const QUESTIONS = '/questions';
 
 export const questionApi = {
-  getQuestions: (params?: QuestionListParams) =>
-    api.get<ApiResponse<PagedResponse<QuestionDto>>>(QUESTIONS, { params }),
+  getQuestions: (params?: QuestionListParams, signal?: AbortSignal) =>
+    api.get<ApiResponse<PagedResponse<QuestionDto>>>(QUESTIONS, { params, signal }),
 
-  getQuestion: (id: string) =>
-    api.get<ApiResponse<QuestionDto>>(`${QUESTIONS}/${id}`),
+  getQuestion: (id: string, signal?: AbortSignal) =>
+    api.get<ApiResponse<QuestionDto>>(`${QUESTIONS}/${id}`, { signal }),
 
   createQuestion: (data: CreateQuestionRequest) =>
     api.post<ApiResponse<QuestionDto>>(QUESTIONS, data),
@@ -31,11 +31,11 @@ export const questionApi = {
   submitForModeration: (id: string) =>
     api.post<ApiResponse<QuestionDto>>(`${QUESTIONS}/${id}/submit`),
 
-  getQuestionsByTopic: (topicId: string, params?: { page?: number; size?: number }) =>
-    api.get<ApiResponse<PagedResponse<QuestionDto>>>(`/topics/${topicId}/questions`, { params }),
+  getQuestionsByTopic: (topicId: string, params?: { page?: number; size?: number }, signal?: AbortSignal) =>
+    api.get<ApiResponse<PagedResponse<QuestionDto>>>(`/topics/${topicId}/questions`, { params, signal }),
 
-  getVersionHistory: (id: string) =>
-    api.get<ApiResponse<QuestionVersionDto[]>>(`${QUESTIONS}/${id}/versions`),
+  getVersionHistory: (id: string, signal?: AbortSignal) =>
+    api.get<ApiResponse<QuestionVersionDto[]>>(`${QUESTIONS}/${id}/versions`, { signal }),
 
   rollbackToVersion: (id: string, version: number) =>
     api.post<ApiResponse<QuestionDto>>(`${QUESTIONS}/${id}/rollback/${version}`),

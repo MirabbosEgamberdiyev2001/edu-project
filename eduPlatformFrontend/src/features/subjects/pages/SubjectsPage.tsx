@@ -42,9 +42,10 @@ export default function SubjectsPage() {
 
   const params = useMemo(() => ({
     ...(debouncedSearch && { search: debouncedSearch }),
+    ...(gradeFilter !== '' && { gradeLevel: gradeFilter }),
     page,
     size: 20,
-  }), [debouncedSearch, page]);
+  }), [debouncedSearch, gradeFilter, page]);
 
   const { data, isLoading } = useSubjects(params);
   const { data: archivedData, isLoading: archivedLoading } = useArchivedSubjects({ page: archivedPage, size: 12 });
@@ -55,13 +56,6 @@ export default function SubjectsPage() {
   const [deleteSubject, setDeleteSubject] = useState<SubjectDto | null>(null);
 
   const hasActiveFilters = Boolean(debouncedSearch || gradeFilter !== '');
-
-  // Client-side grade filter
-  const filteredContent = useMemo(() => {
-    if (!data?.content) return [];
-    if (gradeFilter === '') return data.content;
-    return data.content.filter(s => s.gradeLevel === gradeFilter);
-  }, [data?.content, gradeFilter]);
 
   const handleCreate = () => {
     setEditSubject(null);
@@ -107,7 +101,7 @@ export default function SubjectsPage() {
 
   const isActive = viewTab === 0;
   const currentLoading = isActive ? isLoading : archivedLoading;
-  const displayContent = isActive ? filteredContent : (archivedData?.content || []);
+  const displayContent = isActive ? (data?.content || []) : (archivedData?.content || []);
   const currentPage = isActive ? page : archivedPage;
   const setCurrentPage = isActive ? setPage : setArchivedPage;
   const totalPages = isActive ? (data?.totalPages || 0) : (archivedData?.totalPages || 0);
@@ -165,7 +159,7 @@ export default function SubjectsPage() {
             size="small"
             label={t('form.gradeLevel')}
             value={gradeFilter}
-            onChange={(e) => { setGradeFilter(e.target.value === '' ? '' : Number(e.target.value)); }}
+            onChange={(e) => { setGradeFilter(e.target.value === '' ? '' : Number(e.target.value)); setPage(0); }}
             sx={{ minWidth: 120 }}
           >
             <MenuItem value="">{t('allGrades', 'All grades')}</MenuItem>

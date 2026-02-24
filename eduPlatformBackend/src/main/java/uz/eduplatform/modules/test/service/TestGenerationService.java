@@ -90,6 +90,23 @@ public class TestGenerationService {
                 throw BusinessException.ofKey("test.manual.questions.not.found");
             }
 
+            // Validate ownership: user must own the question or its subject
+            for (Question q : selected) {
+                boolean isQuestionOwner = q.getUser().getId().equals(userId);
+                boolean isSubjectOwner = q.getTopic() != null
+                        && q.getTopic().getSubject() != null
+                        && q.getTopic().getSubject().getUser().getId().equals(userId);
+                boolean isTemplateQuestion = q.getTopic() != null
+                        && q.getTopic().getSubject() != null
+                        && Boolean.TRUE.equals(q.getTopic().getSubject().getIsTemplate());
+                boolean isActiveOrApproved = q.getStatus() == QuestionStatus.ACTIVE
+                        || q.getStatus() == QuestionStatus.APPROVED;
+
+                if (!isQuestionOwner && !isSubjectOwner && !(isTemplateQuestion && isActiveOrApproved)) {
+                    throw BusinessException.ofKey("test.manual.question.not.accessible");
+                }
+            }
+
             // Filter only valid MCQ questions with options (A, B, C, D)
             List<Question> invalidQuestions = selected.stream()
                     .filter(q -> !isValidForTest(q))
@@ -144,14 +161,24 @@ public class TestGenerationService {
                     ? request.getDifficultyDistribution()
                     : DifficultyDistribution.builder().build();
 
-            int easyCount = (int) Math.ceil(request.getQuestionCount() * dist.getEasy() / 100.0);
-            int mediumCount = (int) Math.ceil(request.getQuestionCount() * dist.getMedium() / 100.0);
-            int hardCount = request.getQuestionCount() - easyCount - mediumCount;
+            // Floor-based rounding: remainder goes to the largest category (no bias)
+            int total = request.getQuestionCount();
+            int easyCount = (int) Math.floor(total * dist.getEasy() / 100.0);
+            int mediumCount = (int) Math.floor(total * dist.getMedium() / 100.0);
+            int hardCount = (int) Math.floor(total * dist.getHard() / 100.0);
 
-            // Adjust if ceil caused overflow
-            while (easyCount + mediumCount + hardCount > request.getQuestionCount()) {
-                if (easyCount > 0) easyCount--;
-                else if (mediumCount > 0) mediumCount--;
+            // Distribute remainder to categories by largest fractional part
+            int remainder = total - easyCount - mediumCount - hardCount;
+            if (remainder > 0) {
+                double easyFrac = (total * dist.getEasy() / 100.0) - easyCount;
+                double medFrac = (total * dist.getMedium() / 100.0) - mediumCount;
+                double hardFrac = (total * dist.getHard() / 100.0) - hardCount;
+
+                for (int r = 0; r < remainder; r++) {
+                    if (hardFrac >= easyFrac && hardFrac >= medFrac) { hardCount++; hardFrac = -1; }
+                    else if (medFrac >= easyFrac) { mediumCount++; medFrac = -1; }
+                    else { easyCount++; easyFrac = -1; }
+                }
             }
 
             // 5. Check availability

@@ -21,6 +21,7 @@ import uz.eduplatform.modules.test.repository.TestQuestionRepository;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,8 +38,18 @@ public class TestHistoryService {
         Page<TestHistory> page = testHistoryRepository.findByUserIdAndDeletedAtIsNullOrderByCreatedAtDesc(
                 userId, pageable);
 
+        // Batch-fetch all subjects to avoid N+1 queries
+        Set<UUID> subjectIds = page.getContent().stream()
+                .map(TestHistory::getSubjectId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        Map<UUID, Subject> subjectMap = subjectIds.isEmpty()
+                ? Map.of()
+                : subjectRepository.findAllById(subjectIds).stream()
+                        .collect(Collectors.toMap(Subject::getId, s -> s, (a, b) -> a));
+
         List<TestHistoryDto> dtos = page.getContent().stream()
-                .map(h -> mapToDto(h, language))
+                .map(h -> mapToDto(h, language, subjectMap.get(h.getSubjectId())))
                 .toList();
 
         return PagedResponse.of(dtos, page.getNumber(), page.getSize(),
@@ -144,13 +155,20 @@ public class TestHistoryService {
         return builder.build();
     }
 
-    @SuppressWarnings("unchecked")
     private TestHistoryDto mapToDto(TestHistory h, AcceptLanguage language) {
-        String subjectName = null;
+        Subject subject = null;
         try {
-            Subject subject = subjectRepository.findById(h.getSubjectId()).orElse(null);
-            if (subject != null) subjectName = TranslatedField.resolve(subject.getName(), language.toLocaleKey());
+            subject = subjectRepository.findById(h.getSubjectId()).orElse(null);
         } catch (Exception ignored) {
+        }
+        return mapToDto(h, language, subject);
+    }
+
+    @SuppressWarnings("unchecked")
+    private TestHistoryDto mapToDto(TestHistory h, AcceptLanguage language, Subject subject) {
+        String subjectName = null;
+        if (subject != null) {
+            subjectName = TranslatedField.resolve(subject.getName(), language.toLocaleKey());
         }
 
         // Convert variants from stored JSON

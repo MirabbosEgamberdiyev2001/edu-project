@@ -70,6 +70,7 @@
     "pdf": "PDF",
     "docx": "DOCX",
     "downloading": "Downloading...",
+    "downloaded": "Downloaded successfully",
     "error": "Export failed"
   },
   "status": {
@@ -157,6 +158,13 @@
     "noQuestions": "No questions found for these parameters",
     "questionsCount": "{{count}} questions",
     "correctAnswer": "Correct answer"
+  },
+  "back": "Back",
+  "modeSwitchWarning": {
+    "title": "Switch Mode?",
+    "message": "Switching mode will reset all form data. Any unsaved changes will be lost.",
+    "confirm": "Switch",
+    "cancel": "Cancel"
   },
   "errors": {
     "noTopics": "Please select at least one topic",

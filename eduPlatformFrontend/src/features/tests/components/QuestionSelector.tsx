@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Box,
@@ -18,9 +18,11 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
+import SearchIcon from '@mui/icons-material/Search';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
+import InputAdornment from '@mui/material/InputAdornment';
 import { useQuestionsForSelection } from '../hooks/useTests';
 import { useQuestionsByIds } from '@/features/questions/hooks/useQuestions';
 import { resolveTranslation } from '@/utils/i18nUtils';
@@ -55,13 +57,26 @@ export default function QuestionSelector({ topicIds, selectedIds, onSelectionCha
 
   const [filterDifficulty, setFilterDifficulty] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(0);
   const [selectedExpanded, setSelectedExpanded] = useState(true);
+
+  // Debounce search input (300ms)
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  useEffect(() => {
+    debounceRef.current = setTimeout(() => {
+      setDebouncedSearch(searchInput);
+      setPage(0);
+    }, 300);
+    return () => clearTimeout(debounceRef.current);
+  }, [searchInput]);
 
   const { data, isLoading, isError, error } = useQuestionsForSelection({
     topicIds,
     difficulty: filterDifficulty || undefined,
     status: filterStatus || undefined,
+    search: debouncedSearch || undefined,
     page,
     size: 50,
   });
@@ -217,7 +232,21 @@ export default function QuestionSelector({ topicIds, selectedIds, onSelectionCha
 
       <Divider />
 
-      {/* Filters */}
+      {/* Search & Filters */}
+      <TextField
+        placeholder={t('manual.searchQuestions', 'Savollarni qidirish...')}
+        value={searchInput}
+        onChange={(e) => setSearchInput(e.target.value)}
+        size="small"
+        fullWidth
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchIcon fontSize="small" color="action" />
+            </InputAdornment>
+          ),
+        }}
+      />
       <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
         <TextField
           select

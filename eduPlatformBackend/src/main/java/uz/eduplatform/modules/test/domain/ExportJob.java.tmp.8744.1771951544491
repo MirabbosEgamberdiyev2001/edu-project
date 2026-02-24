@@ -1,0 +1,67 @@
+package uz.eduplatform.modules.test.domain;
+
+import jakarta.persistence.*;
+import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Entity
+@Table(name = "export_jobs", indexes = {
+        @Index(name = "idx_export_job_user", columnList = "user_id"),
+        @Index(name = "idx_export_job_status", columnList = "status")
+})
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
+public class ExportJob {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @Column(name = "test_history_id", nullable = false)
+    private UUID testHistoryId;
+
+    @Column(name = "user_id", nullable = false)
+    private UUID userId;
+
+    @Column(name = "export_type", nullable = false, length = 20)
+    private String exportType; // TEST, ANSWER_KEY, COMBINED, PROOFS
+
+    @Column(name = "format", nullable = false, length = 10)
+    private String format; // PDF, DOCX
+
+    @Column(length = 10)
+    private String locale;
+
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private ExportJobStatus status = ExportJobStatus.PENDING;
+
+    @Lob
+    @Column(name = "result_data")
+    private byte[] resultData;
+
+    @Column(name = "file_name")
+    private String fileName;
+
+    @Column(name = "content_type")
+    private String contentType;
+
+    @Column(name = "error_message", length = 1000)
+    private String errorMessage;
+
+    @CreatedDate
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "completed_at")
+    private LocalDateTime completedAt;
+}

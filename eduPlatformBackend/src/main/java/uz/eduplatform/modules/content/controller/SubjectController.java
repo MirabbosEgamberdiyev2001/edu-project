@@ -36,6 +36,7 @@ public class SubjectController {
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language,
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) Integer gradeLevel,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "sortOrder") String sortBy,
@@ -43,7 +44,7 @@ public class SubjectController {
 
         Sort sort = Sort.by(Sort.Direction.fromString(direction), sortBy);
         PagedResponse<SubjectDto> response = subjectService.getSubjects(
-                principal.getId(), search, PageRequest.of(page, size, sort), language);
+                principal.getId(), search, gradeLevel, PageRequest.of(page, size, sort), language);
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }

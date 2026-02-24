@@ -71,6 +71,31 @@ public interface SubjectRepository extends JpaRepository<Subject, UUID> {
             nativeQuery = true)
     Page<Subject> searchByUser(@Param("userId") UUID userId, @Param("search") String search, Pageable pageable);
 
+    @Query("SELECT s FROM Subject s WHERE s.isArchived = false AND s.gradeLevel = :gradeLevel AND " +
+            "(s.user.id = :userId OR s.isTemplate = true) " +
+            "ORDER BY s.sortOrder ASC")
+    Page<Subject> findAllAccessibleByUserAndGradeLevel(@Param("userId") UUID userId,
+                                                        @Param("gradeLevel") Integer gradeLevel,
+                                                        Pageable pageable);
+
+    @Query(value = "SELECT s.* FROM subjects s WHERE s.is_archived = false AND s.deleted_at IS NULL AND " +
+            "s.grade_level = :gradeLevel AND " +
+            "(s.user_id = :userId OR s.is_template = true) AND " +
+            "(LOWER(s.name ->> 'uz_latn') LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            " LOWER(s.name ->> 'uz_cyrl') LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            " LOWER(s.name ->> 'en') LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            " LOWER(s.name ->> 'ru') LIKE LOWER(CONCAT('%', :search, '%')))",
+            countQuery = "SELECT COUNT(*) FROM subjects s WHERE s.is_archived = false AND s.deleted_at IS NULL AND " +
+                    "s.grade_level = :gradeLevel AND " +
+                    "(s.user_id = :userId OR s.is_template = true) AND " +
+                    "(LOWER(s.name ->> 'uz_latn') LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+                    " LOWER(s.name ->> 'uz_cyrl') LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+                    " LOWER(s.name ->> 'en') LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+                    " LOWER(s.name ->> 'ru') LIKE LOWER(CONCAT('%', :search, '%')))",
+            nativeQuery = true)
+    Page<Subject> searchByUserAndGradeLevel(@Param("userId") UUID userId, @Param("search") String search,
+                                             @Param("gradeLevel") Integer gradeLevel, Pageable pageable);
+
     long countByIsArchivedFalse();
 
     Page<Subject> findByIsArchivedFalseOrderByQuestionCountDesc(Pageable pageable);

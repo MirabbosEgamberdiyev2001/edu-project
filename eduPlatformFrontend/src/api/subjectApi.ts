@@ -11,6 +11,7 @@ const SUBJECTS = '/subjects';
 
 export interface SubjectListParams {
   search?: string;
+  gradeLevel?: number;
   page?: number;
   size?: number;
   sortBy?: string;
@@ -18,14 +19,14 @@ export interface SubjectListParams {
 }
 
 export const subjectApi = {
-  getSubjects: (params?: SubjectListParams) =>
-    api.get<ApiResponse<PagedResponse<SubjectDto>>>(SUBJECTS, { params }),
+  getSubjects: (params?: SubjectListParams, signal?: AbortSignal) =>
+    api.get<ApiResponse<PagedResponse<SubjectDto>>>(SUBJECTS, { params, signal }),
 
-  getArchivedSubjects: (params?: { page?: number; size?: number }) =>
-    api.get<ApiResponse<PagedResponse<SubjectDto>>>(`${SUBJECTS}/archived`, { params }),
+  getArchivedSubjects: (params?: { page?: number; size?: number }, signal?: AbortSignal) =>
+    api.get<ApiResponse<PagedResponse<SubjectDto>>>(`${SUBJECTS}/archived`, { params, signal }),
 
-  getSubject: (id: string) =>
-    api.get<ApiResponse<SubjectDto>>(`${SUBJECTS}/${id}`),
+  getSubject: (id: string, signal?: AbortSignal) =>
+    api.get<ApiResponse<SubjectDto>>(`${SUBJECTS}/${id}`, { signal }),
 
   createSubject: (data: CreateSubjectRequest) =>
     api.post<ApiResponse<SubjectDto>>(SUBJECTS, data),

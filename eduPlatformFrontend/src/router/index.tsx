@@ -1,67 +1,84 @@
+import { lazy, Suspense } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
 import GuestRoute from './GuestRoute';
 import RoleRoute from './RoleRoute';
 import { Role } from '@/types/user';
+import { Box, CircularProgress } from '@mui/material';
+
+// Shared layout — not lazy (needed immediately)
+import AppLayout from '@/components/AppLayout';
+
+// Lazy loading fallback
+const PageLoader = () => (
+  <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+    <CircularProgress />
+  </Box>
+);
+
+const Lazy = ({ component: Component }: { component: React.LazyExoticComponent<React.ComponentType> }) => (
+  <Suspense fallback={<PageLoader />}>
+    <Component />
+  </Suspense>
+);
 
 // Auth pages
-import LoginPage from '@/features/auth/pages/LoginPage';
-import RegisterPage from '@/features/auth/pages/RegisterPage';
-import OtpVerifyPage from '@/features/auth/pages/OtpVerifyPage';
-import ForgotPasswordPage from '@/features/auth/pages/ForgotPasswordPage';
-import ResetPasswordPage from '@/features/auth/pages/ResetPasswordPage';
-import ChangePasswordPage from '@/features/auth/pages/ChangePasswordPage';
+const LoginPage = lazy(() => import('@/features/auth/pages/LoginPage'));
+const RegisterPage = lazy(() => import('@/features/auth/pages/RegisterPage'));
+const OtpVerifyPage = lazy(() => import('@/features/auth/pages/OtpVerifyPage'));
+const ForgotPasswordPage = lazy(() => import('@/features/auth/pages/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('@/features/auth/pages/ResetPasswordPage'));
+const ChangePasswordPage = lazy(() => import('@/features/auth/pages/ChangePasswordPage'));
 
 // App pages
-import AppLayout from '@/components/AppLayout';
-import DashboardPage from '@/pages/DashboardPage';
-import SubjectsPage from '@/features/subjects/pages/SubjectsPage';
-import SubjectDetailPage from '@/features/subjects/pages/SubjectDetailPage';
-import TopicsPage from '@/features/topics/pages/TopicsPage';
-import QuestionsPage from '@/features/questions/pages/QuestionsPage';
-import QuestionDetailPage from '@/features/questions/pages/QuestionDetailPage';
-import TestsPage from '@/features/tests/pages/TestsPage';
-import TestGeneratePage from '@/features/tests/pages/TestGeneratePage';
-import TestDetailPage from '@/features/tests/pages/TestDetailPage';
-import ProfilePage from '@/pages/ProfilePage';
-import NotFoundPage from '@/pages/NotFoundPage';
-import UnauthorizedPage from '@/pages/UnauthorizedPage';
+const DashboardPage = lazy(() => import('@/pages/DashboardPage'));
+const SubjectsPage = lazy(() => import('@/features/subjects/pages/SubjectsPage'));
+const SubjectDetailPage = lazy(() => import('@/features/subjects/pages/SubjectDetailPage'));
+const TopicsPage = lazy(() => import('@/features/topics/pages/TopicsPage'));
+const QuestionsPage = lazy(() => import('@/features/questions/pages/QuestionsPage'));
+const QuestionDetailPage = lazy(() => import('@/features/questions/pages/QuestionDetailPage'));
+const TestsPage = lazy(() => import('@/features/tests/pages/TestsPage'));
+const TestGeneratePage = lazy(() => import('@/features/tests/pages/TestGeneratePage'));
+const TestDetailPage = lazy(() => import('@/features/tests/pages/TestDetailPage'));
+const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
+const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
+const UnauthorizedPage = lazy(() => import('@/pages/UnauthorizedPage'));
 
 // Groups pages
-import GroupsPage from '@/features/groups/pages/GroupsPage';
-import GroupDetailPage from '@/features/groups/pages/GroupDetailPage';
+const GroupsPage = lazy(() => import('@/features/groups/pages/GroupsPage'));
+const GroupDetailPage = lazy(() => import('@/features/groups/pages/GroupDetailPage'));
 
 // Assignments pages (Teacher)
-import AssignmentsPage from '@/features/assignments/pages/AssignmentsPage';
-import AssignmentDetailPage from '@/features/assignments/pages/AssignmentDetailPage';
-import LiveMonitoringPage from '@/features/assignments/pages/LiveMonitoringPage';
-import AssignmentResultsPage from '@/features/assignments/pages/AssignmentResultsPage';
+const AssignmentsPage = lazy(() => import('@/features/assignments/pages/AssignmentsPage'));
+const AssignmentDetailPage = lazy(() => import('@/features/assignments/pages/AssignmentDetailPage'));
+const LiveMonitoringPage = lazy(() => import('@/features/assignments/pages/LiveMonitoringPage'));
+const AssignmentResultsPage = lazy(() => import('@/features/assignments/pages/AssignmentResultsPage'));
 
 // Test Taking pages (Student)
-import AvailableAssignmentsPage from '@/features/testTaking/pages/AvailableAssignmentsPage';
-import ExamPage from '@/features/testTaking/pages/ExamPage';
-import MyAttemptsPage from '@/features/testTaking/pages/MyAttemptsPage';
-import AttemptResultPage from '@/features/testTaking/pages/AttemptResultPage';
+const AvailableAssignmentsPage = lazy(() => import('@/features/testTaking/pages/AvailableAssignmentsPage'));
+const ExamPage = lazy(() => import('@/features/testTaking/pages/ExamPage'));
+const MyAttemptsPage = lazy(() => import('@/features/testTaking/pages/MyAttemptsPage'));
+const AttemptResultPage = lazy(() => import('@/features/testTaking/pages/AttemptResultPage'));
 
 // Analytics pages
-import TeacherAnalyticsPage from '@/features/analytics/pages/TeacherAnalyticsPage';
-import StudentAnalyticsPage from '@/features/analytics/pages/StudentAnalyticsPage';
-import GroupAnalyticsPage from '@/features/analytics/pages/GroupAnalyticsPage';
+const TeacherAnalyticsPage = lazy(() => import('@/features/analytics/pages/TeacherAnalyticsPage'));
+const StudentAnalyticsPage = lazy(() => import('@/features/analytics/pages/StudentAnalyticsPage'));
+const GroupAnalyticsPage = lazy(() => import('@/features/analytics/pages/GroupAnalyticsPage'));
 
 // Parent pages
-import ParentDashboardPage from '@/features/parent/pages/ParentDashboardPage';
-import ChildDashboardPage from '@/features/parent/pages/ChildDashboardPage';
-import StudentPairingPage from '@/features/parent/pages/StudentPairingPage';
+const ParentDashboardPage = lazy(() => import('@/features/parent/pages/ParentDashboardPage'));
+const ChildDashboardPage = lazy(() => import('@/features/parent/pages/ChildDashboardPage'));
+const StudentPairingPage = lazy(() => import('@/features/parent/pages/StudentPairingPage'));
 
 // Admin pages
-import AdminDashboardPage from '@/features/admin/pages/AdminDashboardPage';
-import AdminUsersPage from '@/features/admin/pages/AdminUsersPage';
-import AdminUserDetailPage from '@/features/admin/pages/AdminUserDetailPage';
-import AuditLogPage from '@/features/admin/pages/AuditLogPage';
-import ModerationPage from '@/features/admin/pages/ModerationPage';
+const AdminDashboardPage = lazy(() => import('@/features/admin/pages/AdminDashboardPage'));
+const AdminUsersPage = lazy(() => import('@/features/admin/pages/AdminUsersPage'));
+const AdminUserDetailPage = lazy(() => import('@/features/admin/pages/AdminUserDetailPage'));
+const AuditLogPage = lazy(() => import('@/features/admin/pages/AuditLogPage'));
+const ModerationPage = lazy(() => import('@/features/admin/pages/ModerationPage'));
 
 // Public test page
-import PublicTestPage from '@/features/tests/pages/PublicTestPage';
+const PublicTestPage = lazy(() => import('@/features/tests/pages/PublicTestPage'));
 
 export const router = createBrowserRouter([
   {
@@ -73,11 +90,11 @@ export const router = createBrowserRouter([
   {
     element: <GuestRoute />,
     children: [
-      { path: '/auth/login', element: <LoginPage /> },
-      { path: '/auth/register', element: <RegisterPage /> },
-      { path: '/auth/otp-verify', element: <OtpVerifyPage /> },
-      { path: '/auth/forgot-password', element: <ForgotPasswordPage /> },
-      { path: '/auth/reset-password', element: <ResetPasswordPage /> },
+      { path: '/auth/login', element: <Lazy component={LoginPage} /> },
+      { path: '/auth/register', element: <Lazy component={RegisterPage} /> },
+      { path: '/auth/otp-verify', element: <Lazy component={OtpVerifyPage} /> },
+      { path: '/auth/forgot-password', element: <Lazy component={ForgotPasswordPage} /> },
+      { path: '/auth/reset-password', element: <Lazy component={ResetPasswordPage} /> },
     ],
   },
 
@@ -89,7 +106,7 @@ export const router = createBrowserRouter([
       {
         element: <RoleRoute allowedRoles={[Role.STUDENT]} />,
         children: [
-          { path: '/exam/:attemptId', element: <ExamPage /> },
+          { path: '/exam/:attemptId', element: <Lazy component={ExamPage} /> },
         ],
       },
 
@@ -97,30 +114,30 @@ export const router = createBrowserRouter([
         element: <AppLayout />,
         children: [
           // Common routes (all authenticated users)
-          { path: '/dashboard', element: <DashboardPage /> },
-          { path: '/profile', element: <ProfilePage /> },
-          { path: '/settings/change-password', element: <ChangePasswordPage /> },
+          { path: '/dashboard', element: <Lazy component={DashboardPage} /> },
+          { path: '/profile', element: <Lazy component={ProfilePage} /> },
+          { path: '/settings/change-password', element: <Lazy component={ChangePasswordPage} /> },
 
           // Teacher/Admin content management routes
           {
             element: <RoleRoute allowedRoles={[Role.TEACHER, Role.ADMIN, Role.SUPER_ADMIN]} />,
             children: [
-              { path: '/subjects', element: <SubjectsPage /> },
-              { path: '/subjects/:id', element: <SubjectDetailPage /> },
-              { path: '/topics', element: <TopicsPage /> },
-              { path: '/questions', element: <QuestionsPage /> },
-              { path: '/questions/:id', element: <QuestionDetailPage /> },
-              { path: '/tests', element: <TestsPage /> },
-              { path: '/tests/generate', element: <TestGeneratePage /> },
-              { path: '/tests/:id', element: <TestDetailPage /> },
-              { path: '/groups', element: <GroupsPage /> },
-              { path: '/groups/:id', element: <GroupDetailPage /> },
-              { path: '/assignments', element: <AssignmentsPage /> },
-              { path: '/assignments/:id', element: <AssignmentDetailPage /> },
-              { path: '/assignments/:id/live', element: <LiveMonitoringPage /> },
-              { path: '/assignments/:id/results', element: <AssignmentResultsPage /> },
-              { path: '/analytics/teacher', element: <TeacherAnalyticsPage /> },
-              { path: '/analytics/group/:groupId', element: <GroupAnalyticsPage /> },
+              { path: '/subjects', element: <Lazy component={SubjectsPage} /> },
+              { path: '/subjects/:id', element: <Lazy component={SubjectDetailPage} /> },
+              { path: '/topics', element: <Lazy component={TopicsPage} /> },
+              { path: '/questions', element: <Lazy component={QuestionsPage} /> },
+              { path: '/questions/:id', element: <Lazy component={QuestionDetailPage} /> },
+              { path: '/tests', element: <Lazy component={TestsPage} /> },
+              { path: '/tests/generate', element: <Lazy component={TestGeneratePage} /> },
+              { path: '/tests/:id', element: <Lazy component={TestDetailPage} /> },
+              { path: '/groups', element: <Lazy component={GroupsPage} /> },
+              { path: '/groups/:id', element: <Lazy component={GroupDetailPage} /> },
+              { path: '/assignments', element: <Lazy component={AssignmentsPage} /> },
+              { path: '/assignments/:id', element: <Lazy component={AssignmentDetailPage} /> },
+              { path: '/assignments/:id/live', element: <Lazy component={LiveMonitoringPage} /> },
+              { path: '/assignments/:id/results', element: <Lazy component={AssignmentResultsPage} /> },
+              { path: '/analytics/teacher', element: <Lazy component={TeacherAnalyticsPage} /> },
+              { path: '/analytics/group/:groupId', element: <Lazy component={GroupAnalyticsPage} /> },
             ],
           },
 
@@ -128,8 +145,8 @@ export const router = createBrowserRouter([
           {
             element: <RoleRoute allowedRoles={[Role.MODERATOR]} />,
             children: [
-              { path: '/questions', element: <QuestionsPage /> },
-              { path: '/questions/:id', element: <QuestionDetailPage /> },
+              { path: '/questions', element: <Lazy component={QuestionsPage} /> },
+              { path: '/questions/:id', element: <Lazy component={QuestionDetailPage} /> },
             ],
           },
 
@@ -137,11 +154,11 @@ export const router = createBrowserRouter([
           {
             element: <RoleRoute allowedRoles={[Role.STUDENT]} />,
             children: [
-              { path: '/my-tests', element: <AvailableAssignmentsPage /> },
-              { path: '/my-attempts', element: <MyAttemptsPage /> },
-              { path: '/attempt-result/:attemptId', element: <AttemptResultPage /> },
-              { path: '/analytics/student', element: <StudentAnalyticsPage /> },
-              { path: '/pairing', element: <StudentPairingPage /> },
+              { path: '/my-tests', element: <Lazy component={AvailableAssignmentsPage} /> },
+              { path: '/my-attempts', element: <Lazy component={MyAttemptsPage} /> },
+              { path: '/attempt-result/:attemptId', element: <Lazy component={AttemptResultPage} /> },
+              { path: '/analytics/student', element: <Lazy component={StudentAnalyticsPage} /> },
+              { path: '/pairing', element: <Lazy component={StudentPairingPage} /> },
             ],
           },
 
@@ -149,8 +166,8 @@ export const router = createBrowserRouter([
           {
             element: <RoleRoute allowedRoles={[Role.PARENT]} />,
             children: [
-              { path: '/my-children', element: <ParentDashboardPage /> },
-              { path: '/my-children/:childId', element: <ChildDashboardPage /> },
+              { path: '/my-children', element: <Lazy component={ParentDashboardPage} /> },
+              { path: '/my-children/:childId', element: <Lazy component={ChildDashboardPage} /> },
             ],
           },
 
@@ -158,7 +175,7 @@ export const router = createBrowserRouter([
           {
             element: <RoleRoute allowedRoles={[Role.MODERATOR, Role.ADMIN, Role.SUPER_ADMIN]} />,
             children: [
-              { path: '/admin/moderation', element: <ModerationPage /> },
+              { path: '/admin/moderation', element: <Lazy component={ModerationPage} /> },
             ],
           },
 
@@ -166,10 +183,10 @@ export const router = createBrowserRouter([
           {
             element: <RoleRoute allowedRoles={[Role.ADMIN, Role.SUPER_ADMIN]} />,
             children: [
-              { path: '/admin', element: <AdminDashboardPage /> },
-              { path: '/admin/users', element: <AdminUsersPage /> },
-              { path: '/admin/users/:id', element: <AdminUserDetailPage /> },
-              { path: '/admin/audit-logs', element: <AuditLogPage /> },
+              { path: '/admin', element: <Lazy component={AdminDashboardPage} /> },
+              { path: '/admin/users', element: <Lazy component={AdminUsersPage} /> },
+              { path: '/admin/users/:id', element: <Lazy component={AdminUserDetailPage} /> },
+              { path: '/admin/audit-logs', element: <Lazy component={AuditLogPage} /> },
             ],
           },
         ],
@@ -178,7 +195,7 @@ export const router = createBrowserRouter([
   },
 
   // Public routes
-  { path: '/test/:slug', element: <PublicTestPage /> },
-  { path: '/unauthorized', element: <UnauthorizedPage /> },
-  { path: '*', element: <NotFoundPage /> },
+  { path: '/test/:slug', element: <Lazy component={PublicTestPage} /> },
+  { path: '/unauthorized', element: <Lazy component={UnauthorizedPage} /> },
+  { path: '*', element: <Lazy component={NotFoundPage} /> },
 ]);

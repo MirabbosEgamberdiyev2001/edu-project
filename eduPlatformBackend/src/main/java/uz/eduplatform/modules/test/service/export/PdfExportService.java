@@ -21,9 +21,11 @@ import uz.eduplatform.modules.content.repository.QuestionRepository;
 import uz.eduplatform.modules.test.domain.TestHistory;
 import uz.eduplatform.modules.test.service.ExportHelper;
 
+import jakarta.annotation.PostConstruct;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -39,6 +41,19 @@ public class PdfExportService implements TestExportService {
     private final MessageService messageService;
     private final ExportHelper exportHelper;
     private final ObjectMapper objectMapper;
+
+    @PostConstruct
+    void validateFontsAvailable() {
+        String[] fontPaths = {"/fonts/NotoSans-Regular.ttf", "/fonts/NotoSans-Bold.ttf"};
+        for (String path : fontPaths) {
+            if (getClass().getResourceAsStream(path) == null) {
+                log.error("CRITICAL: Required font missing from classpath: {}", path);
+                throw new IllegalStateException("Required font missing: " + path
+                        + ". PDF export will not work without Unicode fonts.");
+            }
+        }
+        log.info("PDF export fonts validated successfully");
+    }
 
     private static final float PAGE_WIDTH = PDRectangle.A4.getWidth();
     private static final float PAGE_HEIGHT = PDRectangle.A4.getHeight();
@@ -107,6 +122,74 @@ public class PdfExportService implements TestExportService {
             log.error("Failed to generate PDF", e);
             throw new BusinessException(messageService.get("export.pdf.fail", locale, e.getMessage()));
         }
+    }
+
+    @Override
+    public void exportTestToStream(TestHistory test, ExportFormat format, Locale locale, OutputStream out) throws IOException {
+        try (PDDocument document = new PDDocument()) {
+            PDFont fontBold = loadFont(document, true);
+            PDFont fontRegular = loadFont(document, false);
+
+            for (Map<String, Object> variant : test.getVariants()) {
+                String variantCode = (String) variant.get("code");
+                List<UUID> questionIds = exportHelper.parseQuestionIds(variant.get("questionIds"));
+                List<List<String>> optionsOrder = exportHelper.parseOptionsOrder(variant.get("optionsOrder"));
+
+                Map<UUID, Question> questionMap = questionRepository.findAllById(questionIds).stream()
+                        .collect(Collectors.toMap(Question::getId, Function.identity(), (a, b) -> a));
+
+                PDPage page = new PDPage(PDRectangle.A4);
+                document.addPage(page);
+                PDPageContentStream cs = new PDPageContentStream(document, page);
+
+                float y = PAGE_HEIGHT - MARGIN;
+                y = drawHeader(cs, fontBold, fontRegular, test, variantCode, y, locale);
+                y -= 20;
+
+                int questionNum = 1;
+                for (int qi = 0; qi < questionIds.size(); qi++) {
+                    Question q = questionMap.get(questionIds.get(qi));
+                    if (q == null) continue;
+
+                    float estimatedHeight = estimateQuestionHeight(q);
+                    if (y - estimatedHeight < MARGIN + 30) {
+                        cs.close();
+                        page = new PDPage(PDRectangle.A4);
+                        document.addPage(page);
+                        cs = new PDPageContentStream(document, page);
+                        y = PAGE_HEIGHT - MARGIN;
+                    }
+
+                    List<String> optOrder = (optionsOrder != null && qi < optionsOrder.size())
+                            ? optionsOrder.get(qi) : null;
+                    y = drawQuestion(cs, fontBold, fontRegular, q, questionNum++, y, optOrder, locale);
+                    y -= QUESTION_SPACING;
+                }
+                cs.close();
+            }
+
+            addPageNumbers(document, fontRegular);
+            document.save(out);
+        }
+    }
+
+    @Override
+    public void exportAnswerKeyToStream(TestHistory test, ExportFormat format, Locale locale, OutputStream out) throws IOException {
+        byte[] data = exportAnswerKey(test, format, locale);
+        out.write(data);
+    }
+
+    @Override
+    public void exportCombinedToStream(TestHistory test, ExportFormat format, Locale locale, OutputStream out) throws IOException {
+        // Combined still uses byte[] merge — streaming not possible with PDF merge
+        byte[] data = exportCombined(test, format, locale);
+        out.write(data);
+    }
+
+    @Override
+    public void exportProofsToStream(TestHistory test, ExportFormat format, Locale locale, OutputStream out) throws IOException {
+        byte[] data = exportProofs(test, format, locale);
+        out.write(data);
     }
 
     @Override
@@ -308,9 +391,9 @@ public class PdfExportService implements TestExportService {
                 is.close();
             }
         }
-        log.warn("NotoSans font not found at {}, falling back to Helvetica (Cyrillic will not render)", path);
-        return bold ? PDType1Font.HELVETICA_BOLD
-                    : PDType1Font.HELVETICA;
+        log.error("NotoSans font not found at {}. PDF export requires embedded Unicode fonts for Cyrillic/Uzbek text.", path);
+        throw new IOException("Required font not found: " + path
+                + ". Ensure NotoSans-Regular.ttf and NotoSans-Bold.ttf are in src/main/resources/fonts/");
     }
 
     // ===== Private helpers =====

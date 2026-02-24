@@ -118,12 +118,18 @@ public class TestValidationService {
     }
 
     public PagedResponse<QuestionDto> getQuestionsForSelection(
-            List<UUID> topicIds, Difficulty difficulty, QuestionStatus status,
+            List<UUID> topicIds, Difficulty difficulty, QuestionStatus status, String search,
             Pageable pageable, AcceptLanguage language, UUID userId) {
         String localeKey = language.toLocaleKey();
+        String searchTerm = (search != null && !search.isBlank()) ? search.trim() : null;
 
         Page<Question> page;
-        if (status == null) {
+        if (searchTerm != null) {
+            // Text search across all accessible questions in given topics
+            page = questionRepository.searchByTopicIdsForTeacher(topicIds, userId, searchTerm,
+                    difficulty != null ? difficulty.name() : null,
+                    status != null ? status.name() : null, pageable);
+        } else if (status == null) {
             // No status filter: ACTIVE/APPROVED + teacher's own DRAFT/PENDING
             page = difficulty != null
                     ? questionRepository.findByTopicIdsFilteredForTeacher(topicIds, userId, difficulty, pageable)

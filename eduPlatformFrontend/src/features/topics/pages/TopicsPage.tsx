@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { useSubjects } from '@/features/subjects/hooks/useSubjects';
 import TopicTreeView from '../components/TopicTreeView';
 import { resolveTranslation } from '@/utils/i18nUtils';
+import PageBreadcrumbs from '@/components/PageBreadcrumbs';
 
 const GRADES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 
@@ -27,9 +28,18 @@ export default function TopicsPage() {
   const [selectedGrade, setSelectedGrade] = useState<number | null>(null);
 
   const subjects = subjectsData?.content || [];
+  const selectedSubject = subjects.find((s) => s.id === selectedSubjectId);
+  const selectedSubjectName = selectedSubject ? resolveTranslation(selectedSubject.nameTranslations) || selectedSubject.name : '';
 
   return (
     <Box>
+      {selectedSubjectId && (
+        <PageBreadcrumbs items={[
+          { label: t('common:topics') },
+          { label: selectedSubjectName },
+        ]} />
+      )}
+
       {/* Header */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="h5" fontWeight={700}>{t('pageTitle')}</Typography>

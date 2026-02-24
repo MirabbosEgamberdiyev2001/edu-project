@@ -30,6 +30,7 @@ import SubjectDeleteDialog from '../components/SubjectDeleteDialog';
 import TopicTreeView from '@/features/topics/components/TopicTreeView';
 import type { CreateSubjectRequest, UpdateSubjectRequest } from '@/types/subject';
 import { useAuthStore } from '@/stores/authStore';
+import PageBreadcrumbs from '@/components/PageBreadcrumbs';
 
 const GRADES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 
@@ -92,9 +93,14 @@ export default function SubjectDetailPage() {
 
   return (
     <Box>
+      <PageBreadcrumbs items={[
+        { label: t('common:subjects'), href: '/subjects' },
+        { label: displayName },
+      ]} />
+
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-        <IconButton onClick={() => navigate('/subjects')}>
+        <IconButton onClick={() => navigate('/subjects')} aria-label={t('common:back')}>
           <ArrowBackIcon />
         </IconButton>
         <Box sx={{ flex: 1 }}>
