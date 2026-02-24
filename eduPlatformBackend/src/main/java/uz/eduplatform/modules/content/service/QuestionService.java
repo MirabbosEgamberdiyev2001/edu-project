@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.eduplatform.core.audit.AuditService;
@@ -52,7 +54,11 @@ public class QuestionService {
         Page<Question> page;
 
         if (filter.getSearch() != null && !filter.getSearch().isBlank()) {
-            page = questionRepository.searchByUser(userId, filter.getSearch().trim(), pageable);
+            // Native query requires actual DB column names for sorting
+            Pageable nativePageable = PageRequest.of(
+                    pageable.getPageNumber(), pageable.getPageSize(),
+                    Sort.by(Sort.Direction.DESC, "created_at"));
+            page = questionRepository.searchByUser(userId, filter.getSearch().trim(), nativePageable);
         } else {
             page = questionRepository.findAll(
                     buildFilterSpec(userId, filter), pageable

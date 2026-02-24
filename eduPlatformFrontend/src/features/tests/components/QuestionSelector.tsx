@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Box,
@@ -58,28 +58,28 @@ export default function QuestionSelector({ topicIds, selectedIds, onSelectionCha
   const [filterDifficulty, setFilterDifficulty] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [searchInput, setSearchInput] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(0);
   const [selectedExpanded, setSelectedExpanded] = useState(true);
-
-  // Debounce search input (300ms)
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
-  useEffect(() => {
-    debounceRef.current = setTimeout(() => {
-      setDebouncedSearch(searchInput);
-      setPage(0);
-    }, 300);
-    return () => clearTimeout(debounceRef.current);
-  }, [searchInput]);
 
   const { data, isLoading, isError, error } = useQuestionsForSelection({
     topicIds,
     difficulty: filterDifficulty || undefined,
     status: filterStatus || undefined,
-    search: debouncedSearch || undefined,
     page,
     size: 50,
   });
+
+  // Client-side search filtering on loaded data
+  const filteredContent = useMemo(() => {
+    if (!data?.content) return [];
+    if (!searchInput.trim()) return data.content;
+    const term = searchInput.trim().toLowerCase();
+    return data.content.filter((q) => {
+      const text = (resolveTranslation(q.questionTextTranslations) || q.questionText || '').toLowerCase();
+      const topic = (resolveTranslation(q.topicNameTranslations) || q.topicName || '').toLowerCase();
+      return text.includes(term) || topic.includes(term);
+    });
+  }, [data?.content, searchInput]);
 
   const handleToggle = (questionId: string) => {
     if (selectedIds.includes(questionId)) {
@@ -90,13 +90,13 @@ export default function QuestionSelector({ topicIds, selectedIds, onSelectionCha
   };
 
   const handleSelectAll = () => {
-    if (!data?.content) return;
-    const pageIds = data.content.map(q => q.id);
-    const allSelected = pageIds.every(id => selectedIds.includes(id));
+    if (!filteredContent.length) return;
+    const visibleIds = filteredContent.map(q => q.id);
+    const allSelected = visibleIds.every(id => selectedIds.includes(id));
     if (allSelected) {
-      onSelectionChange(selectedIds.filter(id => !pageIds.includes(id)));
+      onSelectionChange(selectedIds.filter(id => !visibleIds.includes(id)));
     } else {
-      const newIds = pageIds.filter(id => !selectedIds.includes(id));
+      const newIds = visibleIds.filter(id => !selectedIds.includes(id));
       onSelectionChange([...selectedIds, ...newIds]);
     }
   };
@@ -104,9 +104,8 @@ export default function QuestionSelector({ topicIds, selectedIds, onSelectionCha
   // Fetch all selected questions across pages for accurate counts and display
   const { data: allSelectedQuestions, isLoading: selectedLoading } = useQuestionsByIds(selectedIds);
 
-  const allSelectedOnPage = data?.content
-    ? data.content.length > 0 && data.content.every(q => selectedIds.includes(q.id))
-    : false;
+  const allSelectedOnPage = filteredContent.length > 0
+    && filteredContent.every(q => selectedIds.includes(q.id));
 
   // Count difficulties from all selected questions (cross-page accurate)
   const easySel = allSelectedQuestions?.filter(q => q.difficulty === Difficulty.EASY).length ?? 0;
@@ -299,7 +298,7 @@ export default function QuestionSelector({ topicIds, selectedIds, onSelectionCha
             || (error as Error)?.message
             || t('manual.noQuestionsFound')}
         </Alert>
-      ) : !data?.content?.length ? (
+      ) : !filteredContent.length ? (
         <Alert severity="warning">{t('manual.noQuestionsFound')}</Alert>
       ) : (
         <Paper variant="outlined" sx={{ maxHeight: 400, overflow: 'auto' }}>
@@ -313,7 +312,7 @@ export default function QuestionSelector({ topicIds, selectedIds, onSelectionCha
           >
             <Checkbox
               checked={allSelectedOnPage}
-              indeterminate={data.content.some(q => selectedIds.includes(q.id)) && !allSelectedOnPage}
+              indeterminate={filteredContent.some(q => selectedIds.includes(q.id)) && !allSelectedOnPage}
               onChange={handleSelectAll}
               size="small"
             />
@@ -322,7 +321,7 @@ export default function QuestionSelector({ topicIds, selectedIds, onSelectionCha
             </Typography>
           </Box>
 
-          {data.content.map((question) => (
+          {filteredContent.map((question) => (
             <Box
               key={question.id}
               sx={{

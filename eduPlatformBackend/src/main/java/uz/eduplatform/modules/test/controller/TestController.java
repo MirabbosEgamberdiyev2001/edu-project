@@ -10,7 +10,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -214,66 +213,61 @@ public class TestController {
 
     @GetMapping("/history/{id}/export/test")
     @Operation(summary = "Testni eksport qilish", description = "Testni PDF yoki DOCX formatida yuklab olish. Faqat savollar va variantlar chiqariladi.")
-    public ResponseEntity<StreamingResponseBody> exportTest(
+    public ResponseEntity<byte[]> exportTest(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language,
             @RequestParam(defaultValue = "PDF") ExportFormat format) {
 
-        StreamingResponseBody body = out -> exportFacade.streamExportTest(
-                id, principal.getId(), format, language.toLocale(), out);
-        return buildStreamingResponse(body, "test_" + id, format);
+        byte[] data = exportFacade.exportTest(id, principal.getId(), format, language.toLocale());
+        return buildExportResponse(data, "test_" + id, format);
     }
 
     @GetMapping("/history/{id}/export/answer-key")
     @Operation(summary = "Javoblar kalitini eksport qilish", description = "Test javoblari kalitini PDF yoki DOCX formatida yuklab olish.")
-    public ResponseEntity<StreamingResponseBody> exportAnswerKey(
+    public ResponseEntity<byte[]> exportAnswerKey(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language,
             @RequestParam(defaultValue = "PDF") ExportFormat format) {
 
-        StreamingResponseBody body = out -> exportFacade.streamExportAnswerKey(
-                id, principal.getId(), format, language.toLocale(), out);
-        return buildStreamingResponse(body, "answer_key_" + id, format);
+        byte[] data = exportFacade.exportAnswerKey(id, principal.getId(), format, language.toLocale());
+        return buildExportResponse(data, "answer_key_" + id, format);
     }
 
     @GetMapping("/history/{id}/export/combined")
     @Operation(summary = "Test + javoblar kalitini birga eksport qilish", description = "Test va javoblar kalitini bitta faylda PDF yoki DOCX formatida yuklab olish.")
-    public ResponseEntity<StreamingResponseBody> exportCombined(
+    public ResponseEntity<byte[]> exportCombined(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language,
             @RequestParam(defaultValue = "PDF") ExportFormat format) {
 
-        StreamingResponseBody body = out -> exportFacade.streamExportCombined(
-                id, principal.getId(), format, language.toLocale(), out);
-        return buildStreamingResponse(body, "combined_" + id, format);
+        byte[] data = exportFacade.exportCombined(id, principal.getId(), format, language.toLocale());
+        return buildExportResponse(data, "combined_" + id, format);
     }
 
     @GetMapping("/history/{id}/export/proofs")
     @Operation(summary = "Yechimlar (proof) ni eksport qilish", description = "Savollarning batafsil yechimlari va izohlarini PDF yoki DOCX formatida yuklab olish.")
-    public ResponseEntity<StreamingResponseBody> exportProofs(
+    public ResponseEntity<byte[]> exportProofs(
             @PathVariable UUID id,
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language,
             @RequestParam(defaultValue = "PDF") ExportFormat format) {
 
-        StreamingResponseBody body = out -> exportFacade.streamExportProofs(
-                id, principal.getId(), format, language.toLocale(), out);
-        return buildStreamingResponse(body, "proofs_" + id, format);
+        byte[] data = exportFacade.exportProofs(id, principal.getId(), format, language.toLocale());
+        return buildExportResponse(data, "proofs_" + id, format);
     }
 
-    private ResponseEntity<StreamingResponseBody> buildStreamingResponse(
-            StreamingResponseBody body, String filename, ExportFormat format) {
+    private ResponseEntity<byte[]> buildExportResponse(byte[] data, String filename, ExportFormat format) {
         String extension = format == ExportFormat.PDF ? ".pdf" : ".docx";
         MediaType mediaType = format == ExportFormat.PDF
                 ? MediaType.APPLICATION_PDF
                 : MediaType.parseMediaType(DOCX_CONTENT_TYPE);
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename + extension)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + extension + "\"")
                 .contentType(mediaType)
-                .body(body);
+                .body(data);
     }
 }

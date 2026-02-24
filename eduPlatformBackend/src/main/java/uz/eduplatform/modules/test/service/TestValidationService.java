@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import uz.eduplatform.core.common.dto.PagedResponse;
 import uz.eduplatform.core.common.exception.BusinessException;
@@ -125,10 +127,14 @@ public class TestValidationService {
 
         Page<Question> page;
         if (searchTerm != null) {
+            // Native query requires actual DB column names for sorting (created_at, not createdAt)
+            Pageable nativePageable = PageRequest.of(
+                    pageable.getPageNumber(), pageable.getPageSize(),
+                    Sort.by(Sort.Direction.DESC, "created_at"));
             // Text search across all accessible questions in given topics
             page = questionRepository.searchByTopicIdsForTeacher(topicIds, userId, searchTerm,
                     difficulty != null ? difficulty.name() : null,
-                    status != null ? status.name() : null, pageable);
+                    status != null ? status.name() : null, nativePageable);
         } else if (status == null) {
             // No status filter: ACTIVE/APPROVED + teacher's own DRAFT/PENDING
             page = difficulty != null

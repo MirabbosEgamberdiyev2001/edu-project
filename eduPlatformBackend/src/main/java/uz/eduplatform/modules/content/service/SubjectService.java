@@ -2,7 +2,9 @@ package uz.eduplatform.modules.content.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.eduplatform.core.audit.AuditService;
@@ -42,10 +44,16 @@ public class SubjectService {
         boolean hasSearch = search != null && !search.isBlank();
         boolean hasGrade = gradeLevel != null;
 
-        if (hasSearch && hasGrade) {
-            page = subjectRepository.searchByUserAndGradeLevel(userId, search.trim(), gradeLevel, pageable);
-        } else if (hasSearch) {
-            page = subjectRepository.searchByUser(userId, search.trim(), pageable);
+        if (hasSearch) {
+            // Native queries require actual DB column names for sorting (sort_order, not sortOrder)
+            Pageable nativePageable = PageRequest.of(
+                    pageable.getPageNumber(), pageable.getPageSize(),
+                    Sort.by(Sort.Direction.ASC, "sort_order"));
+            if (hasGrade) {
+                page = subjectRepository.searchByUserAndGradeLevel(userId, search.trim(), gradeLevel, nativePageable);
+            } else {
+                page = subjectRepository.searchByUser(userId, search.trim(), nativePageable);
+            }
         } else if (hasGrade) {
             page = subjectRepository.findAllAccessibleByUserAndGradeLevel(userId, gradeLevel, pageable);
         } else {

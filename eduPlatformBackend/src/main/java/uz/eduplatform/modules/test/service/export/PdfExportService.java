@@ -236,7 +236,7 @@ public class PdfExportService implements TestExportService {
             cs.beginText();
             cs.setFont(fontBold, 11);
             cs.newLineAtOffset(MARGIN, y);
-            cs.showText(messageService.get("export.grading.title", locale));
+            cs.showText(sanitizeForPdf(messageService.get("export.grading.title", locale), fontBold));
             cs.endText();
             y -= LINE_HEIGHT;
 
@@ -246,7 +246,7 @@ public class PdfExportService implements TestExportService {
                 cs.beginText();
                 cs.setFont(fontRegular, 10);
                 cs.newLineAtOffset(MARGIN + 10, y);
-                cs.showText("- " + messageService.get(key, locale));
+                cs.showText(sanitizeForPdf("- " + messageService.get(key, locale), fontRegular));
                 cs.endText();
                 y -= LINE_HEIGHT;
             }
@@ -314,14 +314,14 @@ public class PdfExportService implements TestExportService {
                 cs.beginText();
                 cs.setFont(fontBold, 11);
                 cs.newLineAtOffset(MARGIN, y);
-                cs.showText(num + ". " + exportHelper.truncateText(qText, 80));
+                cs.showText(sanitizeForPdf(num + ". " + exportHelper.truncateText(qText, 80), fontBold));
                 cs.endText();
                 y -= LINE_HEIGHT + 5;
 
                 cs.beginText();
                 cs.setFont(fontRegular, 10);
                 cs.newLineAtOffset(MARGIN + 15, y);
-                cs.showText(messageService.get("export.proof.label", locale));
+                cs.showText(sanitizeForPdf(messageService.get("export.proof.label", locale), fontRegular));
                 cs.endText();
                 y -= LINE_HEIGHT;
 
@@ -336,7 +336,7 @@ public class PdfExportService implements TestExportService {
                     cs.beginText();
                     cs.setFont(fontRegular, 9);
                     cs.newLineAtOffset(MARGIN + 20, y);
-                    cs.showText(line);
+                    cs.showText(sanitizeForPdf(line, fontRegular));
                     cs.endText();
                     y -= LINE_HEIGHT - 2;
                 }
@@ -421,21 +421,21 @@ public class PdfExportService implements TestExportService {
         cs.beginText();
         cs.setFont(fontRegular, 11);
         cs.newLineAtOffset(MARGIN, y);
-        cs.showText(messageService.get("export.student.name", locale));
+        cs.showText(sanitizeForPdf(messageService.get("export.student.name", locale), fontRegular));
         cs.endText();
         y -= LINE_HEIGHT + 3;
 
         cs.beginText();
         cs.setFont(fontRegular, 11);
         cs.newLineAtOffset(MARGIN, y);
-        cs.showText(messageService.get("export.class.date", locale, className));
+        cs.showText(sanitizeForPdf(messageService.get("export.class.date", locale, className), fontRegular));
         cs.endText();
         y -= LINE_HEIGHT + 3;
 
         cs.beginText();
         cs.setFont(fontRegular, 10);
         cs.newLineAtOffset(MARGIN, y);
-        cs.showText(messageService.get("export.question.count", locale, test.getQuestionCount()));
+        cs.showText(sanitizeForPdf(messageService.get("export.question.count", locale, test.getQuestionCount()), fontRegular));
         cs.endText();
         y -= LINE_HEIGHT;
 
@@ -452,6 +452,8 @@ public class PdfExportService implements TestExportService {
                                 PDFont fontRegular, Question q,
                                 int num, float y, List<String> optionsOrder, Locale locale) throws IOException {
         String questionText = num + ". " + TranslatedField.resolve(q.getQuestionText());
+        // Sanitize before wrapping to avoid glyph errors for unsupported Unicode chars
+        questionText = sanitizeForPdf(questionText, fontRegular);
         List<String> lines = exportHelper.wrapText(questionText, 85);
         for (int i = 0; i < lines.size(); i++) {
             cs.beginText();
@@ -493,7 +495,7 @@ public class PdfExportService implements TestExportService {
                 cs.beginText();
                 cs.setFont(fontRegular, 10);
                 cs.newLineAtOffset(MARGIN + 20, y);
-                cs.showText(label + ") " + exportHelper.truncateText(text, 75));
+                cs.showText(sanitizeForPdf(label + ") " + exportHelper.truncateText(text, 75), fontRegular));
                 cs.endText();
                 y -= LINE_HEIGHT;
             }
@@ -501,8 +503,8 @@ public class PdfExportService implements TestExportService {
             cs.beginText();
             cs.setFont(fontRegular, 10);
             cs.newLineAtOffset(MARGIN + 20, y);
-            cs.showText("A) " + messageService.get("export.true.option", locale)
-                    + "     B) " + messageService.get("export.false.option", locale));
+            cs.showText(sanitizeForPdf("A) " + messageService.get("export.true.option", locale)
+                    + "     B) " + messageService.get("export.false.option", locale), fontRegular));
             cs.endText();
             y -= LINE_HEIGHT;
         }
@@ -541,7 +543,7 @@ public class PdfExportService implements TestExportService {
             cs.beginText();
             cs.setFont(fontBold, 9);
             cs.newLineAtOffset(xAns + 4, headerY - 12);
-            cs.showText(messageService.get("export.answer.column.short", locale));
+            cs.showText(sanitizeForPdf(messageService.get("export.answer.column.short", locale), fontBold));
             cs.endText();
         }
 
@@ -582,13 +584,13 @@ public class PdfExportService implements TestExportService {
                 cs.beginText();
                 cs.setFont(fontRegular, 10);
                 cs.newLineAtOffset(xNum + 4, rowTop - 12);
-                cs.showText(numStr);
+                cs.showText(sanitizeForPdf(numStr, fontRegular));
                 cs.endText();
 
                 cs.beginText();
                 cs.setFont(fontBold, 10);
                 cs.newLineAtOffset(xAns + 4, rowTop - 12);
-                cs.showText(answer);
+                cs.showText(sanitizeForPdf(answer, fontBold));
                 cs.endText();
             }
 
@@ -627,6 +629,7 @@ public class PdfExportService implements TestExportService {
 
     private float drawCenteredText(PDPageContentStream cs, PDFont font,
                                     float fontSize, String text, float y) throws IOException {
+        text = sanitizeForPdf(text, font);
         float textWidth = font.getStringWidth(text) / 1000 * fontSize;
         float x = (PAGE_WIDTH - textWidth) / 2;
         cs.beginText();
@@ -643,7 +646,7 @@ public class PdfExportService implements TestExportService {
             PDPage page = document.getPage(i);
             PDPageContentStream cs = new PDPageContentStream(document, page,
                     PDPageContentStream.AppendMode.APPEND, true, true);
-            String text = (i + 1) + " / " + totalPages;
+            String text = sanitizeForPdf((i + 1) + " / " + totalPages, font);
             float textWidth = font.getStringWidth(text) / 1000 * 9;
             cs.beginText();
             cs.setFont(font, 9);
@@ -679,6 +682,56 @@ public class PdfExportService implements TestExportService {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    /**
+     * Sanitizes text for PDF rendering by replacing characters unsupported by the font.
+     * NotoSans lacks many math/special Unicode glyphs — this prevents IllegalArgumentException.
+     */
+    private String sanitizeForPdf(String text, PDFont font) {
+        if (text == null || text.isEmpty()) return "";
+        StringBuilder sb = new StringBuilder(text.length());
+        for (int i = 0; i < text.length(); ) {
+            int cp = text.codePointAt(i);
+            String ch = new String(Character.toChars(cp));
+            try {
+                font.encode(ch);
+                sb.append(ch);
+            } catch (Exception e) {
+                sb.append(mapUnsupportedChar(cp));
+            }
+            i += Character.charCount(cp);
+        }
+        return sb.toString();
+    }
+
+    private String mapUnsupportedChar(int codePoint) {
+        return switch (codePoint) {
+            case 0x221A -> "sqrt";   // √
+            case 0x03C0 -> "pi";     // π
+            case 0x2211 -> "sum";    // ∑
+            case 0x222B -> "int";    // ∫
+            case 0x2260 -> "!=";     // ≠
+            case 0x2264 -> "<=";     // ≤
+            case 0x2265 -> ">=";     // ≥
+            case 0x00B2 -> "^2";     // ²
+            case 0x00B3 -> "^3";     // ³
+            case 0x2248 -> "~=";     // ≈
+            case 0x221E -> "inf";    // ∞
+            case 0x00B1 -> "+/-";    // ±
+            case 0x00D7 -> "*";      // ×
+            case 0x00F7 -> "/";      // ÷
+            case 0x2013 -> "-";      // –
+            case 0x2014 -> "--";     // —
+            case 0x2018, 0x2019 -> "'";  // ' '
+            case 0x201C, 0x201D -> "\""; // " "
+            case 0x2026 -> "...";    // …
+            case 0x0394 -> "delta";  // Δ
+            case 0x03B1 -> "alpha";  // α
+            case 0x03B2 -> "beta";   // β
+            case 0x03B3 -> "gamma";  // γ
+            default -> "?";
+        };
     }
 
     private byte[] mergePdfs(byte[] pdf1, byte[] pdf2, Locale locale) {
