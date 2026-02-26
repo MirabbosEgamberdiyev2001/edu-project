@@ -7,6 +7,8 @@ import type {
   AssignmentResultDto,
   LiveMonitoringDto,
   AssignmentStatus,
+  PromoCodeDto,
+  GeneratePromoCodeRequest,
 } from '@/types/assignment';
 
 const ASSIGNMENTS = '/assignments';
@@ -51,4 +53,13 @@ export const assignmentApi = {
       params: { format },
       responseType: 'blob',
     }),
+
+  generatePromoCode: (assignmentId: string, data?: GeneratePromoCodeRequest) =>
+    api.post<ApiResponse<PromoCodeDto>>(`${ASSIGNMENTS}/${assignmentId}/promo-code`, data || {}),
+
+  getPromoCode: (assignmentId: string, signal?: AbortSignal) =>
+    api.get<ApiResponse<PromoCodeDto>>(`${ASSIGNMENTS}/${assignmentId}/promo-code`, { signal }),
+
+  revokePromoCode: (assignmentId: string) =>
+    api.delete<ApiResponse<void>>(`${ASSIGNMENTS}/${assignmentId}/promo-code`),
 };

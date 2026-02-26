@@ -1,6 +1,8 @@
 export enum AttemptStatus {
   IN_PROGRESS = 'IN_PROGRESS',
   SUBMITTED = 'SUBMITTED',
+  AUTO_GRADED = 'AUTO_GRADED',
+  NEEDS_REVIEW = 'NEEDS_REVIEW',
   GRADED = 'GRADED',
   EXPIRED = 'EXPIRED',
 }
@@ -8,21 +10,29 @@ export enum AttemptStatus {
 export interface AttemptDto {
   id: string;
   assignmentId: string;
+  assignmentTitle: string | null;
+
+  // Frontend-expected aliases (populated by backend alongside the originals)
+  testTitle: string | null;        // = assignmentTitle
+  tabSwitches: number;             // = tabSwitchCount
+  score: number | null;            // = rawScore as double
+  maxScore: number | null;         // = maxScore
+  timeRemaining: number | null;    // = remainingSeconds
+  durationMinutes: number | null;
+
   studentId: string;
-  testTitle: string;
   status: AttemptStatus;
   startedAt: string;
   submittedAt: string | null;
-  score: number | null;
-  maxScore: number;
   percentage: number | null;
   totalQuestions: number;
   answeredQuestions: number;
-  tabSwitches: number;
-  timeRemaining: number | null;
-  durationMinutes: number | null;
+
+  // Exam questions — populated for IN_PROGRESS attempts
   questions: AttemptQuestionDto[];
-  answers: Record<string, AttemptAnswerDto>;
+
+  // Answers map (keyed by questionId) — populated for completed attempts
+  answers: Record<string, AttemptAnswerDto> | null;
 }
 
 export interface AttemptQuestionDto {
@@ -34,14 +44,21 @@ export interface AttemptQuestionDto {
   timeLimitSeconds: number | null;
   media: Record<string, unknown> | null;
   options: unknown;
+  optionsOrder: string[] | null;
 }
 
 export interface AttemptAnswerDto {
+  id: string;
   questionId: string;
-  response: unknown;
-  savedAt: string;
+  selectedAnswer: unknown;
+  response: unknown;          // alias for selectedAnswer
   isCorrect: boolean | null;
-  score: number | null;
+  isPartial: boolean | null;
+  earnedPoints: number | null;
+  score: number | null;       // alias for earnedPoints
+  maxPoints: number | null;
+  bookmarked: boolean | null;
+  timeSpentSeconds: number | null;
 }
 
 export interface SubmitAnswerRequest {

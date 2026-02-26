@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import uz.eduplatform.core.audit.AuditService;
 import uz.eduplatform.core.common.exception.BusinessException;
 import uz.eduplatform.core.common.exception.ResourceNotFoundException;
 import uz.eduplatform.modules.auth.domain.Role;
@@ -43,6 +44,7 @@ class GroupServiceTest {
     @Mock private GroupMemberRepository memberRepository;
     @Mock private UserRepository userRepository;
     @Mock private SubjectRepository subjectRepository;
+    @Mock private AuditService auditService;
 
     @InjectMocks private GroupService groupService;
 
@@ -82,6 +84,7 @@ class GroupServiceTest {
         when(userRepository.findById(teacherId)).thenReturn(Optional.of(teacher));
         when(userRepository.findById(studentId)).thenReturn(Optional.of(student));
         when(subjectRepository.findById(subjectId)).thenReturn(Optional.of(subject));
+        when(subjectRepository.findByIdAndUserId(subjectId, teacherId)).thenReturn(Optional.of(subject));
     }
 
     // ── Create Group ──
@@ -150,7 +153,7 @@ class GroupServiceTest {
 
         when(groupRepository.findByTeacherIdOrderByCreatedAtDesc(teacherId, pageable)).thenReturn(page);
 
-        var result = groupService.getTeacherGroups(teacherId, null, pageable);
+        var result = groupService.getTeacherGroups(teacherId, null, null, pageable);
 
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getTotalElements()).isEqualTo(1);
@@ -164,7 +167,7 @@ class GroupServiceTest {
         when(groupRepository.findByTeacherIdAndStatusOrderByCreatedAtDesc(
                 teacherId, GroupStatus.ACTIVE, pageable)).thenReturn(page);
 
-        var result = groupService.getTeacherGroups(teacherId, GroupStatus.ACTIVE, pageable);
+        var result = groupService.getTeacherGroups(teacherId, GroupStatus.ACTIVE, null, pageable);
 
         assertThat(result.getContent()).hasSize(1);
     }
@@ -279,7 +282,8 @@ class GroupServiceTest {
         List<GroupMemberDto> result = groupService.addMembers(groupId, teacherId, request);
 
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getStudentName()).isEqualTo("Jane Student");
+        assertThat(result.get(0).getFirstName()).isEqualTo("Jane");
+        assertThat(result.get(0).getLastName()).isEqualTo("Student");
     }
 
     @Test

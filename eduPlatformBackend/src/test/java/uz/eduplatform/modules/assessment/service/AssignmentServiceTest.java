@@ -23,6 +23,8 @@ import uz.eduplatform.modules.assessment.repository.TestAssignmentRepository;
 import uz.eduplatform.modules.assessment.repository.TestAttemptRepository;
 import uz.eduplatform.modules.auth.domain.User;
 import uz.eduplatform.modules.auth.repository.UserRepository;
+import uz.eduplatform.modules.group.repository.StudentGroupRepository;
+import uz.eduplatform.modules.group.service.GroupService;
 import uz.eduplatform.modules.test.domain.TestHistory;
 import uz.eduplatform.modules.test.repository.TestHistoryRepository;
 
@@ -43,6 +45,8 @@ class AssignmentServiceTest {
     @Mock private TestAttemptRepository attemptRepository;
     @Mock private TestHistoryRepository testHistoryRepository;
     @Mock private UserRepository userRepository;
+    @Mock private GroupService groupService;
+    @Mock private StudentGroupRepository studentGroupRepository;
 
     @InjectMocks
     private AssignmentService assignmentService;
@@ -74,6 +78,7 @@ class AssignmentServiceTest {
         when(userRepository.findById(teacherId)).thenReturn(Optional.of(teacher));
         when(attemptRepository.countDistinctStudentsByAssignmentId(any())).thenReturn(0L);
         when(attemptRepository.countSubmittedByAssignmentId(any())).thenReturn(0L);
+        when(attemptRepository.averagePercentageByAssignmentId(any())).thenReturn(null);
     }
 
     // ==================== Create ====================
@@ -113,8 +118,8 @@ class AssignmentServiceTest {
         CreateAssignmentRequest request = CreateAssignmentRequest.builder()
                 .testHistoryId(testHistoryId)
                 .title("Scheduled Test")
-                .startTime(LocalDateTime.now().plusDays(1))
-                .endTime(LocalDateTime.now().plusDays(2))
+                .startDate(LocalDateTime.now().plusDays(1))
+                .endDate(LocalDateTime.now().plusDays(2))
                 .build();
 
         when(testHistoryRepository.findByIdAndUserIdAndDeletedAtIsNull(testHistoryId, teacherId))
@@ -135,8 +140,8 @@ class AssignmentServiceTest {
         CreateAssignmentRequest request = CreateAssignmentRequest.builder()
                 .testHistoryId(testHistoryId)
                 .title("Invalid Time")
-                .startTime(LocalDateTime.now().plusDays(2))
-                .endTime(LocalDateTime.now().plusDays(1))
+                .startDate(LocalDateTime.now().plusDays(2))
+                .endDate(LocalDateTime.now().plusDays(1))
                 .build();
 
         when(testHistoryRepository.findByIdAndUserIdAndDeletedAtIsNull(testHistoryId, teacherId))
@@ -171,7 +176,7 @@ class AssignmentServiceTest {
         when(assignmentRepository.findByTeacherIdOrderByCreatedAtDesc(teacherId, pageable))
                 .thenReturn(page);
 
-        PagedResponse<AssignmentDto> result = assignmentService.getTeacherAssignments(teacherId, null, pageable);
+        PagedResponse<AssignmentDto> result = assignmentService.getTeacherAssignments(teacherId, null, null, pageable);
 
         assertEquals(1, result.getContent().size());
         assertEquals("Test Assignment", result.getContent().get(0).getTitle());

@@ -12,26 +12,71 @@ import java.util.UUID;
 @AllArgsConstructor
 public class TeacherDashboardDto {
 
-    // Summary stats
+    // Core counts
     private int totalGroups;
     private int totalStudents;
     private int totalAssignments;
     private int activeAssignments;
+    private int totalTests;
 
-    // Performance overview
+    // Scores — frontend uses averageScore & completionRate (double)
     private BigDecimal overallAverageScore;
+    private double averageScore;
+    private double completionRate;
 
-    // Top performing students
+    // Trend data (monthly test creation — {date, value})
+    private List<TrendPointDto> testCreationTrend;
+
+    // Recent activity feed
+    private List<ActivityDto> recentActivity;
+
+    // Top / at-risk students
     private List<StudentPerformanceDto> topStudents;
-
-    // At-risk students (low average)
     private List<StudentPerformanceDto> atRiskStudents;
 
-    // Recent assignment results
+    // Legacy fields (still populated for backward compat)
     private List<AssignmentSummaryDto> recentAssignments;
-
-    // Topic-level analysis
     private List<TopicPerformanceDto> topicBreakdown;
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class TrendPointDto {
+        private String date;   // e.g. "2024-01"
+        private double value;  // count
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ActivityDto {
+        private String type;
+        private String description;
+        private String createdAt;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class StudentPerformanceDto {
+        private UUID studentId;
+        private String studentName;   // legacy combined
+        // Frontend-expected split names
+        private String firstName;
+        private String lastName;
+
+        private BigDecimal averageScore;
+        private int totalAttempts;
+        private int completedAttempts;
+        private double completionRate;
+
+        // at-risk extras
+        private int missedAssignments;
+        private String lastActivityAt;
+    }
 
     @Data
     @Builder
@@ -43,19 +88,7 @@ public class TeacherDashboardDto {
         private String subjectName;
         private BigDecimal averageScore;
         private int attemptCount;
-        private String difficulty; // EASY, MEDIUM, HARD
-    }
-
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class StudentPerformanceDto {
-        private UUID studentId;
-        private String studentName;
-        private BigDecimal averageScore;
-        private int totalAttempts;
-        private int completedAttempts;
+        private String difficulty;
     }
 
     @Data
@@ -69,5 +102,6 @@ public class TeacherDashboardDto {
         private int submittedCount;
         private BigDecimal averageScore;
         private String status;
+        private String createdAt;
     }
 }

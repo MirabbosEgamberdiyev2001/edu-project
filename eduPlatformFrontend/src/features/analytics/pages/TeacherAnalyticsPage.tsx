@@ -27,7 +27,14 @@ export default function TeacherAnalyticsPage() {
     );
   }
 
-  if (!data) return null;
+  if (!data) {
+    return (
+      <Box sx={{ textAlign: 'center', py: 8 }}>
+        <Typography variant="h6" color="text.secondary">{t('noData')}</Typography>
+        <Typography variant="body2" color="text.disabled" sx={{ mt: 1 }}>{t('noDataDescription')}</Typography>
+      </Box>
+    );
+  }
 
   const stats = [
     { label: t('totalStudents'), value: data.totalStudents, color: '#1976d2' },

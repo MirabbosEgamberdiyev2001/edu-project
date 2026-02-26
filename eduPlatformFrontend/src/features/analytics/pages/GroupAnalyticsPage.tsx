@@ -35,7 +35,17 @@ export default function GroupAnalyticsPage() {
     );
   }
 
-  if (!data) return null;
+  if (!data) {
+    return (
+      <Box sx={{ textAlign: 'center', py: 8 }}>
+        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/groups')} sx={{ mb: 3 }}>
+          {t('backToGroups')}
+        </Button>
+        <Typography variant="h6" color="text.secondary">{t('noData')}</Typography>
+        <Typography variant="body2" color="text.disabled" sx={{ mt: 1 }}>{t('noDataDescription')}</Typography>
+      </Box>
+    );
+  }
 
   const stats = [
     { label: t('members'), value: data.memberCount, color: '#1976d2' },

@@ -77,7 +77,7 @@ export default function AssignmentCard({
           color={STATUS_COLORS[assignment.status] || 'default'}
         />
         {assignment.durationMinutes && (
-          <Chip label={`${assignment.durationMinutes} min`} size="small" variant="outlined" />
+          <Chip label={`${assignment.durationMinutes} ${t('minutesShort')}`} size="small" variant="outlined" />
         )}
       </Box>
 

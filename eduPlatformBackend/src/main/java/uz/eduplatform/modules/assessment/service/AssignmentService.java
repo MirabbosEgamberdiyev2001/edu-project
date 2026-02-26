@@ -17,12 +17,15 @@ import uz.eduplatform.modules.assessment.dto.CreateAssignmentRequest;
 import uz.eduplatform.modules.assessment.dto.UpdateAssignmentRequest;
 import uz.eduplatform.modules.assessment.repository.TestAssignmentRepository;
 import uz.eduplatform.modules.assessment.repository.TestAttemptRepository;
-import uz.eduplatform.modules.auth.domain.User;
 import uz.eduplatform.modules.auth.repository.UserRepository;
+import uz.eduplatform.modules.group.domain.StudentGroup;
+import uz.eduplatform.modules.group.repository.StudentGroupRepository;
 import uz.eduplatform.modules.group.service.GroupService;
 import uz.eduplatform.modules.test.domain.TestHistory;
 import uz.eduplatform.modules.test.repository.TestHistoryRepository;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -39,6 +42,7 @@ public class AssignmentService {
     private final TestHistoryRepository testHistoryRepository;
     private final UserRepository userRepository;
     private final GroupService groupService;
+    private final StudentGroupRepository studentGroupRepository;
 
     @Transactional
     public AssignmentDto createAssignment(UUID teacherId, CreateAssignmentRequest request) {
@@ -48,8 +52,8 @@ public class AssignmentService {
                 .orElseThrow(() -> new ResourceNotFoundException("TestHistory", "id", request.getTestHistoryId()));
 
         // Validate time range
-        if (request.getStartTime() != null && request.getEndTime() != null
-                && request.getEndTime().isBefore(request.getStartTime())) {
+        if (request.getStartDate() != null && request.getEndDate() != null
+                && request.getEndDate().isBefore(request.getStartDate())) {
             throw BusinessException.ofKey("assignment.end.before.start");
         }
 
@@ -73,23 +77,24 @@ public class AssignmentService {
 
         // Determine initial status
         AssignmentStatus status = AssignmentStatus.DRAFT;
-        if (request.getStartTime() != null && request.getStartTime().isAfter(LocalDateTime.now())) {
+        if (request.getStartDate() != null && request.getStartDate().isAfter(LocalDateTime.now())) {
             status = AssignmentStatus.SCHEDULED;
         }
 
         TestAssignment assignment = TestAssignment.builder()
                 .testHistoryId(testHistory.getId())
                 .teacherId(teacherId)
+                .groupId(request.getGroupId())
                 .title(request.getTitle())
                 .description(request.getDescription())
-                .startTime(request.getStartTime())
-                .endTime(request.getEndTime())
+                .startTime(request.getStartDate())
+                .endTime(request.getEndDate())
                 .durationMinutes(request.getDurationMinutes())
                 .maxAttempts(request.getMaxAttempts())
                 .showResults(request.getShowResults())
                 .showCorrectAnswers(request.getShowCorrectAnswers())
                 .showProofs(request.getShowProofs())
-                .shufflePerStudent(request.getShufflePerStudent())
+                .shufflePerStudent(request.getShuffleQuestions())
                 .preventCopyPaste(request.getPreventCopyPaste())
                 .preventTabSwitch(request.getPreventTabSwitch())
                 .tabSwitchThreshold(request.getTabSwitchThreshold())
@@ -105,9 +110,14 @@ public class AssignmentService {
     }
 
     @Transactional(readOnly = true)
-    public PagedResponse<AssignmentDto> getTeacherAssignments(UUID teacherId, AssignmentStatus status, Pageable pageable) {
+    public PagedResponse<AssignmentDto> getTeacherAssignments(UUID teacherId, AssignmentStatus status,
+                                                               String search, Pageable pageable) {
         Page<TestAssignment> page;
-        if (status != null) {
+        if (search != null && !search.isBlank() && status != null) {
+            page = assignmentRepository.searchByTeacherIdAndStatus(teacherId, search.trim(), status, pageable);
+        } else if (search != null && !search.isBlank()) {
+            page = assignmentRepository.searchByTeacherId(teacherId, search.trim(), pageable);
+        } else if (status != null) {
             page = assignmentRepository.findByTeacherIdAndStatusOrderByCreatedAtDesc(teacherId, status, pageable);
         } else {
             page = assignmentRepository.findByTeacherIdOrderByCreatedAtDesc(teacherId, pageable);
@@ -162,14 +172,14 @@ public class AssignmentService {
 
         if (request.getTitle() != null) assignment.setTitle(request.getTitle());
         if (request.getDescription() != null) assignment.setDescription(request.getDescription());
-        if (request.getStartTime() != null) assignment.setStartTime(request.getStartTime());
-        if (request.getEndTime() != null) assignment.setEndTime(request.getEndTime());
+        if (request.getStartDate() != null) assignment.setStartTime(request.getStartDate());
+        if (request.getEndDate() != null) assignment.setEndTime(request.getEndDate());
         if (request.getDurationMinutes() != null) assignment.setDurationMinutes(request.getDurationMinutes());
         if (request.getMaxAttempts() != null) assignment.setMaxAttempts(request.getMaxAttempts());
         if (request.getShowResults() != null) assignment.setShowResults(request.getShowResults());
         if (request.getShowCorrectAnswers() != null) assignment.setShowCorrectAnswers(request.getShowCorrectAnswers());
         if (request.getShowProofs() != null) assignment.setShowProofs(request.getShowProofs());
-        if (request.getShufflePerStudent() != null) assignment.setShufflePerStudent(request.getShufflePerStudent());
+        if (request.getShuffleQuestions() != null) assignment.setShufflePerStudent(request.getShuffleQuestions());
         if (request.getPreventCopyPaste() != null) assignment.setPreventCopyPaste(request.getPreventCopyPaste());
         if (request.getPreventTabSwitch() != null) assignment.setPreventTabSwitch(request.getPreventTabSwitch());
         if (request.getTabSwitchThreshold() != null) assignment.setTabSwitchThreshold(request.getTabSwitchThreshold());
@@ -236,25 +246,45 @@ public class AssignmentService {
                 .map(u -> u.getFirstName() + " " + u.getLastName())
                 .orElse(null);
 
+        // Get group name
+        String groupName = null;
+        if (a.getGroupId() != null) {
+            groupName = studentGroupRepository.findById(a.getGroupId())
+                    .map(StudentGroup::getName)
+                    .orElse(null);
+        }
+
+        // Get test title
+        String testTitle = testHistoryRepository.findById(a.getTestHistoryId())
+                .map(TestHistory::getTitle)
+                .orElse(null);
+
         // Get attempt stats
         long startedCount = attemptRepository.countDistinctStudentsByAssignmentId(a.getId());
         long submittedCount = attemptRepository.countSubmittedByAssignmentId(a.getId());
+
+        // Get average score
+        Double avgPct = attemptRepository.averagePercentageByAssignmentId(a.getId());
 
         return AssignmentDto.builder()
                 .id(a.getId())
                 .testHistoryId(a.getTestHistoryId())
                 .teacherId(a.getTeacherId())
                 .teacherName(teacherName)
+                .groupId(a.getGroupId())
+                .groupName(groupName)
+                .testTitle(testTitle)
                 .title(a.getTitle())
                 .description(a.getDescription())
-                .startTime(a.getStartTime())
-                .endTime(a.getEndTime())
+                .startDate(a.getStartTime())
+                .endDate(a.getEndTime())
                 .durationMinutes(a.getDurationMinutes())
                 .maxAttempts(a.getMaxAttempts())
                 .showResults(a.getShowResults())
                 .showCorrectAnswers(a.getShowCorrectAnswers())
                 .showProofs(a.getShowProofs())
-                .shufflePerStudent(a.getShufflePerStudent())
+                .shuffleQuestions(a.getShufflePerStudent())
+                .shuffleOptions(false)
                 .preventCopyPaste(a.getPreventCopyPaste())
                 .preventTabSwitch(a.getPreventTabSwitch())
                 .tabSwitchThreshold(a.getTabSwitchThreshold())
@@ -262,8 +292,10 @@ public class AssignmentService {
                 .accessCode(a.getAccessCode())
                 .assignedStudentIds(a.getAssignedStudentIds())
                 .totalStudents(a.getAssignedStudentIds() != null ? a.getAssignedStudentIds().size() : 0)
-                .startedCount((int) startedCount)
-                .submittedCount((int) submittedCount)
+                .activeStudents((int) startedCount)
+                .completedStudents((int) submittedCount)
+                .averageScore(avgPct != null
+                        ? BigDecimal.valueOf(avgPct).setScale(2, RoundingMode.HALF_UP) : null)
                 .status(a.getStatus())
                 .createdAt(a.getCreatedAt())
                 .updatedAt(a.getUpdatedAt())

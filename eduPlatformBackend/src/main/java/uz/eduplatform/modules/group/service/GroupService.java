@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uz.eduplatform.core.audit.AuditService;
 import uz.eduplatform.core.common.dto.PagedResponse;
 import uz.eduplatform.core.common.exception.BusinessException;
 import uz.eduplatform.core.common.exception.ResourceNotFoundException;
@@ -26,6 +27,8 @@ import uz.eduplatform.modules.group.repository.StudentGroupRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -37,6 +40,7 @@ public class GroupService {
     private final GroupMemberRepository memberRepository;
     private final UserRepository userRepository;
     private final SubjectRepository subjectRepository;
+    private final AuditService auditService;
 
     @Transactional
     public GroupDto createGroup(UUID teacherId, CreateGroupRequest request) {
@@ -63,9 +67,15 @@ public class GroupService {
     }
 
     @Transactional(readOnly = true)
-    public PagedResponse<GroupDto> getTeacherGroups(UUID teacherId, GroupStatus status, Pageable pageable) {
+    public PagedResponse<GroupDto> getTeacherGroups(UUID teacherId, GroupStatus status, String search, Pageable pageable) {
         Page<StudentGroup> page;
-        if (status != null) {
+        boolean hasSearch = search != null && !search.isBlank();
+
+        if (hasSearch && status != null) {
+            page = groupRepository.searchByTeacherIdAndStatusAndName(teacherId, status, search.trim(), pageable);
+        } else if (hasSearch) {
+            page = groupRepository.searchByTeacherIdAndName(teacherId, search.trim(), pageable);
+        } else if (status != null) {
             page = groupRepository.findByTeacherIdAndStatusOrderByCreatedAtDesc(teacherId, status, pageable);
         } else {
             page = groupRepository.findByTeacherIdOrderByCreatedAtDesc(teacherId, pageable);
@@ -161,7 +171,14 @@ public class GroupService {
             throw BusinessException.ofKey("group.add.members.archived");
         }
 
-        return addMembersInternal(group, request.getStudentIds());
+        List<GroupMemberDto> added = addMembersInternal(group, request.getStudentIds());
+
+        auditService.log(teacherId, "TEACHER", "GROUP_MEMBERS_ADDED", "GROUP",
+                "StudentGroup", groupId,
+                null, Map.of("addedStudentIds", request.getStudentIds().toString(),
+                        "addedCount", added.size()));
+
+        return added;
     }
 
     @Transactional
@@ -173,7 +190,34 @@ public class GroupService {
                 .orElseThrow(() -> new ResourceNotFoundException("GroupMember", "studentId", studentId));
 
         memberRepository.delete(member);
+
+        auditService.log(teacherId, "TEACHER", "GROUP_MEMBER_REMOVED", "GROUP",
+                "StudentGroup", groupId,
+                Map.of("removedStudentId", studentId.toString()), null);
+
         log.info("Removed student {} from group {} by teacher {}", studentId, groupId, teacherId);
+    }
+
+    @Transactional
+    public void removeMembersBatch(UUID groupId, UUID teacherId, List<UUID> studentIds) {
+        groupRepository.findByIdAndTeacherId(groupId, teacherId)
+                .orElseThrow(() -> new ResourceNotFoundException("StudentGroup", "id", groupId));
+
+        int removedCount = 0;
+        for (UUID studentId : studentIds) {
+            Optional<GroupMember> memberOpt = memberRepository.findByGroupIdAndStudentId(groupId, studentId);
+            if (memberOpt.isPresent()) {
+                memberRepository.delete(memberOpt.get());
+                removedCount++;
+            }
+        }
+
+        auditService.log(teacherId, "TEACHER", "GROUP_MEMBERS_BATCH_REMOVED", "GROUP",
+                "StudentGroup", groupId,
+                Map.of("removedStudentIds", studentIds.toString()),
+                Map.of("removedCount", removedCount));
+
+        log.info("Teacher {} batch-removed {} members from group {}", teacherId, removedCount, groupId);
     }
 
     @Transactional(readOnly = true)
@@ -197,6 +241,29 @@ public class GroupService {
     @Transactional(readOnly = true)
     public List<UUID> getGroupStudentIds(UUID groupId) {
         return groupRepository.findStudentIdsByGroupId(groupId);
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResponse<StudentSearchDto> searchStudents(String search, Pageable pageable) {
+        Page<User> page;
+        if (search != null && !search.isBlank()) {
+            page = userRepository.searchUsersByRole(search.trim(), Role.STUDENT, pageable);
+        } else {
+            page = userRepository.findByRole(Role.STUDENT, pageable);
+        }
+
+        List<StudentSearchDto> dtos = page.getContent().stream()
+                .map(u -> StudentSearchDto.builder()
+                        .id(u.getId())
+                        .firstName(u.getFirstName())
+                        .lastName(u.getLastName())
+                        .email(u.getEmail())
+                        .phone(u.getPhone())
+                        .build())
+                .toList();
+
+        return PagedResponse.of(dtos, page.getNumber(), page.getSize(),
+                page.getTotalElements(), page.getTotalPages());
     }
 
     // ── Internal Helpers ──
@@ -267,8 +334,10 @@ public class GroupService {
         return GroupMemberDto.builder()
                 .id(member.getId())
                 .studentId(member.getStudentId())
-                .studentName(student != null ? student.getFirstName() + " " + student.getLastName() : null)
-                .studentEmail(student != null ? student.getEmail() : null)
+                .firstName(student != null ? student.getFirstName() : null)
+                .lastName(student != null ? student.getLastName() : null)
+                .email(student != null ? student.getEmail() : null)
+                .phone(student != null ? student.getPhone() : null)
                 .joinedAt(member.getJoinedAt())
                 .build();
     }

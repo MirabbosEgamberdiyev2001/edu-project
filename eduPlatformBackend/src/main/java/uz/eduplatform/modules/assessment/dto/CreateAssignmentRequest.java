@@ -28,8 +28,8 @@ public class CreateAssignmentRequest {
     private String description;
 
     // --- Scheduling ---
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
 
     @Builder.Default
     @Min(value = 1, message = "{assessment.validation.duration.min}")
@@ -54,7 +54,10 @@ public class CreateAssignmentRequest {
 
     // --- Shuffling ---
     @Builder.Default
-    private Boolean shufflePerStudent = true;
+    private Boolean shuffleQuestions = true;
+
+    @Builder.Default
+    private Boolean shuffleOptions = false;
 
     // --- Anti-cheat ---
     @Builder.Default

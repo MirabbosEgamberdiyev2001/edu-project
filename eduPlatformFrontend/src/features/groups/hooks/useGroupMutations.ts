@@ -9,18 +9,19 @@ import type { ApiError } from '@/types/api';
 export function useGroupMutations() {
   const queryClient = useQueryClient();
   const toast = useToast();
-  const { t } = useTranslation('common');
+  const { t } = useTranslation('group');
+  const { t: tCommon } = useTranslation('common');
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['groups'] });
 
   const create = useMutation({
     mutationFn: (data: CreateGroupRequest) => groupApi.createGroup(data),
     onSuccess: ({ data: resp }) => {
-      toast.success(resp.message);
+      toast.success(resp.message || t('success.created'));
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || t('error'));
+      toast.error(error.response?.data?.message || tCommon('error'));
     },
   });
 
@@ -28,33 +29,33 @@ export function useGroupMutations() {
     mutationFn: ({ id, data }: { id: string; data: UpdateGroupRequest }) =>
       groupApi.updateGroup(id, data),
     onSuccess: ({ data: resp }) => {
-      toast.success(resp.message);
+      toast.success(resp.message || t('success.updated'));
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || t('error'));
+      toast.error(error.response?.data?.message || tCommon('error'));
     },
   });
 
   const remove = useMutation({
     mutationFn: (id: string) => groupApi.deleteGroup(id),
     onSuccess: ({ data: resp }) => {
-      toast.success(resp.message);
+      toast.success(resp.message || t('success.deleted'));
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || t('error'));
+      toast.error(error.response?.data?.message || tCommon('error'));
     },
   });
 
   const archive = useMutation({
     mutationFn: (id: string) => groupApi.archiveGroup(id),
     onSuccess: ({ data: resp }) => {
-      toast.success(resp.message);
+      toast.success(resp.message || t('success.archived'));
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || t('error'));
+      toast.error(error.response?.data?.message || tCommon('error'));
     },
   });
 

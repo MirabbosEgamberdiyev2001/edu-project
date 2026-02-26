@@ -21,10 +21,9 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
-import { adminApi } from '@/api/adminApi';
-import { useAddMembers } from '../hooks/useGroupMembers';
+import { groupApi } from '@/api/groupApi';
+import { useAddMembers, useGroupMembers } from '../hooks/useGroupMembers';
 import { useDebounce } from '@/features/subjects/hooks/useDebounce';
-import { Role } from '@/types/user';
 
 interface AddMembersDialogProps {
   open: boolean;
@@ -40,21 +39,30 @@ export default function AddMembersDialog({ open, onClose, groupId, onSuccess }: 
   const debouncedSearch = useDebounce(search, 300);
 
   const addMembers = useAddMembers(groupId);
+  const { data: existingMembers } = useGroupMembers(open ? groupId : undefined);
 
   const { data: studentsData, isLoading } = useQuery({
-    queryKey: ['admin', 'users', 'students', debouncedSearch],
+    queryKey: ['groups', 'students', 'search', debouncedSearch],
     queryFn: async () => {
-      const { data } = await adminApi.getUsers({
-        role: Role.STUDENT,
+      const { data } = await groupApi.searchStudents({
         search: debouncedSearch || undefined,
-        size: 20,
+        size: 50,
       });
       return data.data;
     },
     enabled: open,
   });
 
-  const students = useMemo(() => studentsData?.content || [], [studentsData]);
+  // Filter out students who are already members of this group
+  const existingMemberIds = useMemo(
+    () => new Set(existingMembers?.map((m) => m.studentId) || []),
+    [existingMembers],
+  );
+
+  const students = useMemo(
+    () => (studentsData?.content || []).filter((s) => !existingMemberIds.has(s.id)),
+    [studentsData, existingMemberIds],
+  );
 
   const handleToggle = (studentId: string) => {
     setSelected((prev) =>

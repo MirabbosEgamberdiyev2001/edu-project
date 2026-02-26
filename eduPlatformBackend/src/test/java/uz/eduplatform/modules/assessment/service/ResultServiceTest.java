@@ -12,11 +12,11 @@ import uz.eduplatform.core.common.exception.BusinessException;
 import uz.eduplatform.core.common.exception.ResourceNotFoundException;
 import uz.eduplatform.modules.assessment.domain.*;
 import uz.eduplatform.modules.assessment.dto.AssignmentResultDto;
-import uz.eduplatform.modules.assessment.repository.AnswerRepository;
 import uz.eduplatform.modules.assessment.repository.TestAssignmentRepository;
 import uz.eduplatform.modules.assessment.repository.TestAttemptRepository;
 import uz.eduplatform.modules.auth.domain.User;
 import uz.eduplatform.modules.auth.repository.UserRepository;
+import uz.eduplatform.modules.group.repository.StudentGroupRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -34,8 +34,8 @@ class ResultServiceTest {
 
     @Mock private TestAssignmentRepository assignmentRepository;
     @Mock private TestAttemptRepository attemptRepository;
-    @Mock private AnswerRepository answerRepository;
     @Mock private UserRepository userRepository;
+    @Mock private StudentGroupRepository studentGroupRepository;
 
     @InjectMocks
     private ResultService resultService;
@@ -97,29 +97,23 @@ class ResultServiceTest {
         when(assignmentRepository.findById(assignmentId)).thenReturn(Optional.of(assignment));
         when(attemptRepository.findByAssignmentIdOrderByCreatedAtDesc(assignmentId))
                 .thenReturn(List.of(attempt1, attempt2));
-        when(attemptRepository.countDistinctStudentsByAssignmentId(assignmentId)).thenReturn(2L);
-        when(attemptRepository.countSubmittedByAssignmentId(assignmentId)).thenReturn(2L);
         when(attemptRepository.averagePercentageByAssignmentId(assignmentId)).thenReturn(70.0);
         when(attemptRepository.maxPercentageByAssignmentId(assignmentId)).thenReturn(80.0);
         when(attemptRepository.minPercentageByAssignmentId(assignmentId)).thenReturn(60.0);
         when(userRepository.findById(student1Id)).thenReturn(Optional.of(student1));
         when(userRepository.findById(student2Id)).thenReturn(Optional.of(student2));
-        when(answerRepository.countByAttemptId(any())).thenReturn(10L);
-        when(answerRepository.countByAttemptIdAndSelectedAnswerIsNotNull(any())).thenReturn(10L);
 
         AssignmentResultDto result = resultService.getAssignmentResults(assignmentId, teacherId);
 
         assertNotNull(result);
         assertEquals("Matematika Nazorat", result.getAssignmentTitle());
-        assertEquals(3, result.getTotalAssigned());
-        assertEquals(2, result.getTotalStarted());
-        assertEquals(2, result.getTotalSubmitted());
-        assertEquals(2, result.getTotalGraded());
+        assertEquals(3, result.getTotalStudents());
+        assertEquals(2, result.getCompletedStudents());
         assertEquals(new BigDecimal("70.00"), result.getAverageScore());
         assertEquals(new BigDecimal("80.00"), result.getHighestScore());
         assertEquals(new BigDecimal("60.00"), result.getLowestScore());
-        assertEquals(2, result.getAttempts().size());
-        assertEquals("Aziz K", result.getAttempts().get(0).getStudentName());
+        assertEquals(2, result.getStudents().size());
+        assertEquals("Aziz", result.getStudents().get(0).getFirstName());
     }
 
     @Test
@@ -127,8 +121,6 @@ class ResultServiceTest {
         when(assignmentRepository.findById(assignmentId)).thenReturn(Optional.of(assignment));
         when(attemptRepository.findByAssignmentIdOrderByCreatedAtDesc(assignmentId))
                 .thenReturn(List.of());
-        when(attemptRepository.countDistinctStudentsByAssignmentId(assignmentId)).thenReturn(0L);
-        when(attemptRepository.countSubmittedByAssignmentId(assignmentId)).thenReturn(0L);
         when(attemptRepository.averagePercentageByAssignmentId(assignmentId)).thenReturn(null);
         when(attemptRepository.maxPercentageByAssignmentId(assignmentId)).thenReturn(null);
         when(attemptRepository.minPercentageByAssignmentId(assignmentId)).thenReturn(null);
@@ -136,12 +128,11 @@ class ResultServiceTest {
         AssignmentResultDto result = resultService.getAssignmentResults(assignmentId, teacherId);
 
         assertNotNull(result);
-        assertEquals(3, result.getTotalAssigned());
-        assertEquals(0, result.getTotalStarted());
-        assertEquals(0, result.getTotalSubmitted());
+        assertEquals(3, result.getTotalStudents());
+        assertEquals(0, result.getCompletedStudents());
         assertNull(result.getAverageScore());
         assertNull(result.getHighestScore());
-        assertTrue(result.getAttempts().isEmpty());
+        assertTrue(result.getStudents().isEmpty());
     }
 
     @Test

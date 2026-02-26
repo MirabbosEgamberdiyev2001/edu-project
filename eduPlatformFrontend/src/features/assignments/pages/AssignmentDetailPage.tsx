@@ -19,6 +19,7 @@ import { useAssignment } from '../hooks/useAssignments';
 import { useAssignmentMutations } from '../hooks/useAssignmentMutations';
 import { AssignmentStatus } from '@/types/assignment';
 import AssignmentSettingsForm from '../components/AssignmentSettingsForm';
+import PromoCodeSection from '../components/PromoCodeSection';
 
 const STATUS_COLORS: Record<string, 'default' | 'info' | 'success' | 'error'> = {
   DRAFT: 'default',
@@ -104,7 +105,7 @@ export default function AssignmentDetailPage() {
         {assignment.durationMinutes && (
           <Box sx={{ mt: 2 }}>
             <Typography variant="caption" color="text.secondary">{t('durationMinutes')}</Typography>
-            <Typography variant="body2">{assignment.durationMinutes} min</Typography>
+            <Typography variant="body2">{assignment.durationMinutes} {t('minutesShort')}</Typography>
           </Box>
         )}
 
@@ -141,6 +142,10 @@ export default function AssignmentDetailPage() {
           disabled
         />
       </Paper>
+
+      {(assignment.status === AssignmentStatus.ACTIVE || assignment.status === AssignmentStatus.DRAFT) && (
+        <PromoCodeSection assignmentId={id!} />
+      )}
 
       <Box sx={{ display: 'flex', gap: 2 }}>
         {assignment.status === AssignmentStatus.DRAFT && (

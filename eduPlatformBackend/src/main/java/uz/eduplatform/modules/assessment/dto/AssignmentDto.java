@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uz.eduplatform.modules.assessment.domain.AssignmentStatus;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -21,12 +22,17 @@ public class AssignmentDto {
     private UUID teacherId;
     private String teacherName;
 
+    // --- Group & Test info ---
+    private UUID groupId;
+    private String groupName;
+    private String testTitle;
+
     private String title;
     private String description;
 
     // --- Scheduling ---
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
     private Integer durationMinutes;
 
     // --- Settings ---
@@ -34,7 +40,8 @@ public class AssignmentDto {
     private Boolean showResults;
     private Boolean showCorrectAnswers;
     private Boolean showProofs;
-    private Boolean shufflePerStudent;
+    private Boolean shuffleQuestions;
+    private Boolean shuffleOptions;
     private Boolean preventCopyPaste;
     private Boolean preventTabSwitch;
     private Integer tabSwitchThreshold;
@@ -44,8 +51,9 @@ public class AssignmentDto {
     // --- Students ---
     private List<UUID> assignedStudentIds;
     private Integer totalStudents;
-    private Integer startedCount;
-    private Integer submittedCount;
+    private Integer activeStudents;
+    private Integer completedStudents;
+    private BigDecimal averageScore;
 
     // --- Status ---
     private AssignmentStatus status;

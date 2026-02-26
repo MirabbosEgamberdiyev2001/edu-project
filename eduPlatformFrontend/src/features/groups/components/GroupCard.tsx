@@ -18,6 +18,7 @@ import ArchiveIcon from '@mui/icons-material/Archive';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import GroupIcon from '@mui/icons-material/Group';
 import PeopleIcon from '@mui/icons-material/People';
+import SchoolIcon from '@mui/icons-material/School';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -79,13 +80,22 @@ export default function GroupCard({ group, onEdit, onDelete, onArchive }: GroupC
             </Typography>
           )}
 
-          <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', mt: 'auto' }}>
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mt: 'auto', flexWrap: 'wrap' }}>
             <Chip
               label={isArchived ? t('archived') : t('active')}
               size="small"
               color={isArchived ? 'default' : 'success'}
               variant="outlined"
             />
+            {group.subjectName && (
+              <Chip
+                icon={<SchoolIcon />}
+                label={group.subjectName}
+                size="small"
+                color="primary"
+                variant="outlined"
+              />
+            )}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <PeopleIcon fontSize="small" color="action" />
               <Typography variant="body2" color="text.secondary">

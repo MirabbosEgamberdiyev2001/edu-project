@@ -27,6 +27,10 @@
   "myAttempts": "Mening urinishlarim",
   "myChildren": "Mening farzandlarim",
   "pairing": "Bog'lanish",
+  "confirm": "Tasdiqlash",
+  "name": "Ism",
+  "email": "Email",
+  "phone": "Telefon",
   "notFound": {
     "title": "Sahifa topilmadi",
     "description": "Siz izlayotgan sahifa mavjud emas yoki boshqa manzilga ko'chirilgan",
@@ -36,5 +40,10 @@
     "title": "Ruxsat berilmagan",
     "description": "Sizda bu sahifaga kirishga ruxsat yo'q",
     "goBack": "Orqaga qaytish"
+  },
+  "errorBoundary": {
+    "title": "Xatolik yuz berdi",
+    "description": "Kutilmagan xatolik yuz berdi. Iltimos, sahifani qayta yuklang.",
+    "reload": "Sahifani qayta yuklash"
   }
 }

@@ -28,34 +28,37 @@ export default function AttemptResultPage() {
     );
   }
 
+  const answersMap = attempt.answers ?? {};
+  const answerValues = Object.values(answersMap);
+
   // Map AttemptDto to AttemptResultDto shape for ResultDisplay
   const result: AttemptResultDto = {
     id: attempt.id,
-    testTitle: attempt.testTitle,
+    testTitle: attempt.testTitle ?? attempt.assignmentTitle ?? '',
     score: attempt.score ?? 0,
-    maxScore: attempt.maxScore,
+    maxScore: attempt.maxScore ?? 0,
     percentage: attempt.percentage ?? 0,
     totalQuestions: attempt.totalQuestions,
-    correctAnswers: Object.values(attempt.answers).filter((a) => a.isCorrect === true).length,
-    wrongAnswers: Object.values(attempt.answers).filter((a) => a.isCorrect === false).length,
+    correctAnswers: answerValues.filter((a) => a.isCorrect === true).length,
+    wrongAnswers: answerValues.filter((a) => a.isCorrect === false).length,
     unanswered: attempt.totalQuestions - attempt.answeredQuestions,
-    tabSwitches: attempt.tabSwitches,
+    tabSwitches: attempt.tabSwitches ?? 0,
     startedAt: attempt.startedAt,
     submittedAt: attempt.submittedAt || attempt.startedAt,
     durationSeconds: attempt.submittedAt
       ? Math.floor((new Date(attempt.submittedAt).getTime() - new Date(attempt.startedAt).getTime()) / 1000)
       : 0,
-    answers: attempt.questions.map((q) => {
-      const ans = attempt.answers[q.id];
+    answers: (attempt.questions ?? []).map((q) => {
+      const ans = answersMap[q.id];
       return {
         questionId: q.id,
         questionText: q.questionText,
         questionType: q.questionType,
         options: q.options,
         correctAnswer: null,
-        studentAnswer: ans?.response ?? null,
+        studentAnswer: ans?.response ?? ans?.selectedAnswer ?? null,
         isCorrect: ans?.isCorrect ?? false,
-        score: ans?.score ?? 0,
+        score: ans?.score ?? ans?.earnedPoints ?? 0,
         maxScore: q.points,
         proof: null,
       };

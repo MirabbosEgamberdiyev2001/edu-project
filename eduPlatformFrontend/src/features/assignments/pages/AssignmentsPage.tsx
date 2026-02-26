@@ -44,7 +44,7 @@ export default function AssignmentsPage() {
   }), [search, statusTab, page]);
 
   const { data, isLoading } = useAssignments(params);
-  const { create, activate, cancel, remove } = useAssignmentMutations();
+  const { create, update, activate, cancel, remove } = useAssignmentMutations();
   const { data: groupsData } = useGroups({ size: 100 });
   const { data: testsData } = useTests({ size: 100 });
 
@@ -73,7 +73,14 @@ export default function AssignmentsPage() {
   };
 
   const handleFormSubmit = (formData: CreateAssignmentRequest) => {
-    create.mutate(formData, { onSuccess: () => setFormOpen(false) });
+    if (editAssignment) {
+      update.mutate(
+        { id: editAssignment.id, data: formData },
+        { onSuccess: () => { setFormOpen(false); setEditAssignment(null); } },
+      );
+    } else {
+      create.mutate(formData, { onSuccess: () => setFormOpen(false) });
+    }
   };
 
   const handleDelete = (assignment: AssignmentDto) => {
@@ -189,7 +196,7 @@ export default function AssignmentsPage() {
         onClose={() => setFormOpen(false)}
         onSubmit={handleFormSubmit}
         assignment={editAssignment}
-        isPending={create.isPending}
+        isPending={create.isPending || update.isPending}
         groups={groups}
         tests={tests}
       />

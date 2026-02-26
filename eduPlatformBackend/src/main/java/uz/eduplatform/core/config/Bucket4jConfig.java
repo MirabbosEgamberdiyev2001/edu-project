@@ -48,4 +48,15 @@ public class Bucket4jConfig {
                         .build()
         );
     }
+
+    @Bean(name = "promoCodeRedeemRateLimiter")
+    public Function<String, Bucket> promoCodeRedeemBucketResolver() {
+        return key -> buckets.computeIfAbsent("promo_redeem:" + key, k ->
+                Bucket.builder()
+                        .addLimit(Bandwidth.classic(
+                                5, Refill.intervally(5, Duration.ofMinutes(5))
+                        ))
+                        .build()
+        );
+    }
 }

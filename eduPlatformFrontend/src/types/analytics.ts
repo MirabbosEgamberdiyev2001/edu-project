@@ -1,18 +1,21 @@
+// ── Teacher Dashboard ──────────────────────────────
+
 export interface TeacherDashboardDto {
   totalStudents: number;
   totalGroups: number;
   totalAssignments: number;
+  activeAssignments: number;
   totalTests: number;
   averageScore: number;
   completionRate: number;
   testCreationTrend: TrendPointDto[];
+  recentActivity: TeacherActivityDto[];
   topStudents: TopStudentDto[];
   atRiskStudents: AtRiskStudentDto[];
-  recentActivity: TeacherActivityDto[];
 }
 
 export interface TrendPointDto {
-  date: string;
+  date: string;   // e.g. "2024-01" or ISO date
   value: number;
 }
 
@@ -40,6 +43,8 @@ export interface TeacherActivityDto {
   createdAt: string;
 }
 
+// ── Student Analytics ──────────────────────────────
+
 export interface StudentAnalyticsDto {
   studentId: string;
   firstName: string;
@@ -51,7 +56,7 @@ export interface StudentAnalyticsDto {
   scoreTrend: TrendPointDto[];
   subjectBreakdown: SubjectBreakdownDto[];
   weakAreas: WeakAreaDto[];
-  strongAreas: StrongAreaDto[];
+  strongAreas: WeakAreaDto[];
   weeklyActivity: WeeklyActivityDto[];
 }
 
@@ -70,18 +75,14 @@ export interface WeakAreaDto {
   attemptCount: number;
 }
 
-export interface StrongAreaDto {
-  topicId: string;
-  topicName: string;
-  subjectName: string;
-  averageScore: number;
-  attemptCount: number;
-}
+export type StrongAreaDto = WeakAreaDto;
 
 export interface WeeklyActivityDto {
   date: string;
   attemptCount: number;
 }
+
+// ── Group Statistics ──────────────────────────────
 
 export interface GroupStatisticsDto {
   groupId: string;

@@ -8,6 +8,7 @@ import { Box, CircularProgress } from '@mui/material';
 
 // Shared layout — not lazy (needed immediately)
 import AppLayout from '@/components/AppLayout';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 // Lazy loading fallback
 const PageLoader = () => (
@@ -17,9 +18,11 @@ const PageLoader = () => (
 );
 
 const Lazy = ({ component: Component }: { component: React.LazyExoticComponent<React.ComponentType> }) => (
-  <Suspense fallback={<PageLoader />}>
-    <Component />
-  </Suspense>
+  <ErrorBoundary>
+    <Suspense fallback={<PageLoader />}>
+      <Component />
+    </Suspense>
+  </ErrorBoundary>
 );
 
 // Auth pages

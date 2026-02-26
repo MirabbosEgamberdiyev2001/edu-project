@@ -20,8 +20,8 @@ public class UpdateAssignmentRequest {
     private String title;
     private String description;
 
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
 
     @Min(value = 1, message = "{assessment.validation.duration.min}")
     @Max(value = 480, message = "{assessment.validation.duration.max}")
@@ -34,7 +34,8 @@ public class UpdateAssignmentRequest {
     private Boolean showResults;
     private Boolean showCorrectAnswers;
     private Boolean showProofs;
-    private Boolean shufflePerStudent;
+    private Boolean shuffleQuestions;
+    private Boolean shuffleOptions;
     private Boolean preventCopyPaste;
     private Boolean preventTabSwitch;
     private Integer tabSwitchThreshold;

@@ -21,9 +21,11 @@ import { useMyAttempts } from '../hooks/useAttempt';
 
 const STATUS_COLORS: Record<string, 'info' | 'success' | 'warning' | 'default'> = {
   IN_PROGRESS: 'info',
-  SUBMITTED: 'success',
+  SUBMITTED: 'warning',
+  AUTO_GRADED: 'success',
+  NEEDS_REVIEW: 'warning',
   GRADED: 'success',
-  EXPIRED: 'warning',
+  EXPIRED: 'default',
 };
 
 export default function MyAttemptsPage() {

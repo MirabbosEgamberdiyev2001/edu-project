@@ -13,7 +13,9 @@ public class GroupMemberDto {
 
     private UUID id;
     private UUID studentId;
-    private String studentName;
-    private String studentEmail;
+    private String firstName;
+    private String lastName;
+    private String email;
+    private String phone;
     private LocalDateTime joinedAt;
 }

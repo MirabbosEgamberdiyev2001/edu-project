@@ -40,6 +40,9 @@ public class TestAssignment {
     @Column(name = "teacher_id", nullable = false)
     private UUID teacherId;
 
+    @Column(name = "group_id")
+    private UUID groupId;
+
     @Column(nullable = false)
     private String title;
 

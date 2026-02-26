@@ -6,7 +6,9 @@ import type {
   CreateGroupRequest,
   UpdateGroupRequest,
   AddMembersRequest,
+  BatchRemoveMembersRequest,
   GroupStatus,
+  StudentSearchDto,
 } from '@/types/group';
 
 const GROUPS = '/groups';
@@ -53,4 +55,10 @@ export const groupApi = {
 
   removeMember: (groupId: string, studentId: string) =>
     api.delete<ApiResponse<void>>(`${GROUPS}/${groupId}/members/${studentId}`),
+
+  removeMembersBatch: (groupId: string, data: BatchRemoveMembersRequest) =>
+    api.delete<ApiResponse<void>>(`${GROUPS}/${groupId}/members/batch`, { data }),
+
+  searchStudents: (params?: { search?: string; page?: number; size?: number }) =>
+    api.get<ApiResponse<PagedResponse<StudentSearchDto>>>(`${GROUPS}/students/search`, { params }),
 };

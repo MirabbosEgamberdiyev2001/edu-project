@@ -2,7 +2,7 @@ package uz.eduplatform.modules.assessment.service.export;
 
 import org.springframework.stereotype.Service;
 import uz.eduplatform.modules.assessment.dto.AssignmentResultDto;
-import uz.eduplatform.modules.assessment.dto.AttemptDto;
+import uz.eduplatform.modules.assessment.dto.StudentResultDto;
 
 import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
@@ -20,22 +20,21 @@ public class CsvResultExportService implements ResultExportService {
         sb.append(BOM);
 
         // Header
-        sb.append("Student Name,Attempt #,Status,Score,Max Score,%,Tab Switches,IP Address,Flagged,Started At,Submitted At\n");
+        sb.append("Student Name,Score,Max Score,%,Attempts,Tab Switches,Status,Submitted At\n");
 
         // Data rows
-        if (results.getAttempts() != null) {
-            for (AttemptDto attempt : results.getAttempts()) {
-                sb.append(escapeCsv(attempt.getStudentName())).append(',');
-                sb.append(attempt.getAttemptNumber() != null ? attempt.getAttemptNumber() : "").append(',');
-                sb.append(attempt.getStatus() != null ? attempt.getStatus().name() : "").append(',');
-                sb.append(attempt.getRawScore() != null ? attempt.getRawScore().toPlainString() : "").append(',');
-                sb.append(attempt.getMaxScore() != null ? attempt.getMaxScore().toPlainString() : "").append(',');
-                sb.append(attempt.getPercentage() != null ? attempt.getPercentage().toPlainString() : "").append(',');
-                sb.append(attempt.getTabSwitchCount() != null ? attempt.getTabSwitchCount() : 0).append(',');
-                sb.append(attempt.getIpAddress() != null ? attempt.getIpAddress() : "").append(',');
-                sb.append(Boolean.TRUE.equals(attempt.getFlagged()) ? "Yes" : "No").append(',');
-                sb.append(attempt.getStartedAt() != null ? attempt.getStartedAt().format(DATE_FORMAT) : "").append(',');
-                sb.append(attempt.getSubmittedAt() != null ? attempt.getSubmittedAt().format(DATE_FORMAT) : "");
+        if (results.getStudents() != null) {
+            for (StudentResultDto student : results.getStudents()) {
+                String name = (student.getFirstName() != null ? student.getFirstName() : "")
+                        + " " + (student.getLastName() != null ? student.getLastName() : "");
+                sb.append(escapeCsv(name.trim())).append(',');
+                sb.append(student.getScore() != null ? student.getScore().toPlainString() : "").append(',');
+                sb.append(student.getMaxScore() != null ? student.getMaxScore().toPlainString() : "").append(',');
+                sb.append(student.getPercentage() != null ? student.getPercentage().toPlainString() : "").append(',');
+                sb.append(student.getAttemptCount() != null ? student.getAttemptCount() : 0).append(',');
+                sb.append(student.getTabSwitches() != null ? student.getTabSwitches() : 0).append(',');
+                sb.append(student.getStatus() != null ? student.getStatus() : "").append(',');
+                sb.append(student.getSubmittedAt() != null ? student.getSubmittedAt().format(DATE_FORMAT) : "");
                 sb.append('\n');
             }
         }

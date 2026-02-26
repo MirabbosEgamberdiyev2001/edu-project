@@ -59,7 +59,7 @@ export default function ResultDisplay({ result }: ResultDisplayProps) {
       <Paper sx={{ p: 2, mb: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
           <Typography variant="body2" color="text.secondary">{t('result.duration')}</Typography>
-          <Typography variant="body2">{durationMin}m {durationSec}s</Typography>
+          <Typography variant="body2">{t('durationFormat', { min: durationMin, sec: durationSec })}</Typography>
         </Box>
         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <Typography variant="body2" color="text.secondary">{t('result.tabSwitches')}</Typography>

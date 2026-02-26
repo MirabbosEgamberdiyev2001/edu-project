@@ -17,6 +17,7 @@ import uz.eduplatform.modules.assessment.dto.LiveTestEvent;
 import uz.eduplatform.modules.assessment.repository.AnswerRepository;
 import uz.eduplatform.modules.assessment.repository.TestAssignmentRepository;
 import uz.eduplatform.modules.assessment.repository.TestAttemptRepository;
+import uz.eduplatform.modules.auth.domain.User;
 import uz.eduplatform.modules.auth.repository.UserRepository;
 
 import java.time.Duration;
@@ -59,53 +60,52 @@ public class LiveMonitoringService {
 
         List<TestAttempt> attempts = attemptRepository.findByAssignmentIdOrderByCreatedAtDesc(assignmentId);
 
-        List<LiveMonitoringDto.StudentProgressDto> students = attempts.stream()
+        List<LiveMonitoringDto.LiveStudentDto> students = attempts.stream()
                 .map(attempt -> buildStudentProgress(attempt, assignment))
                 .toList();
 
-        int totalAssigned = assignment.getAssignedStudentIds() != null ? assignment.getAssignedStudentIds().size() : 0;
-        long totalStarted = attempts.stream().map(TestAttempt::getStudentId).distinct().count();
-        long inProgress = attempts.stream().filter(a -> a.getStatus() == AttemptStatus.IN_PROGRESS).count();
-        long submitted = attempts.stream().filter(a -> a.getStatus() != AttemptStatus.IN_PROGRESS).count();
+        int totalStudents = assignment.getAssignedStudentIds() != null ? assignment.getAssignedStudentIds().size() : 0;
+        long activeStudents = attempts.stream().filter(a -> a.getStatus() == AttemptStatus.IN_PROGRESS).count();
+        long completedStudents = attempts.stream().filter(a -> a.getStatus() != AttemptStatus.IN_PROGRESS).count();
+        long startedStudents = attempts.stream().map(TestAttempt::getStudentId).distinct().count();
+        int notStartedStudents = (int) Math.max(0, totalStudents - startedStudents);
 
         return LiveMonitoringDto.builder()
                 .assignmentId(assignmentId)
-                .assignmentTitle(assignment.getTitle())
-                .totalAssigned(totalAssigned)
-                .totalStarted((int) totalStarted)
-                .inProgress((int) inProgress)
-                .submitted((int) submitted)
+                .totalStudents(totalStudents)
+                .activeStudents((int) activeStudents)
+                .completedStudents((int) completedStudents)
+                .notStartedStudents(notStartedStudents)
                 .students(students)
                 .build();
     }
 
-    private LiveMonitoringDto.StudentProgressDto buildStudentProgress(TestAttempt attempt, TestAssignment assignment) {
-        String studentName = userRepository.findById(attempt.getStudentId())
-                .map(u -> u.getFirstName() + " " + u.getLastName())
-                .orElse("Unknown");
+    private LiveMonitoringDto.LiveStudentDto buildStudentProgress(TestAttempt attempt, TestAssignment assignment) {
+        User student = userRepository.findById(attempt.getStudentId()).orElse(null);
+        String firstName = student != null ? student.getFirstName() : "Unknown";
+        String lastName = student != null ? student.getLastName() : "";
 
         long answeredQuestions = answerRepository.countByAttemptIdAndSelectedAnswerIsNotNull(attempt.getId());
         long totalQuestions = answerRepository.countByAttemptId(attempt.getId());
 
-        Long remainingSeconds = null;
+        Long timeRemaining = null;
         if (attempt.getStatus() == AttemptStatus.IN_PROGRESS) {
             LocalDateTime deadline = attempt.getStartedAt().plusMinutes(assignment.getDurationMinutes());
             Duration remaining = Duration.between(LocalDateTime.now(), deadline);
-            remainingSeconds = Math.max(0, remaining.getSeconds());
+            timeRemaining = Math.max(0, remaining.getSeconds());
         }
 
-        double percentage = totalQuestions > 0 ? (double) answeredQuestions / totalQuestions * 100 : 0;
-
-        return LiveMonitoringDto.StudentProgressDto.builder()
+        return LiveMonitoringDto.LiveStudentDto.builder()
                 .studentId(attempt.getStudentId())
-                .studentName(studentName)
-                .attemptId(attempt.getId())
+                .firstName(firstName)
+                .lastName(lastName)
                 .status(attempt.getStatus().name())
-                .answeredQuestions((int) answeredQuestions)
+                .currentQuestion(null)
                 .totalQuestions((int) totalQuestions)
-                .tabSwitchCount(attempt.getTabSwitchCount() != null ? attempt.getTabSwitchCount() : 0)
-                .remainingSeconds(remainingSeconds)
-                .percentage(percentage)
+                .answeredQuestions((int) answeredQuestions)
+                .tabSwitches(attempt.getTabSwitchCount() != null ? attempt.getTabSwitchCount() : 0)
+                .startedAt(attempt.getStartedAt())
+                .timeRemaining(timeRemaining)
                 .build();
     }
 }

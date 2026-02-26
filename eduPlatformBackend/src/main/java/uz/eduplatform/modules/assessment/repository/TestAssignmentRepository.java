@@ -47,6 +47,24 @@ public interface TestAssignmentRepository extends JpaRepository<TestAssignment, 
             "AND a.endTime IS NOT NULL AND a.endTime <= :now")
     List<TestAssignment> findActiveAssignmentsToComplete(@Param("now") LocalDateTime now);
 
+    @Query("SELECT a FROM TestAssignment a WHERE a.teacherId = :teacherId " +
+            "AND LOWER(a.title) LIKE LOWER(CONCAT('%', :search, '%')) " +
+            "ORDER BY a.createdAt DESC")
+    Page<TestAssignment> searchByTeacherId(
+            @Param("teacherId") UUID teacherId,
+            @Param("search") String search,
+            Pageable pageable);
+
+    @Query("SELECT a FROM TestAssignment a WHERE a.teacherId = :teacherId " +
+            "AND a.status = :status " +
+            "AND LOWER(a.title) LIKE LOWER(CONCAT('%', :search, '%')) " +
+            "ORDER BY a.createdAt DESC")
+    Page<TestAssignment> searchByTeacherIdAndStatus(
+            @Param("teacherId") UUID teacherId,
+            @Param("search") String search,
+            @Param("status") AssignmentStatus status,
+            Pageable pageable);
+
     long countByTeacherId(UUID teacherId);
 
     long countByTeacherIdAndStatus(UUID teacherId, AssignmentStatus status);

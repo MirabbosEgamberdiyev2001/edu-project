@@ -13,6 +13,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import uz.eduplatform.core.common.dto.ApiResponse;
 import uz.eduplatform.core.common.dto.PagedResponse;
+import uz.eduplatform.core.common.utils.MessageService;
+import uz.eduplatform.core.i18n.AcceptLanguage;
 import uz.eduplatform.core.security.UserPrincipal;
 import uz.eduplatform.modules.group.domain.GroupStatus;
 import uz.eduplatform.modules.group.dto.*;
@@ -28,30 +30,34 @@ import java.util.UUID;
 public class GroupController {
 
     private final GroupService groupService;
+    private final MessageService messageService;
 
     @PostMapping
     @Operation(summary = "Yangi guruh yaratish", description = "O'quvchilar uchun yangi guruh yaratish. Faqat TEACHER roli uchun.")
     @PreAuthorize("hasRole('TEACHER')")
     public ResponseEntity<ApiResponse<GroupDto>> createGroup(
             @AuthenticationPrincipal UserPrincipal principal,
+            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language,
             @Valid @RequestBody CreateGroupRequest request) {
 
         GroupDto dto = groupService.createGroup(principal.getId(), request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(dto));
+                .body(ApiResponse.success(dto, messageService.get("success.group.created", language.toLocale())));
     }
 
     @GetMapping
-    @Operation(summary = "O'qituvchi guruhlarini olish", description = "Joriy o'qituvchining barcha guruhlarini sahifalab olish. Holat bo'yicha filtrlash mumkin.")
+    @Operation(summary = "O'qituvchi guruhlarini olish", description = "Joriy o'qituvchining barcha guruhlarini sahifalab olish. Holat va nom bo'yicha filtrlash mumkin.")
     @PreAuthorize("hasRole('TEACHER')")
     public ResponseEntity<ApiResponse<PagedResponse<GroupDto>>> getMyGroups(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestParam(required = false) GroupStatus status,
+            @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
 
         PagedResponse<GroupDto> response = groupService.getTeacherGroups(
-                principal.getId(), status, PageRequest.of(page, size, Sort.by("createdAt").descending()));
+                principal.getId(), status, search,
+                PageRequest.of(page, size, Sort.by("createdAt").descending()));
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
@@ -84,11 +90,12 @@ public class GroupController {
     @PreAuthorize("hasRole('TEACHER')")
     public ResponseEntity<ApiResponse<GroupDto>> updateGroup(
             @AuthenticationPrincipal UserPrincipal principal,
+            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language,
             @PathVariable UUID id,
             @Valid @RequestBody UpdateGroupRequest request) {
 
         GroupDto dto = groupService.updateGroup(id, principal.getId(), request);
-        return ResponseEntity.ok(ApiResponse.success(dto));
+        return ResponseEntity.ok(ApiResponse.success(dto, messageService.get("success.group.updated", language.toLocale())));
     }
 
     @PostMapping("/{id}/archive")
@@ -96,10 +103,11 @@ public class GroupController {
     @PreAuthorize("hasRole('TEACHER')")
     public ResponseEntity<ApiResponse<GroupDto>> archiveGroup(
             @AuthenticationPrincipal UserPrincipal principal,
+            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language,
             @PathVariable UUID id) {
 
         GroupDto dto = groupService.archiveGroup(id, principal.getId());
-        return ResponseEntity.ok(ApiResponse.success(dto));
+        return ResponseEntity.ok(ApiResponse.success(dto, messageService.get("success.group.archived", language.toLocale())));
     }
 
     @DeleteMapping("/{id}")
@@ -107,10 +115,26 @@ public class GroupController {
     @PreAuthorize("hasRole('TEACHER')")
     public ResponseEntity<ApiResponse<Void>> deleteGroup(
             @AuthenticationPrincipal UserPrincipal principal,
+            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language,
             @PathVariable UUID id) {
 
         groupService.deleteGroup(id, principal.getId());
-        return ResponseEntity.ok(ApiResponse.success(null));
+        return ResponseEntity.ok(ApiResponse.success(null, messageService.get("success.group.deleted", language.toLocale())));
+    }
+
+    // ── Student Search (for teachers) ──
+
+    @GetMapping("/students/search")
+    @Operation(summary = "Talabalarni qidirish", description = "Guruhga qo'shish uchun talabalarni ism, email yoki telefon raqami bo'yicha qidirish.")
+    @PreAuthorize("hasRole('TEACHER')")
+    public ResponseEntity<ApiResponse<PagedResponse<StudentSearchDto>>> searchStudents(
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size) {
+
+        PagedResponse<StudentSearchDto> response = groupService.searchStudents(
+                search, PageRequest.of(page, Math.min(size, 50)));
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     // ── Member Management ──
@@ -131,12 +155,13 @@ public class GroupController {
     @PreAuthorize("hasRole('TEACHER')")
     public ResponseEntity<ApiResponse<List<GroupMemberDto>>> addMembers(
             @AuthenticationPrincipal UserPrincipal principal,
+            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language,
             @PathVariable UUID id,
             @Valid @RequestBody AddMembersRequest request) {
 
         List<GroupMemberDto> added = groupService.addMembers(id, principal.getId(), request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(added));
+                .body(ApiResponse.success(added, messageService.get("success.group.members.added", language.toLocale())));
     }
 
     @DeleteMapping("/{id}/members/{studentId}")
@@ -144,10 +169,24 @@ public class GroupController {
     @PreAuthorize("hasRole('TEACHER')")
     public ResponseEntity<ApiResponse<Void>> removeMember(
             @AuthenticationPrincipal UserPrincipal principal,
+            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language,
             @PathVariable UUID id,
             @PathVariable UUID studentId) {
 
         groupService.removeMember(id, principal.getId(), studentId);
-        return ResponseEntity.ok(ApiResponse.success(null));
+        return ResponseEntity.ok(ApiResponse.success(null, messageService.get("success.group.member.removed", language.toLocale())));
+    }
+
+    @DeleteMapping("/{id}/members/batch")
+    @Operation(summary = "Bir nechta o'quvchini guruhdan chiqarish", description = "Bir nechta o'quvchini birdan guruh a'zoligidan chiqarish.")
+    @PreAuthorize("hasRole('TEACHER')")
+    public ResponseEntity<ApiResponse<Void>> removeMembersBatch(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language,
+            @PathVariable UUID id,
+            @Valid @RequestBody BatchRemoveMembersRequest request) {
+
+        groupService.removeMembersBatch(id, principal.getId(), request.getStudentIds());
+        return ResponseEntity.ok(ApiResponse.success(null, messageService.get("success.group.members.batch.removed", language.toLocale())));
     }
 }

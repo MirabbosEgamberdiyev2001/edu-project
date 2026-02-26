@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,26 +16,26 @@ import java.util.UUID;
 public class LiveMonitoringDto {
 
     private UUID assignmentId;
-    private String assignmentTitle;
-    private int totalAssigned;
-    private int totalStarted;
-    private int inProgress;
-    private int submitted;
-    private List<StudentProgressDto> students;
+    private int totalStudents;
+    private int activeStudents;
+    private int completedStudents;
+    private int notStartedStudents;
+    private List<LiveStudentDto> students;
 
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class StudentProgressDto {
+    public static class LiveStudentDto {
         private UUID studentId;
-        private String studentName;
-        private UUID attemptId;
+        private String firstName;
+        private String lastName;
         private String status;
-        private int answeredQuestions;
+        private Integer currentQuestion;
         private int totalQuestions;
-        private int tabSwitchCount;
-        private Long remainingSeconds;
-        private double percentage;
+        private int answeredQuestions;
+        private int tabSwitches;
+        private LocalDateTime startedAt;
+        private Long timeRemaining;
     }
 }

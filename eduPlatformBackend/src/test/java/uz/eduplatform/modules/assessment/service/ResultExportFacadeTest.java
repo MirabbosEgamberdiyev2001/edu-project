@@ -10,7 +10,7 @@ import org.mockito.quality.Strictness;
 import uz.eduplatform.core.common.exception.BusinessException;
 import uz.eduplatform.modules.assessment.domain.AttemptStatus;
 import uz.eduplatform.modules.assessment.dto.AssignmentResultDto;
-import uz.eduplatform.modules.assessment.dto.AttemptDto;
+import uz.eduplatform.modules.assessment.dto.StudentResultDto;
 import uz.eduplatform.modules.assessment.service.export.*;
 
 import java.math.BigDecimal;
@@ -46,48 +46,41 @@ class ResultExportFacadeTest {
         assignmentId = UUID.randomUUID();
         teacherId = UUID.randomUUID();
 
-        AttemptDto attempt1 = AttemptDto.builder()
-                .id(UUID.randomUUID())
-                .studentName("Jasur Toshmatov")
-                .attemptNumber(1)
-                .status(AttemptStatus.AUTO_GRADED)
-                .rawScore(BigDecimal.valueOf(85))
+        StudentResultDto student1 = StudentResultDto.builder()
+                .studentId(UUID.randomUUID())
+                .firstName("Jasur")
+                .lastName("Toshmatov")
+                .score(BigDecimal.valueOf(85))
                 .maxScore(BigDecimal.valueOf(100))
                 .percentage(BigDecimal.valueOf(85))
-                .tabSwitchCount(2)
-                .ipAddress("192.168.1.1")
-                .flagged(false)
-                .startedAt(LocalDateTime.now().minusHours(1))
+                .attemptCount(1)
+                .tabSwitches(2)
+                .status(AttemptStatus.AUTO_GRADED.name())
                 .submittedAt(LocalDateTime.now())
                 .build();
 
-        AttemptDto attempt2 = AttemptDto.builder()
-                .id(UUID.randomUUID())
-                .studentName("Ali Valiyev")
-                .attemptNumber(1)
-                .status(AttemptStatus.AUTO_GRADED)
-                .rawScore(BigDecimal.valueOf(70))
+        StudentResultDto student2 = StudentResultDto.builder()
+                .studentId(UUID.randomUUID())
+                .firstName("Ali")
+                .lastName("Valiyev")
+                .score(BigDecimal.valueOf(70))
                 .maxScore(BigDecimal.valueOf(100))
                 .percentage(BigDecimal.valueOf(70))
-                .tabSwitchCount(0)
-                .flagged(false)
-                .startedAt(LocalDateTime.now().minusHours(1))
+                .attemptCount(1)
+                .tabSwitches(0)
+                .status(AttemptStatus.AUTO_GRADED.name())
                 .submittedAt(LocalDateTime.now())
                 .build();
 
         resultDto = AssignmentResultDto.builder()
                 .assignmentId(assignmentId)
                 .assignmentTitle("Math Test")
-                .teacherId(teacherId)
-                .totalAssigned(2)
-                .totalStarted(2)
-                .totalSubmitted(2)
-                .totalGraded(2)
+                .totalStudents(2)
+                .completedStudents(2)
                 .averageScore(BigDecimal.valueOf(77.5))
                 .highestScore(BigDecimal.valueOf(85))
                 .lowestScore(BigDecimal.valueOf(70))
-                .averagePercentage(BigDecimal.valueOf(77.5))
-                .attempts(List.of(attempt1, attempt2))
+                .students(List.of(student1, student2))
                 .build();
 
         when(resultService.getAssignmentResults(any(), any())).thenReturn(resultDto);
@@ -130,19 +123,18 @@ class ResultExportFacadeTest {
 
     @Test
     void exportCsv_escapesCommasInNames() {
-        AttemptDto attemptWithComma = AttemptDto.builder()
-                .id(UUID.randomUUID())
-                .studentName("Last, First")
-                .attemptNumber(1)
-                .status(AttemptStatus.AUTO_GRADED)
-                .tabSwitchCount(0)
-                .flagged(false)
+        StudentResultDto studentWithComma = StudentResultDto.builder()
+                .studentId(UUID.randomUUID())
+                .firstName("Last, First")
+                .lastName("")
+                .status(AttemptStatus.AUTO_GRADED.name())
+                .tabSwitches(0)
                 .build();
 
         AssignmentResultDto commaResult = AssignmentResultDto.builder()
                 .assignmentId(assignmentId)
                 .assignmentTitle("Test")
-                .attempts(List.of(attemptWithComma))
+                .students(List.of(studentWithComma))
                 .build();
 
         byte[] data = csvService.exportResults(commaResult, Locale.ENGLISH);

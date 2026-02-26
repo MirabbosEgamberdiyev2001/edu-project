@@ -18,12 +18,17 @@ import uz.eduplatform.modules.assessment.repository.AnswerRepository;
 import uz.eduplatform.modules.assessment.repository.TestAssignmentRepository;
 import uz.eduplatform.modules.assessment.repository.TestAttemptRepository;
 import uz.eduplatform.modules.auth.repository.UserRepository;
+import uz.eduplatform.modules.content.domain.Question;
+import uz.eduplatform.modules.content.repository.QuestionRepository;
 import uz.eduplatform.modules.parent.service.ParentNotificationService;
+import uz.eduplatform.modules.test.domain.TestQuestion;
 import uz.eduplatform.modules.test.repository.TestHistoryRepository;
+import uz.eduplatform.modules.test.repository.TestQuestionRepository;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -43,6 +48,8 @@ public class TestTakingService {
     private final LiveMonitoringService liveMonitoringService;
     private final ParentNotificationService parentNotificationService;
     private final TestHistoryRepository testHistoryRepository;
+    private final TestQuestionRepository testQuestionRepository;
+    private final QuestionRepository questionRepository;
     private final ObjectMapper objectMapper;
 
     @Transactional
@@ -276,6 +283,9 @@ public class TestTakingService {
             throw BusinessException.ofKey("test.taking.attempt.not.in.progress");
         }
 
+        // Guard: auto-submit and reject if time has already expired
+        checkTimeExpired(attempt);
+
         attempt.setSubmittedAt(LocalDateTime.now());
         attempt.setStatus(AttemptStatus.SUBMITTED);
         attempt = attemptRepository.save(attempt);
@@ -400,8 +410,13 @@ public class TestTakingService {
     public PagedResponse<AttemptDto> getStudentAttempts(UUID studentId, Pageable pageable) {
         Page<TestAttempt> page = attemptRepository.findByStudentIdOrderByCreatedAtDesc(studentId, pageable);
 
+        // All attempts belong to the same student — fetch name once to avoid N+1
+        String studentName = userRepository.findById(studentId)
+                .map(u -> u.getFirstName() + " " + u.getLastName())
+                .orElse(null);
+
         List<AttemptDto> dtos = page.getContent().stream()
-                .map(a -> mapToDto(a, a.getAssignment()))
+                .map(a -> mapToDto(a, a.getAssignment(), studentName))
                 .toList();
 
         return PagedResponse.of(dtos, page.getNumber(), page.getSize(),
@@ -425,10 +440,10 @@ public class TestTakingService {
         String studentName = userRepository.findById(attempt.getStudentId())
                 .map(u -> u.getFirstName() + " " + u.getLastName())
                 .orElse(null);
+        return mapToDto(attempt, assignment, studentName);
+    }
 
-        long totalQuestions = answerRepository.countByAttemptId(attempt.getId());
-        long answeredQuestions = answerRepository.countByAttemptIdAndSelectedAnswerIsNotNull(attempt.getId());
-
+    private AttemptDto mapToDto(TestAttempt attempt, TestAssignment assignment, String studentName) {
         // Calculate remaining seconds
         Long remainingSeconds = null;
         if (attempt.getStatus() == AttemptStatus.IN_PROGRESS && assignment != null) {
@@ -437,17 +452,37 @@ public class TestTakingService {
             remainingSeconds = Math.max(0, remaining.getSeconds());
         }
 
-        // Load answers if attempt is completed and results are viewable
-        List<AnswerDto> answerDtos = null;
+        // Load questions for IN_PROGRESS exams so the frontend can render the exam UI
+        List<AttemptQuestionDto> questionDtos = null;
+        if (attempt.getStatus() == AttemptStatus.IN_PROGRESS && assignment != null) {
+            questionDtos = loadQuestionsForAttempt(assignment.getTestHistoryId(),
+                    attempt.getVariantIndex() != null ? attempt.getVariantIndex() : 0);
+        }
+
+        // Load answers as a map keyed by questionId (completed attempts only)
+        Map<UUID, AnswerDto> answersMap = null;
         if (attempt.getStatus() != AttemptStatus.IN_PROGRESS) {
             List<Answer> answers = answerRepository.findByAttemptIdOrderByQuestionIndexAsc(attempt.getId());
-            answerDtos = answers.stream().map(this::mapAnswerToDto).toList();
+            answersMap = answers.stream()
+                    .collect(Collectors.toMap(Answer::getQuestionId, this::mapAnswerToDto));
         }
+
+        // totalQuestions: for IN_PROGRESS use the actual question list size (answer records don't
+        // exist yet); for completed attempts use the answer-record count as a proxy.
+        int totalQuestionsInt = questionDtos != null
+                ? questionDtos.size()
+                : (answersMap != null ? answersMap.size() : (int) answerRepository.countByAttemptId(attempt.getId()));
+        int answeredQuestionsInt = answersMap != null
+                ? (int) answersMap.values().stream().filter(a -> a.getSelectedAnswer() != null).count()
+                : (int) answerRepository.countByAttemptIdAndSelectedAnswerIsNotNull(attempt.getId());
+
+        String assignmentTitle = assignment != null ? assignment.getTitle() : null;
+        Integer durationMinutes = assignment != null ? assignment.getDurationMinutes() : null;
 
         return AttemptDto.builder()
                 .id(attempt.getId())
                 .assignmentId(assignment != null ? assignment.getId() : null)
-                .assignmentTitle(assignment != null ? assignment.getTitle() : null)
+                .assignmentTitle(assignmentTitle)
                 .studentId(attempt.getStudentId())
                 .studentName(studentName)
                 .attemptNumber(attempt.getAttemptNumber())
@@ -463,23 +498,87 @@ public class TestTakingService {
                 .ipAddress(attempt.getIpAddress())
                 .flagged(attempt.getFlagged())
                 .flagReason(attempt.getFlagReason())
-                .answers(answerDtos)
-                .totalQuestions((int) totalQuestions)
-                .answeredQuestions((int) answeredQuestions)
+                .questions(questionDtos)
+                .answers(answersMap)
+                .totalQuestions(totalQuestionsInt)
+                .answeredQuestions(answeredQuestionsInt)
                 .createdAt(attempt.getCreatedAt())
+                // Frontend-expected aliases
+                .testTitle(assignmentTitle)
+                .tabSwitches(attempt.getTabSwitchCount())
+                .score(attempt.getRawScore() != null ? attempt.getRawScore().doubleValue() : null)
+                .timeRemaining(remainingSeconds)
+                .durationMinutes(durationMinutes)
                 .build();
     }
 
+    private List<AttemptQuestionDto> loadQuestionsForAttempt(UUID testHistoryId, int variantIndex) {
+        if (testHistoryId == null) return List.of();
+        try {
+            // Convert numeric index to variant code: 0→A, 1→B, etc.
+            String variantCode = String.valueOf((char) ('A' + variantIndex));
+            List<TestQuestion> testQuestions = testQuestionRepository
+                    .findByTestIdAndVariantCodeOrderByQuestionOrderAsc(testHistoryId, variantCode);
+
+            if (testQuestions.isEmpty()) {
+                log.debug("No questions found for testHistoryId={} variantCode={}", testHistoryId, variantCode);
+                return List.of();
+            }
+
+            // Batch-load Question entities by their IDs
+            List<UUID> questionIds = testQuestions.stream()
+                    .map(TestQuestion::getQuestionId).toList();
+            Map<UUID, Question> questionMap = new HashMap<>();
+            questionRepository.findAllById(questionIds)
+                    .forEach(q -> questionMap.put(q.getId(), q));
+
+            return testQuestions.stream()
+                    .map(tq -> {
+                        Question q = questionMap.get(tq.getQuestionId());
+                        if (q == null) return null;
+                        return AttemptQuestionDto.builder()
+                                .id(q.getId())
+                                .questionText(extractText(q.getQuestionText()))
+                                .questionType(q.getQuestionType() != null ? q.getQuestionType().name() : null)
+                                .difficulty(q.getDifficulty() != null ? q.getDifficulty().name() : null)
+                                .points(q.getPoints() != null ? q.getPoints().doubleValue() : 1.0)
+                                .timeLimitSeconds(q.getTimeLimitSeconds())
+                                .media(q.getMedia())
+                                .options(parseJson(q.getOptions()))
+                                .optionsOrder(tq.getOptionsOrder())
+                                .build();
+                    })
+                    .filter(java.util.Objects::nonNull)
+                    .toList();
+        } catch (Exception e) {
+            log.warn("Failed to load questions for testHistoryId={}: {}", testHistoryId, e.getMessage());
+            return List.of();
+        }
+    }
+
+    private String extractText(Map<String, String> textMap) {
+        if (textMap == null || textMap.isEmpty()) return "";
+        for (String lang : new String[]{"uz", "en", "ru", "uz_Cyrl"}) {
+            String val = textMap.get(lang);
+            if (val != null && !val.isBlank()) return val;
+        }
+        return textMap.values().stream().findFirst().orElse("");
+    }
+
     private AnswerDto mapAnswerToDto(Answer answer) {
+        Object parsedAnswer = parseJson(answer.getSelectedAnswer());
         return AnswerDto.builder()
                 .id(answer.getId())
                 .questionId(answer.getQuestionId())
                 .questionIndex(answer.getQuestionIndex())
-                .selectedAnswer(parseJson(answer.getSelectedAnswer()))
+                .selectedAnswer(parsedAnswer)
+                .response(parsedAnswer)              // frontend alias for selectedAnswer
                 .isCorrect(answer.getIsCorrect())
                 .isPartial(answer.getIsPartial())
                 .earnedPoints(answer.getEarnedPoints())
                 .maxPoints(answer.getMaxPoints())
+                .score(answer.getEarnedPoints() != null  // frontend alias for earnedPoints
+                        ? answer.getEarnedPoints().doubleValue() : null)
                 .needsManualGrading(answer.getNeedsManualGrading())
                 .manualScore(answer.getManualScore())
                 .manualFeedback(answer.getManualFeedback())

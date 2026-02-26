@@ -108,3 +108,23 @@ export interface LiveStudentDto {
   startedAt: string | null;
   timeRemaining: number | null;
 }
+
+export interface PromoCodeDto {
+  id: string;
+  assignmentId: string;
+  code: string;
+  maxUses: number | null;
+  currentUses: number;
+  expiresAt: string | null;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface GeneratePromoCodeRequest {
+  maxUses?: number;
+  expiresAt?: string;
+}
+
+export interface RedeemPromoCodeRequest {
+  code: string;
+}

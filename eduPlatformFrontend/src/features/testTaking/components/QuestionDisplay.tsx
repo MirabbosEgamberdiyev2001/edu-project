@@ -1,4 +1,5 @@
 import { Typography, Box, Chip } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 import type { AttemptQuestionDto } from '@/types/testTaking';
 
 interface QuestionDisplayProps {
@@ -8,6 +9,8 @@ interface QuestionDisplayProps {
 }
 
 export default function QuestionDisplay({ question, questionNumber, totalQuestions }: QuestionDisplayProps) {
+  const { t } = useTranslation('testTaking');
+
   return (
     <Box sx={{ mb: 3 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
@@ -15,7 +18,7 @@ export default function QuestionDisplay({ question, questionNumber, totalQuestio
           {questionNumber}/{totalQuestions}
         </Typography>
         <Chip label={question.difficulty} size="small" variant="outlined" />
-        <Chip label={`${question.points} pts`} size="small" />
+        <Chip label={`${question.points} ${t('pointsShort')}`} size="small" />
       </Box>
       <Typography variant="h6" sx={{ mb: 2, lineHeight: 1.5 }}>
         {question.questionText}

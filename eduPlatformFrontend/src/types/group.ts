@@ -6,8 +6,11 @@ export enum GroupStatus {
 export interface GroupDto {
   id: string;
   teacherId: string;
+  teacherName: string | null;
   name: string;
   description: string | null;
+  subjectId: string | null;
+  subjectName: string | null;
   memberCount: number;
   status: GroupStatus;
   createdAt: string;
@@ -35,5 +38,17 @@ export interface UpdateGroupRequest {
 }
 
 export interface AddMembersRequest {
+  studentIds: string[];
+}
+
+export interface StudentSearchDto {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string | null;
+  phone: string | null;
+}
+
+export interface BatchRemoveMembersRequest {
   studentIds: string[];
 }

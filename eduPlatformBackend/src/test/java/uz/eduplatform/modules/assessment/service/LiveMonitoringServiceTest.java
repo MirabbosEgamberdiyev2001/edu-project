@@ -115,11 +115,11 @@ class LiveMonitoringServiceTest {
 
         assertNotNull(result);
         assertEquals(assignmentId, result.getAssignmentId());
-        assertEquals(1, result.getTotalAssigned());
-        assertEquals(1, result.getTotalStarted());
-        assertEquals(1, result.getInProgress());
+        assertEquals(1, result.getTotalStudents());
+        assertEquals(1, result.getActiveStudents());
         assertEquals(1, result.getStudents().size());
-        assertEquals("Ali Valiyev", result.getStudents().get(0).getStudentName());
+        assertEquals("Ali", result.getStudents().get(0).getFirstName());
+        assertEquals("Valiyev", result.getStudents().get(0).getLastName());
         assertEquals(5, result.getStudents().get(0).getAnsweredQuestions());
     }
 

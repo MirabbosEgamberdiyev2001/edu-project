@@ -2,6 +2,7 @@ package uz.eduplatform.modules.assessment.repository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,6 +20,7 @@ public interface TestAttemptRepository extends JpaRepository<TestAttempt, UUID> 
 
     List<TestAttempt> findByAssignmentIdOrderByCreatedAtDesc(UUID assignmentId);
 
+    @EntityGraph(attributePaths = {"assignment"})
     Page<TestAttempt> findByStudentIdOrderByCreatedAtDesc(UUID studentId, Pageable pageable);
 
     List<TestAttempt> findByStudentIdOrderByCreatedAtDesc(UUID studentId);

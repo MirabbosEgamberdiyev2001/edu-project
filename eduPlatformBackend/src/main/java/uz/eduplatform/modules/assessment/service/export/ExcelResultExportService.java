@@ -6,7 +6,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import uz.eduplatform.core.common.exception.BusinessException;
 import uz.eduplatform.modules.assessment.dto.AssignmentResultDto;
-import uz.eduplatform.modules.assessment.dto.AttemptDto;
+import uz.eduplatform.modules.assessment.dto.StudentResultDto;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -32,10 +32,8 @@ public class ExcelResultExportService implements ResultExportService {
             titleRow.getCell(0).setCellStyle(headerStyle);
 
             rowIdx++;
-            addSummaryRow(summarySheet, rowIdx++, "Total Assigned", String.valueOf(results.getTotalAssigned()));
-            addSummaryRow(summarySheet, rowIdx++, "Total Started", String.valueOf(results.getTotalStarted()));
-            addSummaryRow(summarySheet, rowIdx++, "Total Submitted", String.valueOf(results.getTotalSubmitted()));
-            addSummaryRow(summarySheet, rowIdx++, "Total Graded", String.valueOf(results.getTotalGraded()));
+            addSummaryRow(summarySheet, rowIdx++, "Total Students", String.valueOf(results.getTotalStudents()));
+            addSummaryRow(summarySheet, rowIdx++, "Completed", String.valueOf(results.getCompletedStudents()));
             rowIdx++;
             addSummaryRow(summarySheet, rowIdx++, "Average Score",
                     results.getAverageScore() != null ? results.getAverageScore().toPlainString() + "%" : "N/A");
@@ -49,8 +47,8 @@ public class ExcelResultExportService implements ResultExportService {
 
             // ── Sheet 2: Results ──
             Sheet resultsSheet = workbook.createSheet("Results");
-            String[] headers = {"Student Name", "Attempt #", "Status", "Score", "Max Score", "%",
-                    "Tab Switches", "IP Address", "Flagged", "Started At", "Submitted At"};
+            String[] headers = {"Student Name", "Score", "Max Score", "%",
+                    "Attempts", "Tab Switches", "Status", "Submitted At"};
 
             Row headerRow = resultsSheet.createRow(0);
             for (int i = 0; i < headers.length; i++) {
@@ -59,34 +57,33 @@ public class ExcelResultExportService implements ResultExportService {
                 cell.setCellStyle(headerStyle);
             }
 
-            if (results.getAttempts() != null) {
+            if (results.getStudents() != null) {
                 int dataRow = 1;
-                for (AttemptDto attempt : results.getAttempts()) {
+                for (StudentResultDto student : results.getStudents()) {
                     Row row = resultsSheet.createRow(dataRow++);
                     int col = 0;
-                    row.createCell(col++).setCellValue(attempt.getStudentName() != null ? attempt.getStudentName() : "");
-                    row.createCell(col++).setCellValue(attempt.getAttemptNumber() != null ? attempt.getAttemptNumber() : 0);
-                    row.createCell(col++).setCellValue(attempt.getStatus() != null ? attempt.getStatus().name() : "");
-                    if (attempt.getRawScore() != null) {
-                        row.createCell(col++).setCellValue(attempt.getRawScore().doubleValue());
+                    String name = (student.getFirstName() != null ? student.getFirstName() : "")
+                            + " " + (student.getLastName() != null ? student.getLastName() : "");
+                    row.createCell(col++).setCellValue(name.trim());
+                    if (student.getScore() != null) {
+                        row.createCell(col++).setCellValue(student.getScore().doubleValue());
                     } else {
                         row.createCell(col++).setCellValue("");
                     }
-                    if (attempt.getMaxScore() != null) {
-                        row.createCell(col++).setCellValue(attempt.getMaxScore().doubleValue());
+                    if (student.getMaxScore() != null) {
+                        row.createCell(col++).setCellValue(student.getMaxScore().doubleValue());
                     } else {
                         row.createCell(col++).setCellValue("");
                     }
-                    if (attempt.getPercentage() != null) {
-                        row.createCell(col++).setCellValue(attempt.getPercentage().doubleValue());
+                    if (student.getPercentage() != null) {
+                        row.createCell(col++).setCellValue(student.getPercentage().doubleValue());
                     } else {
                         row.createCell(col++).setCellValue("");
                     }
-                    row.createCell(col++).setCellValue(attempt.getTabSwitchCount() != null ? attempt.getTabSwitchCount() : 0);
-                    row.createCell(col++).setCellValue(attempt.getIpAddress() != null ? attempt.getIpAddress() : "");
-                    row.createCell(col++).setCellValue(Boolean.TRUE.equals(attempt.getFlagged()) ? "Yes" : "No");
-                    row.createCell(col++).setCellValue(attempt.getStartedAt() != null ? attempt.getStartedAt().format(DATE_FORMAT) : "");
-                    row.createCell(col).setCellValue(attempt.getSubmittedAt() != null ? attempt.getSubmittedAt().format(DATE_FORMAT) : "");
+                    row.createCell(col++).setCellValue(student.getAttemptCount() != null ? student.getAttemptCount() : 0);
+                    row.createCell(col++).setCellValue(student.getTabSwitches() != null ? student.getTabSwitches() : 0);
+                    row.createCell(col++).setCellValue(student.getStatus() != null ? student.getStatus() : "");
+                    row.createCell(col).setCellValue(student.getSubmittedAt() != null ? student.getSubmittedAt().format(DATE_FORMAT) : "");
                 }
             }
 

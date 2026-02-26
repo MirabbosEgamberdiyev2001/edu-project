@@ -26,12 +26,14 @@ public class AnswerDto {
 
     // --- Student's answer ---
     private Object selectedAnswer;
+    private Object response;    // alias for selectedAnswer (frontend-expected name)
 
     // --- Grading ---
     private Boolean isCorrect;
     private Boolean isPartial;
     private BigDecimal earnedPoints;
     private BigDecimal maxPoints;
+    private Double score;       // alias for earnedPoints as double (frontend-expected name)
 
     // --- Manual grading ---
     private Boolean needsManualGrading;

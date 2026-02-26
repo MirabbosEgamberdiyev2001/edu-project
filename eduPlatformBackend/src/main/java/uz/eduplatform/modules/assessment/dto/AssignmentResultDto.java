@@ -17,20 +17,18 @@ public class AssignmentResultDto {
 
     private UUID assignmentId;
     private String assignmentTitle;
-    private UUID teacherId;
+    private UUID groupId;
+    private String groupName;
 
     // --- Overall stats ---
-    private Integer totalAssigned;
-    private Integer totalStarted;
-    private Integer totalSubmitted;
-    private Integer totalGraded;
+    private Integer totalStudents;
+    private Integer completedStudents;
 
     // --- Score stats ---
     private BigDecimal averageScore;
     private BigDecimal highestScore;
     private BigDecimal lowestScore;
-    private BigDecimal averagePercentage;
 
     // --- Individual results ---
-    private List<AttemptDto> attempts;
+    private List<StudentResultDto> students;
 }

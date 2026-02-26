@@ -21,6 +21,14 @@ public interface StudentGroupRepository extends JpaRepository<StudentGroup, UUID
     Page<StudentGroup> findByTeacherIdAndStatusOrderByCreatedAtDesc(
             UUID teacherId, GroupStatus status, Pageable pageable);
 
+    @Query("SELECT g FROM StudentGroup g WHERE g.teacherId = :teacherId AND LOWER(g.name) LIKE LOWER(CONCAT('%', :search, '%')) ORDER BY g.createdAt DESC")
+    Page<StudentGroup> searchByTeacherIdAndName(
+            @Param("teacherId") UUID teacherId, @Param("search") String search, Pageable pageable);
+
+    @Query("SELECT g FROM StudentGroup g WHERE g.teacherId = :teacherId AND g.status = :status AND LOWER(g.name) LIKE LOWER(CONCAT('%', :search, '%')) ORDER BY g.createdAt DESC")
+    Page<StudentGroup> searchByTeacherIdAndStatusAndName(
+            @Param("teacherId") UUID teacherId, @Param("status") GroupStatus status, @Param("search") String search, Pageable pageable);
+
     Optional<StudentGroup> findByIdAndTeacherId(UUID id, UUID teacherId);
 
     @Query("SELECT g FROM StudentGroup g JOIN g.members m WHERE m.studentId = :studentId ORDER BY g.createdAt DESC")

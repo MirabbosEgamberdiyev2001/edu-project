@@ -10,7 +10,7 @@ import type {
   GradeAnswerRequest,
   AttemptResultDto,
 } from '@/types/testTaking';
-import type { AssignmentDto } from '@/types/assignment';
+import type { AssignmentDto, RedeemPromoCodeRequest } from '@/types/assignment';
 
 const TEST_TAKING = '/test-taking';
 
@@ -41,4 +41,7 @@ export const testTakingApi = {
 
   gradeAnswer: (data: GradeAnswerRequest) =>
     api.post<ApiResponse<void>>(`${TEST_TAKING}/grade`, data),
+
+  redeemPromoCode: (data: RedeemPromoCodeRequest) =>
+    api.post<ApiResponse<void>>(`${TEST_TAKING}/promo/redeem`, data),
 };

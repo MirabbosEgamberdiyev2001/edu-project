@@ -27,5 +27,21 @@
   "selectedStudents": "{{count}} ta tanlangan",
   "deleteConfirm": "\"{{name}}\" guruhini o'chirmoqchimisiz? Bu amalni qaytarib bo'lmaydi.",
   "deleteWarning": "Barcha a'zolik aloqalari o'chiriladi.",
-  "createdAt": "Yaratilgan"
+  "createdAt": "Yaratilgan",
+  "subject": "Fan",
+  "noSubject": "Fan tanlanmagan",
+  "selected": "tanlangan",
+  "removeSelected": "Tanlanganlarni olib tashlash ({{count}})",
+  "removeMemberConfirm": "{{name}}ni bu guruhdan olib tashlamoqchimisiz?",
+  "removeMembersBatchConfirm": "{{count}} ta a'zoni bu guruhdan olib tashlamoqchimisiz?",
+  "removeWarning": "Bu amalni qaytarib bo'lmaydi. Olib tashlangan a'zolar guruh topshiriqlariga kirishni yo'qotadi.",
+  "success": {
+    "created": "Guruh muvaffaqiyatli yaratildi",
+    "updated": "Guruh muvaffaqiyatli yangilandi",
+    "deleted": "Guruh muvaffaqiyatli o'chirildi",
+    "archived": "Guruh arxivlandi",
+    "membersAdded": "A'zolar muvaffaqiyatli qo'shildi",
+    "memberRemoved": "A'zo guruhdan chiqarildi",
+    "membersBatchRemoved": "A'zolar muvaffaqiyatli olib tashlandi"
+  }
 }

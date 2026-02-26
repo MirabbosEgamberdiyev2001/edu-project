@@ -14,44 +14,74 @@ import java.util.UUID;
 public class StudentAnalyticsDto {
 
     private UUID studentId;
-    private String studentName;
+    private String studentName;    // legacy combined name
+    private String firstName;
+    private String lastName;
 
-    // Summary
+    // Summary — frontend uses overallAverage, totalAttempts, completionRate
     private int totalAssignments;
     private int completedAssignments;
     private int pendingAssignments;
     private BigDecimal overallAverageScore;
+    private double overallAverage;     // = overallAverageScore.doubleValue()
+    private int totalAttempts;         // = completedAssignments
+    private double completionRate;     // = completedAssignments / totalAssignments * 100
 
-    // Score trend (last N attempts)
-    private List<ScoreTrendDto> scoreTrend;
+    // Score trend — new frontend shape: [{date, value}]
+    // (old shape scoreTrendDetails kept for backward compat)
+    private List<TrendPointDto> scoreTrend;
+    private List<ScoreTrendDetailDto> scoreTrendDetails;
 
-    // Per-subject breakdown
+    // Subject breakdown — frontend uses subjectId + totalAttempts
     private List<SubjectBreakdownDto> subjectBreakdown;
 
-    // Upcoming assignments
-    private List<UpcomingAssignmentDto> upcomingAssignments;
-
-    // In-progress attempts
-    private List<InProgressAttemptDto> inProgressAttempts;
-
-    // Weekly activity
-    private WeeklyActivityDto weeklyActivity;
-
-    // Weak areas
+    // Weak / strong areas — frontend uses topicId, topicName, subjectName
     private List<WeakAreaDto> weakAreas;
+    private List<WeakAreaDto> strongAreas;
+
+    // Weekly activity — frontend expects List<{date, attemptCount}>
+    private List<WeeklyActivityItemDto> weeklyActivity;
+    private WeeklyActivitySummaryDto weeklyActivitySummary;  // legacy
+
+    // Upcoming / in-progress (not shown in current pages but keep for completeness)
+    private List<UpcomingAssignmentDto> upcomingAssignments;
+    private List<InProgressAttemptDto> inProgressAttempts;
 
     // Time management
     private TimeManagementDto timeManagement;
+
+    // ── New inner classes (frontend-compatible) ──
 
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class ScoreTrendDto {
-        private UUID attemptId;
-        private String assignmentTitle;
-        private BigDecimal percentage;
-        private LocalDateTime submittedAt;
+    public static class TrendPointDto {
+        private String date;    // ISO date string
+        private double value;   // percentage score
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class WeeklyActivityItemDto {
+        private String date;          // ISO date string (YYYY-MM-DD)
+        private int attemptCount;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class WeakAreaDto {
+        private String topicId;       // uses subjectId as proxy
+        private String topicName;     // uses subjectName as proxy
+        private String subjectName;
+        private double averageScore;
+        private int attemptCount;
+        // Legacy BigDecimal (kept for backward compat)
+        private BigDecimal averageScoreDecimal;
     }
 
     @Data
@@ -59,9 +89,24 @@ public class StudentAnalyticsDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class SubjectBreakdownDto {
+        private String subjectId;
         private String subjectName;
-        private int attemptCount;
+        private int totalAttempts;      // frontend name
+        private int attemptCount;       // legacy name
         private BigDecimal averageScore;
+    }
+
+    // ── Legacy inner classes ──
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ScoreTrendDetailDto {
+        private UUID attemptId;
+        private String assignmentTitle;
+        private BigDecimal percentage;
+        private LocalDateTime submittedAt;
     }
 
     @Data
@@ -95,21 +140,11 @@ public class StudentAnalyticsDto {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class WeeklyActivityDto {
+    public static class WeeklyActivitySummaryDto {
         private int testsCompletedThisWeek;
         private int testsCompletedLastWeek;
         private BigDecimal averageScoreThisWeek;
         private long totalTimeSpentMinutes;
-    }
-
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class WeakAreaDto {
-        private String subjectName;
-        private BigDecimal averageScore;
-        private int attemptCount;
     }
 
     @Data

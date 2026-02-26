@@ -28,5 +28,21 @@
   "selectedStudents": "{{count}} selected",
   "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
   "deleteWarning": "All member associations will be removed.",
-  "createdAt": "Created"
+  "createdAt": "Created",
+  "subject": "Subject",
+  "noSubject": "No subject",
+  "selected": "selected",
+  "removeSelected": "Remove selected ({{count}})",
+  "removeMemberConfirm": "Are you sure you want to remove {{name}} from this group?",
+  "removeMembersBatchConfirm": "Are you sure you want to remove {{count}} members from this group?",
+  "removeWarning": "This action cannot be undone. Removed members will lose access to group assignments.",
+  "success": {
+    "created": "Group created successfully",
+    "updated": "Group updated successfully",
+    "deleted": "Group deleted successfully",
+    "archived": "Group archived successfully",
+    "membersAdded": "Members added successfully",
+    "memberRemoved": "Member removed successfully",
+    "membersBatchRemoved": "Members removed successfully"
+  }
 }

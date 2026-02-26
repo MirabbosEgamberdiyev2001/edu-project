@@ -1,10 +1,13 @@
 package uz.eduplatform.modules.assessment.controller;
 
+import io.github.bucket4j.Bucket;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
@@ -13,13 +16,18 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import uz.eduplatform.core.common.dto.ApiResponse;
 import uz.eduplatform.core.common.dto.PagedResponse;
+import uz.eduplatform.core.common.exception.BusinessException;
+import uz.eduplatform.core.common.utils.MessageService;
+import uz.eduplatform.core.i18n.AcceptLanguage;
 import uz.eduplatform.core.security.UserPrincipal;
 import uz.eduplatform.modules.assessment.dto.*;
 import uz.eduplatform.modules.assessment.service.AssignmentService;
 import uz.eduplatform.modules.assessment.service.GradingService;
+import uz.eduplatform.modules.assessment.service.PromoCodeService;
 import uz.eduplatform.modules.assessment.service.TestTakingService;
 
 import java.util.UUID;
+import java.util.function.Function;
 
 @RestController
 @RequestMapping("/api/v1/test-taking")
@@ -30,6 +38,12 @@ public class TestTakingController {
     private final TestTakingService testTakingService;
     private final AssignmentService assignmentService;
     private final GradingService gradingService;
+    private final PromoCodeService promoCodeService;
+    private final MessageService messageService;
+
+    @Autowired
+    @Qualifier("promoCodeRedeemRateLimiter")
+    private Function<String, Bucket> promoCodeRedeemRateLimiter;
 
     // ==================== Student Endpoints ====================
 
@@ -138,6 +152,26 @@ public class TestTakingController {
         PagedResponse<AttemptDto> response = testTakingService.getStudentAttempts(
                 principal.getId(), PageRequest.of(page, size, Sort.by("createdAt").descending()));
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    // ==================== Promo Code Endpoint ====================
+
+    @PostMapping("/promo/redeem")
+    @Operation(summary = "Promokod bilan ro'yxatdan o'tish", description = "Promokodni kiritib, topshiriqqa ro'yxatdan o'tish. Muvaffaqiyatli bo'lsa, topshiriq talabaga biriktiriladi.")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<ApiResponse<Void>> redeemPromoCode(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language,
+            @Valid @RequestBody RedeemPromoCodeRequest request) {
+
+        Bucket bucket = promoCodeRedeemRateLimiter.apply(principal.getId().toString());
+        if (!bucket.tryConsume(1)) {
+            throw BusinessException.ofKey("promo.code.rate.limit");
+        }
+
+        promoCodeService.redeemCode(request.getCode(), principal.getId());
+        return ResponseEntity.ok(ApiResponse.success(null,
+                messageService.get("success.promo.code.redeemed", language.toLocale())));
     }
 
     // ==================== Teacher Grading Endpoint ====================

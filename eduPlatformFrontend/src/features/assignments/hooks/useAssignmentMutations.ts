@@ -9,18 +9,19 @@ import type { ApiError } from '@/types/api';
 export function useAssignmentMutations() {
   const queryClient = useQueryClient();
   const toast = useToast();
-  const { t } = useTranslation('common');
+  const { t } = useTranslation('assignment');
+  const { t: tc } = useTranslation('common');
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['assignments'] });
 
   const create = useMutation({
     mutationFn: (data: CreateAssignmentRequest) => assignmentApi.createAssignment(data),
     onSuccess: ({ data: resp }) => {
-      toast.success(resp.message);
+      toast.success(resp.message || t('success.created'));
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || t('error'));
+      toast.error(error.response?.data?.message || tc('error'));
     },
   });
 
@@ -28,44 +29,44 @@ export function useAssignmentMutations() {
     mutationFn: ({ id, data }: { id: string; data: UpdateAssignmentRequest }) =>
       assignmentApi.updateAssignment(id, data),
     onSuccess: ({ data: resp }) => {
-      toast.success(resp.message);
+      toast.success(resp.message || t('success.updated'));
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || t('error'));
+      toast.error(error.response?.data?.message || tc('error'));
     },
   });
 
   const activate = useMutation({
     mutationFn: (id: string) => assignmentApi.activateAssignment(id),
     onSuccess: ({ data: resp }) => {
-      toast.success(resp.message);
+      toast.success(resp.message || t('success.activated'));
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || t('error'));
+      toast.error(error.response?.data?.message || tc('error'));
     },
   });
 
   const cancel = useMutation({
     mutationFn: (id: string) => assignmentApi.cancelAssignment(id),
     onSuccess: ({ data: resp }) => {
-      toast.success(resp.message);
+      toast.success(resp.message || t('success.cancelled'));
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || t('error'));
+      toast.error(error.response?.data?.message || tc('error'));
     },
   });
 
   const remove = useMutation({
     mutationFn: (id: string) => assignmentApi.deleteAssignment(id),
     onSuccess: ({ data: resp }) => {
-      toast.success(resp.message);
+      toast.success(resp.message || t('success.deleted'));
       invalidate();
     },
     onError: (error: AxiosError<ApiError>) => {
-      toast.error(error.response?.data?.message || t('error'));
+      toast.error(error.response?.data?.message || tc('error'));
     },
   });
 

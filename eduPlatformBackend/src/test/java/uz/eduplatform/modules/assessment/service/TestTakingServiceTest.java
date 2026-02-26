@@ -19,6 +19,7 @@ import uz.eduplatform.modules.assessment.repository.TestAssignmentRepository;
 import uz.eduplatform.modules.assessment.repository.TestAttemptRepository;
 import uz.eduplatform.modules.auth.domain.User;
 import uz.eduplatform.modules.auth.repository.UserRepository;
+import uz.eduplatform.modules.test.repository.TestHistoryRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -40,6 +41,7 @@ class TestTakingServiceTest {
     @Mock private GradingService gradingService;
     @Mock private LiveMonitoringService liveMonitoringService;
     @Mock private uz.eduplatform.modules.parent.service.ParentNotificationService parentNotificationService;
+    @Mock private TestHistoryRepository testHistoryRepository;
     @Spy private ObjectMapper objectMapper = new ObjectMapper();
 
     @InjectMocks

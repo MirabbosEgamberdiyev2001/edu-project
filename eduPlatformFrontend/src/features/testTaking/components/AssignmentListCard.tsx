@@ -34,7 +34,7 @@ export default function AssignmentListCard({ assignment, onStart, isPending }: A
 
       <Box sx={{ display: 'flex', gap: 1, mb: 1.5, flexWrap: 'wrap' }}>
         {assignment.durationMinutes && (
-          <Chip icon={<TimerIcon />} label={`${assignment.durationMinutes} min`} size="small" variant="outlined" />
+          <Chip icon={<TimerIcon />} label={`${assignment.durationMinutes} ${t('minutesShort')}`} size="small" variant="outlined" />
         )}
         <Chip label={`${t('maxAttempts')}: ${assignment.maxAttempts}`} size="small" variant="outlined" />
       </Box>

@@ -6,17 +6,21 @@ import {
   Grid,
   CircularProgress,
   Pagination,
+  Button,
 } from '@mui/material';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import { useTranslation } from 'react-i18next';
 import { useAvailableAssignments } from '../hooks/useAvailableAssignments';
 import { useAttemptMutations } from '../hooks/useAttemptMutations';
 import AssignmentListCard from '../components/AssignmentListCard';
+import PromoCodeRedeemDialog from '../components/PromoCodeRedeemDialog';
 
 export default function AvailableAssignmentsPage() {
   const { t } = useTranslation('testTaking');
   const navigate = useNavigate();
   const [page, setPage] = useState(0);
+  const [promoDialogOpen, setPromoDialogOpen] = useState(false);
 
   const params = useMemo(() => ({ page, size: 12 }), [page]);
   const { data, isLoading } = useAvailableAssignments(params);
@@ -32,7 +36,17 @@ export default function AvailableAssignmentsPage() {
 
   return (
     <Box>
-      <Typography variant="h5" fontWeight={700} sx={{ mb: 1 }}>{t('availableTitle')}</Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+        <Typography variant="h5" fontWeight={700}>{t('availableTitle')}</Typography>
+        <Button
+          variant="outlined"
+          size="small"
+          startIcon={<VpnKeyIcon />}
+          onClick={() => setPromoDialogOpen(true)}
+        >
+          {t('enterPromoCode')}
+        </Button>
+      </Box>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>{t('availableSubtitle')}</Typography>
 
       {isLoading ? (
@@ -70,6 +84,11 @@ export default function AvailableAssignmentsPage() {
           <Typography variant="body2" color="text.disabled">{t('noAvailableDescription')}</Typography>
         </Box>
       )}
+
+      <PromoCodeRedeemDialog
+        open={promoDialogOpen}
+        onClose={() => setPromoDialogOpen(false)}
+      />
     </Box>
   );
 }

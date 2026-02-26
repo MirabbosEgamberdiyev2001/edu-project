@@ -15,9 +15,10 @@ import EditIcon from '@mui/icons-material/Edit';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import ArchiveIcon from '@mui/icons-material/Archive';
 import GroupIcon from '@mui/icons-material/Group';
+import SchoolIcon from '@mui/icons-material/School';
 import { useTranslation } from 'react-i18next';
 import { useGroup } from '../hooks/useGroups';
-import { useGroupMembers, useRemoveMember } from '../hooks/useGroupMembers';
+import { useGroupMembers, useRemoveMember, useRemoveMembersBatch } from '../hooks/useGroupMembers';
 import { useGroupMutations } from '../hooks/useGroupMutations';
 import MemberListTable from '../components/MemberListTable';
 import GroupFormDialog from '../components/GroupFormDialog';
@@ -32,6 +33,7 @@ export default function GroupDetailPage() {
   const { data: group, isLoading } = useGroup(id);
   const { data: members, isLoading: membersLoading, refetch: refetchMembers } = useGroupMembers(id);
   const removeMember = useRemoveMember(id!);
+  const removeMembersBatch = useRemoveMembersBatch(id!);
   const { update, archive } = useGroupMutations();
 
   const [formOpen, setFormOpen] = useState(false);
@@ -45,6 +47,10 @@ export default function GroupDetailPage() {
 
   const handleRemoveMember = (studentId: string) => {
     removeMember.mutate(studentId);
+  };
+
+  const handleBatchRemove = (studentIds: string[]) => {
+    removeMembersBatch.mutate(studentIds);
   };
 
   if (isLoading) {
@@ -99,12 +105,21 @@ export default function GroupDetailPage() {
             )}
           </Box>
         </Box>
-        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
           <Chip
             label={isArchived ? t('archived') : t('active')}
             color={isArchived ? 'default' : 'success'}
             size="small"
           />
+          {group.subjectName && (
+            <Chip
+              icon={<SchoolIcon />}
+              label={group.subjectName}
+              color="primary"
+              size="small"
+              variant="outlined"
+            />
+          )}
           <Chip
             label={t('memberCount', { count: group.memberCount })}
             variant="outlined"
@@ -138,7 +153,10 @@ export default function GroupDetailPage() {
         <MemberListTable
           members={members || []}
           onRemove={handleRemoveMember}
+          onBatchRemove={handleBatchRemove}
           isRemoving={removeMember.isPending}
+          isBatchRemoving={removeMembersBatch.isPending}
+          isEditable={!isArchived}
         />
       )}
 
