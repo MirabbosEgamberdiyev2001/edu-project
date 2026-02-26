@@ -64,25 +64,40 @@ public class ParentService {
         String code = generateUniqueCode();
         LocalDateTime expiresAt = LocalDateTime.now().plusHours(CODE_EXPIRY_HOURS);
 
-        // Create a pending pairing record (parent will be set when they use the code)
-        ParentChild pairing = ParentChild.builder()
-                .parentId(studentId) // temporary placeholder — will be replaced on pairing
-                .childId(studentId)
-                .pairingCode(code)
-                .pairingCodeExpiresAt(expiresAt)
-                .status(PairingStatus.PENDING)
-                .build();
+        // Reuse the existing PENDING record to avoid uk_parent_child (parent_id, child_id)
+        // unique constraint violation: when first generated, both columns equal studentId.
+        // A second call would try to INSERT the same (studentId, studentId) pair → DataIntegrityViolationException.
+        List<ParentChild> existingPending = parentChildRepository.findByChildIdAndStatus(studentId, PairingStatus.PENDING);
+        ParentChild pairing;
+        if (!existingPending.isEmpty()) {
+            // Update existing record with a fresh code and new expiry
+            pairing = existingPending.get(0);
+            pairing.setPairingCode(code);
+            pairing.setPairingCodeExpiresAt(expiresAt);
+            // Expire any extra stale pending records (defensive; should not normally exist)
+            for (int i = 1; i < existingPending.size(); i++) {
+                existingPending.get(i).setStatus(PairingStatus.EXPIRED);
+                existingPending.get(i).setPairingCode(null);
+            }
+            if (existingPending.size() > 1) {
+                parentChildRepository.saveAll(existingPending.subList(1, existingPending.size()));
+            }
+        } else {
+            pairing = ParentChild.builder()
+                    .parentId(studentId) // temporary placeholder — replaced when parent claims code
+                    .childId(studentId)
+                    .pairingCode(code)
+                    .pairingCodeExpiresAt(expiresAt)
+                    .status(PairingStatus.PENDING)
+                    .build();
+        }
 
         parentChildRepository.save(pairing);
         log.info("Generated pairing code for student {}", studentId);
 
         String qrDataUri = qrCodeService.generatePairingQrCode(code);
 
-        return GeneratePairingCodeResponse.builder()
-                .pairingCode(code)
-                .expiresAt(expiresAt)
-                .qrCodeDataUri(qrDataUri)
-                .build();
+        return GeneratePairingCodeResponse.of(code, expiresAt, qrDataUri);
     }
 
     /**
@@ -97,7 +112,7 @@ public class ParentService {
             throw BusinessException.ofKey("parent.only.parents.use.code");
         }
 
-        ParentChild pairing = parentChildRepository.findByPairingCode(request.getPairingCode())
+        ParentChild pairing = parentChildRepository.findByPairingCode(request.getCode())
                 .orElseThrow(() -> BusinessException.ofKey("parent.invalid.pairing.code"));
 
         if (pairing.getStatus() != PairingStatus.PENDING) {

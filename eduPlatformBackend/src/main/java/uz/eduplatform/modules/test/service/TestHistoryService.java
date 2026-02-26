@@ -7,12 +7,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.eduplatform.core.audit.AuditService;
 import uz.eduplatform.core.common.dto.PagedResponse;
+import uz.eduplatform.core.common.exception.BusinessException;
 import uz.eduplatform.core.common.exception.ResourceNotFoundException;
 import uz.eduplatform.core.i18n.AcceptLanguage;
 import uz.eduplatform.core.i18n.LocaleKeys;
 import uz.eduplatform.core.i18n.TranslatedField;
+import uz.eduplatform.modules.auth.domain.User;
+import uz.eduplatform.modules.auth.repository.UserRepository;
 import uz.eduplatform.modules.content.domain.Subject;
 import uz.eduplatform.modules.content.repository.SubjectRepository;
+import uz.eduplatform.modules.test.domain.GlobalStatus;
+import uz.eduplatform.modules.test.domain.TestCategory;
 import uz.eduplatform.modules.test.domain.TestHistory;
 import uz.eduplatform.modules.test.domain.TestStatus;
 import uz.eduplatform.modules.test.dto.*;
@@ -32,6 +37,7 @@ public class TestHistoryService {
     private final TestGenerationService generationService;
     private final SubjectRepository subjectRepository;
     private final AuditService auditService;
+    private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     public PagedResponse<TestHistoryDto> getTestHistory(UUID userId, Pageable pageable, AcceptLanguage language) {
@@ -224,6 +230,11 @@ public class TestHistoryService {
                 .publicDurationMinutes(h.getPublicDurationMinutes())
                 .status(h.getStatus())
                 .createdAt(h.getCreatedAt())
+                .globalStatus(h.getGlobalStatus())
+                .globalRejectionReason(h.getGlobalRejectionReason())
+                .globalSubmittedAt(h.getGlobalSubmittedAt())
+                .globalReviewedAt(h.getGlobalReviewedAt())
+                .gradeLevel(h.getGradeLevel())
                 .build();
     }
 
@@ -275,6 +286,109 @@ public class TestHistoryService {
         }
         testHistoryRepository.save(history);
         return mapToDto(history, language);
+    }
+
+    // ===== Global Test Moderation Methods =====
+
+    @Transactional
+    public TestHistoryDto submitForGlobal(UUID testId, UUID userId, AcceptLanguage language) {
+        TestHistory history = testHistoryRepository.findByIdAndUserIdAndDeletedAtIsNull(testId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Test", "id", testId));
+
+        if (history.getGlobalStatus() == GlobalStatus.PENDING_MODERATION) {
+            throw BusinessException.ofKey("test.global.already.pending");
+        }
+        if (history.getGlobalStatus() == GlobalStatus.APPROVED) {
+            throw BusinessException.ofKey("test.global.already.approved");
+        }
+
+        history.setGlobalStatus(GlobalStatus.PENDING_MODERATION);
+        history.setGlobalSubmittedAt(LocalDateTime.now());
+        history.setGlobalRejectionReason(null);
+        testHistoryRepository.save(history);
+
+        auditService.log(userId, null, "TEST_SUBMITTED_FOR_GLOBAL", "TEST", "TestHistory", testId);
+        return mapToDto(history, language);
+    }
+
+    @Transactional
+    public TestHistoryDto approveGlobal(UUID testId, UUID moderatorId, AcceptLanguage language) {
+        TestHistory history = testHistoryRepository.findByIdAndDeletedAtIsNull(testId)
+                .orElseThrow(() -> new ResourceNotFoundException("Test", "id", testId));
+
+        if (history.getGlobalStatus() != GlobalStatus.PENDING_MODERATION) {
+            throw BusinessException.ofKey("test.global.not.pending");
+        }
+
+        history.setGlobalStatus(GlobalStatus.APPROVED);
+        history.setGlobalReviewedAt(LocalDateTime.now());
+        history.setGlobalReviewedBy(moderatorId);
+        testHistoryRepository.save(history);
+
+        auditService.log(moderatorId, null, "TEST_GLOBAL_APPROVED", "TEST", "TestHistory", testId);
+        return mapToDto(history, language);
+    }
+
+    @Transactional
+    public TestHistoryDto rejectGlobal(UUID testId, UUID moderatorId, String reason, AcceptLanguage language) {
+        TestHistory history = testHistoryRepository.findByIdAndDeletedAtIsNull(testId)
+                .orElseThrow(() -> new ResourceNotFoundException("Test", "id", testId));
+
+        history.setGlobalStatus(GlobalStatus.REJECTED);
+        history.setGlobalReviewedAt(LocalDateTime.now());
+        history.setGlobalReviewedBy(moderatorId);
+        history.setGlobalRejectionReason(reason);
+        testHistoryRepository.save(history);
+
+        auditService.log(moderatorId, null, "TEST_GLOBAL_REJECTED", "TEST", "TestHistory", testId);
+        return mapToDto(history, language);
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResponse<TestHistoryDto> getPendingGlobalTests(Pageable pageable, AcceptLanguage language) {
+        Page<TestHistory> page = testHistoryRepository.findByGlobalStatusAndDeletedAtIsNull(
+                GlobalStatus.PENDING_MODERATION, pageable);
+        return toPagedResponse(page, language);
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResponse<TestHistoryDto> getApprovedGlobalTests(
+            TestCategory category, UUID subjectId, Integer gradeLevel,
+            Pageable pageable, AcceptLanguage language) {
+        Page<TestHistory> page = testHistoryRepository.findGlobalTests(
+                GlobalStatus.APPROVED.name(),
+                category != null ? category.name() : null,
+                subjectId != null ? subjectId.toString() : null,
+                gradeLevel, pageable);
+        return toPagedResponse(page, language);
+    }
+
+    private PagedResponse<TestHistoryDto> toPagedResponse(Page<TestHistory> page, AcceptLanguage language) {
+        Set<UUID> subjectIds = page.getContent().stream()
+                .map(TestHistory::getSubjectId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        Map<UUID, Subject> subjectMap = subjectIds.isEmpty()
+                ? Map.of()
+                : subjectRepository.findAllById(subjectIds).stream()
+                        .collect(Collectors.toMap(Subject::getId, s -> s, (a, b) -> a));
+
+        List<TestHistoryDto> dtos = page.getContent().stream()
+                .map(h -> mapToDtoWithTeacher(h, language, subjectMap.get(h.getSubjectId())))
+                .toList();
+
+        return PagedResponse.of(dtos, page.getNumber(), page.getSize(),
+                page.getTotalElements(), page.getTotalPages());
+    }
+
+    private TestHistoryDto mapToDtoWithTeacher(TestHistory h, AcceptLanguage language, Subject subject) {
+        TestHistoryDto dto = mapToDto(h, language, subject);
+        // Add teacher name for moderators
+        if (h.getUserId() != null) {
+            userRepository.findById(h.getUserId()).ifPresent(user ->
+                dto.setTeacherName(user.getFirstName() + " " + user.getLastName()));
+        }
+        return dto;
     }
 
     @Transactional

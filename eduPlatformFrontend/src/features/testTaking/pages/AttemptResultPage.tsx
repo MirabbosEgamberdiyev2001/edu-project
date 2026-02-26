@@ -55,12 +55,12 @@ export default function AttemptResultPage() {
         questionText: q.questionText,
         questionType: q.questionType,
         options: q.options,
-        correctAnswer: null,
+        correctAnswer: q.correctAnswer ?? null,
         studentAnswer: ans?.response ?? ans?.selectedAnswer ?? null,
         isCorrect: ans?.isCorrect ?? false,
         score: ans?.score ?? ans?.earnedPoints ?? 0,
         maxScore: q.points,
-        proof: null,
+        proof: q.proof ?? null,
       };
     }),
   };

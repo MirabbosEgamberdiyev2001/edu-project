@@ -5,6 +5,7 @@ import uz.eduplatform.modules.group.domain.GroupStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -14,8 +15,16 @@ import java.util.UUID;
 public class GroupDto {
 
     private UUID id;
+
+    /** Resolved name for the current locale */
     private String name;
+    /** Full translations map for edit forms */
+    private Map<String, String> nameTranslations;
+
+    /** Resolved description for the current locale */
     private String description;
+    /** Full translations map for edit forms */
+    private Map<String, String> descriptionTranslations;
 
     private UUID teacherId;
     private String teacherName;

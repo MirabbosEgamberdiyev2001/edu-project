@@ -12,5 +12,5 @@ public class PairWithCodeRequest {
 
     @NotBlank(message = "{parent.validation.pairing_code.required}")
     @Size(min = 8, max = 8, message = "{parent.validation.pairing_code.size}")
-    private String pairingCode;
+    private String code;
 }

@@ -1,8 +1,8 @@
 package uz.eduplatform.modules.group.dto;
 
-import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -11,10 +11,9 @@ import java.util.UUID;
 @AllArgsConstructor
 public class UpdateGroupRequest {
 
-    @Size(max = 255, message = "{group.validation.name.size}")
-    private String name;
+    private Map<String, String> nameTranslations;
 
-    private String description;
+    private Map<String, String> descriptionTranslations;
 
     private UUID subjectId;
 }

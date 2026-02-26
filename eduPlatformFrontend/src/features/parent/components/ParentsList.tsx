@@ -40,12 +40,12 @@ export default function ParentsList() {
           </ListItemAvatar>
           <ListItemText
             primary={p.parentName}
-            secondary={new Date(p.pairingDate).toLocaleDateString()}
+            secondary={p.pairedAt ? new Date(p.pairedAt).toLocaleDateString() : ''}
           />
           <Chip
-            label={t(`pairingStatus.${p.pairingStatus}`)}
+            label={t(`pairingStatus.${p.status}`)}
             size="small"
-            color={p.pairingStatus === 'ACTIVE' ? 'success' : 'default'}
+            color={p.status === 'ACTIVE' ? 'success' : 'default'}
           />
         </ListItem>
       ))}

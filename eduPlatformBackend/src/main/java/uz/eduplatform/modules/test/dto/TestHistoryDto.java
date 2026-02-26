@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uz.eduplatform.modules.test.domain.GlobalStatus;
 import uz.eduplatform.modules.test.domain.TestCategory;
 import uz.eduplatform.modules.test.domain.TestStatus;
 
@@ -45,4 +46,12 @@ public class TestHistoryDto {
     private Integer publicDurationMinutes;
     private TestStatus status;
     private LocalDateTime createdAt;
+
+    // Global moderation fields
+    private GlobalStatus globalStatus;
+    private String globalRejectionReason;
+    private LocalDateTime globalSubmittedAt;
+    private LocalDateTime globalReviewedAt;
+    private Integer gradeLevel;
+    private String teacherName; // for moderators to see who submitted
 }

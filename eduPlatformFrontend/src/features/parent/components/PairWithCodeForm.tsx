@@ -43,11 +43,11 @@ export default function PairWithCodeForm({ onSubmit, isPending }: PairWithCodeFo
       >
         <TextField
           value={code}
-          onChange={(e) => setCode(e.target.value.replace(/[^a-zA-Z0-9]/g, '').slice(0, 6))}
-          placeholder="XXXXXX"
+          onChange={(e) => setCode(e.target.value.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8))}
+          placeholder="XXXXXXXX"
           size="small"
           inputProps={{
-            maxLength: 6,
+            maxLength: 8,
             style: { textAlign: 'center', letterSpacing: 4, fontWeight: 600, fontSize: '1.1rem' },
           }}
           sx={{ width: 180 }}

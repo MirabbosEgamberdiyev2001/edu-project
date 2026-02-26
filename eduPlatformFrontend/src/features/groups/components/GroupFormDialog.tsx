@@ -5,14 +5,14 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  TextField,
   CircularProgress,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { groupSchema, type GroupFormData } from '../schemas/groupSchema';
 import type { GroupDto, CreateGroupRequest, UpdateGroupRequest } from '@/types/group';
+import MultiLangInput from '@/features/tests/components/MultiLangInput';
 
 interface GroupFormDialogProps {
   open: boolean;
@@ -27,15 +27,15 @@ export default function GroupFormDialog({ open, onClose, onSubmit, group, isPend
   const isEdit = Boolean(group);
 
   const {
-    register,
+    control,
     handleSubmit,
     reset,
     formState: { errors },
   } = useForm<GroupFormData>({
     resolver: zodResolver(groupSchema),
     defaultValues: {
-      name: '',
-      description: '',
+      nameTranslations: {},
+      descriptionTranslations: {},
     },
   });
 
@@ -43,13 +43,13 @@ export default function GroupFormDialog({ open, onClose, onSubmit, group, isPend
     if (open) {
       if (group) {
         reset({
-          name: group.name,
-          description: group.description || '',
+          nameTranslations: group.nameTranslations ?? {},
+          descriptionTranslations: group.descriptionTranslations ?? {},
         });
       } else {
         reset({
-          name: '',
-          description: '',
+          nameTranslations: {},
+          descriptionTranslations: {},
         });
       }
     }
@@ -57,8 +57,11 @@ export default function GroupFormDialog({ open, onClose, onSubmit, group, isPend
 
   const onFormSubmit = (data: GroupFormData) => {
     const payload: CreateGroupRequest | UpdateGroupRequest = {
-      name: data.name,
-      ...(data.description?.trim() && { description: data.description.trim() }),
+      nameTranslations: data.nameTranslations,
+      ...(data.descriptionTranslations &&
+        Object.values(data.descriptionTranslations).some((v) => v.trim()) && {
+          descriptionTranslations: data.descriptionTranslations,
+        }),
     };
     onSubmit(payload);
   };
@@ -66,27 +69,30 @@ export default function GroupFormDialog({ open, onClose, onSubmit, group, isPend
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>{isEdit ? t('editGroup') : t('createGroup')}</DialogTitle>
-      <DialogContent>
-        <TextField
-          label={t('name')}
-          placeholder={t('name')}
-          fullWidth
-          required
-          error={Boolean(errors.name)}
-          helperText={errors.name?.message}
-          sx={{ mt: 1, mb: 2 }}
-          {...register('name')}
+      <DialogContent sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <Controller
+          name="nameTranslations"
+          control={control}
+          render={({ field }) => (
+            <MultiLangInput
+              label={t('name')}
+              value={field.value ?? {}}
+              onChange={field.onChange}
+              required
+            />
+          )}
         />
 
-        <TextField
-          label={t('description')}
-          placeholder={t('description')}
-          fullWidth
-          multiline
-          rows={3}
-          error={Boolean(errors.description)}
-          helperText={errors.description?.message}
-          {...register('description')}
+        <Controller
+          name="descriptionTranslations"
+          control={control}
+          render={({ field }) => (
+            <MultiLangInput
+              label={t('description')}
+              value={field.value ?? {}}
+              onChange={field.onChange}
+            />
+          )}
         />
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>

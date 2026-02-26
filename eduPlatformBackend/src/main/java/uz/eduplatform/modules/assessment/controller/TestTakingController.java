@@ -57,7 +57,7 @@ public class TestTakingController {
 
         // Native query requires actual DB column name (created_at, not createdAt)
         PagedResponse<AssignmentDto> response = assignmentService.getStudentAssignments(
-                principal.getId(), PageRequest.of(page, size, Sort.by("created_at").descending()));
+                principal.getId(), PageRequest.of(page, size));
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 

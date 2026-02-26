@@ -1,5 +1,7 @@
 export type TestStatus = 'CREATED' | 'GENERATING' | 'READY' | 'DOWNLOADED' | 'DELETED';
 
+export type GlobalStatus = 'NONE' | 'PENDING_MODERATION' | 'APPROVED' | 'REJECTED';
+
 export type ExportFormat = 'PDF' | 'DOCX';
 
 export enum TestCategory {
@@ -91,6 +93,20 @@ export interface TestHistoryDto {
   publicDurationMinutes: number | null;
   status: TestStatus;
   createdAt: string;
+  globalStatus: GlobalStatus;
+  globalRejectionReason: string | null;
+  globalSubmittedAt: string | null;
+  globalReviewedAt: string | null;
+  gradeLevel: number | null;
+  teacherName?: string;
+}
+
+export interface GlobalTestStartResponse {
+  attemptId: string;
+  assignmentId: string;
+  testTitle: string;
+  durationMinutes: number;
+  questionCount: number;
 }
 
 export interface AvailableQuestionsResponse {

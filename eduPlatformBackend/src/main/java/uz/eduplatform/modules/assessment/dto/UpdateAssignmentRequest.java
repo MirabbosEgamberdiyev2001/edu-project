@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -18,7 +19,9 @@ import java.util.UUID;
 public class UpdateAssignmentRequest {
 
     private String title;
+    private Map<String, String> titleTranslations;
     private String description;
+    private Map<String, String> descriptionTranslations;
 
     private LocalDateTime startDate;
     private LocalDateTime endDate;

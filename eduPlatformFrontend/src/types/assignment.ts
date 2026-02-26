@@ -1,5 +1,6 @@
 export enum AssignmentStatus {
   DRAFT = 'DRAFT',
+  SCHEDULED = 'SCHEDULED',
   ACTIVE = 'ACTIVE',
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
@@ -13,7 +14,9 @@ export interface AssignmentDto {
   testHistoryId: string;
   testTitle: string;
   title: string;
+  titleTranslations: Record<string, string> | null;
   description: string | null;
+  descriptionTranslations: Record<string, string> | null;
   status: AssignmentStatus;
   startDate: string | null;
   endDate: string | null;
@@ -33,10 +36,12 @@ export interface AssignmentDto {
 }
 
 export interface CreateAssignmentRequest {
-  groupId: string;
+  groupId?: string;
   testHistoryId: string;
-  title: string;
+  title?: string;
+  titleTranslations?: Record<string, string>;
   description?: string;
+  descriptionTranslations?: Record<string, string>;
   startDate?: string;
   endDate?: string;
   durationMinutes?: number;
@@ -50,7 +55,9 @@ export interface CreateAssignmentRequest {
 
 export interface UpdateAssignmentRequest {
   title?: string;
+  titleTranslations?: Record<string, string>;
   description?: string;
+  descriptionTranslations?: Record<string, string>;
   startDate?: string;
   endDate?: string;
   durationMinutes?: number;

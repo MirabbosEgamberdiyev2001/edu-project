@@ -11,6 +11,11 @@ import {
   Divider,
   IconButton,
   Tooltip,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
@@ -18,6 +23,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SendIcon from '@mui/icons-material/Send';
 import PublicIcon from '@mui/icons-material/Public';
+import PublishedWithChangesIcon from '@mui/icons-material/PublishedWithChanges';
+import AddLinkIcon from '@mui/icons-material/AddLink';
 import { useTestDetail } from '../hooks/useTests';
 import { useTestMutations } from '../hooks/useTestMutations';
 import { useQuestionMutations } from '@/features/questions/hooks/useQuestionMutations';
@@ -28,10 +35,12 @@ import TestDeleteDialog from '../components/TestDeleteDialog';
 import TestEditDialog from '../components/TestEditDialog';
 import SubmitToModerationDialog from '../components/SubmitToModerationDialog';
 import PublishTestDialog from '../components/PublishTestDialog';
+import QuickPromoDialog from '../components/QuickPromoDialog';
 import { testApi } from '@/api/testApi';
 import { resolveTranslation } from '@/utils/i18nUtils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import PageBreadcrumbs from '@/components/PageBreadcrumbs';
+import type { GlobalStatus } from '@/types/test';
 
 const STATUS_COLORS: Record<string, 'default' | 'info' | 'success' | 'warning' | 'error'> = {
   CREATED: 'info',
@@ -39,6 +48,20 @@ const STATUS_COLORS: Record<string, 'default' | 'info' | 'success' | 'warning' |
   READY: 'success',
   DOWNLOADED: 'success',
   DELETED: 'error',
+};
+
+const GLOBAL_STATUS_COLORS: Record<GlobalStatus, 'default' | 'info' | 'success' | 'warning' | 'error'> = {
+  NONE: 'default',
+  PENDING_MODERATION: 'warning',
+  APPROVED: 'success',
+  REJECTED: 'error',
+};
+
+const GLOBAL_STATUS_LABELS: Record<GlobalStatus, string> = {
+  NONE: 'Global emas',
+  PENDING_MODERATION: 'Moderatsiya kutilmoqda',
+  APPROVED: 'Global tasdiqlangan ✓',
+  REJECTED: 'Rad etildi',
 };
 
 export default function TestDetailPage() {
@@ -56,6 +79,8 @@ export default function TestDetailPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [submitOpen, setSubmitOpen] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
+  const [submitGlobalOpen, setSubmitGlobalOpen] = useState(false);
+  const [quickPromoOpen, setQuickPromoOpen] = useState(false);
 
   const publishMutation = useMutation({
     mutationFn: (durationMinutes?: number) => testApi.publishTest(id!, durationMinutes),
@@ -70,6 +95,14 @@ export default function TestDetailPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tests', 'detail', id] });
       setPublishOpen(false);
+    },
+  });
+
+  const submitForGlobalMutation = useMutation({
+    mutationFn: () => testApi.submitForGlobal(id!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tests', 'detail', id] });
+      setSubmitGlobalOpen(false);
     },
   });
 
@@ -115,6 +148,8 @@ export default function TestDetailPage() {
   };
 
   const displayTitle = resolveTranslation(test.titleTranslations) || test.title;
+  const globalStatus = test.globalStatus || 'NONE';
+  const canSubmitForGlobal = globalStatus === 'NONE' || globalStatus === 'REJECTED';
 
   return (
     <Box>
@@ -142,6 +177,24 @@ export default function TestDetailPage() {
               <PublicIcon />
             </IconButton>
           </Tooltip>
+          {/* Quick Promo Code */}
+          <Tooltip title={t('quickPromo.title')}>
+            <IconButton color="secondary" onClick={() => setQuickPromoOpen(true)}>
+              <AddLinkIcon />
+            </IconButton>
+          </Tooltip>
+          {/* Submit for Global Moderation */}
+          {canSubmitForGlobal && (
+            <Tooltip title="Global testlar ro'yxatiga yuborish">
+              <IconButton
+                color="primary"
+                onClick={() => setSubmitGlobalOpen(true)}
+                disabled={submitForGlobalMutation.isPending}
+              >
+                <PublishedWithChangesIcon />
+              </IconButton>
+            </Tooltip>
+          )}
           {uniqueQuestionIds.length > 0 && (
             <Tooltip title={t('submitToModeration')}>
               <IconButton color="primary" onClick={() => setSubmitOpen(true)} disabled={bulkSubmit.isPending}>
@@ -162,11 +215,40 @@ export default function TestDetailPage() {
         </Box>
       </Box>
 
+      {/* Global Status Alert */}
+      {globalStatus === 'PENDING_MODERATION' && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          Bu test moderatsiya navbatida. Tasdiqlangandan so'ng barcha foydalanuvchilarga ko'rinadi.
+        </Alert>
+      )}
+      {globalStatus === 'APPROVED' && (
+        <Alert severity="success" sx={{ mb: 2 }}>
+          Bu test global tasdiqlangan! Barcha foydalanuvchilarga ko'rinadi.
+        </Alert>
+      )}
+      {globalStatus === 'REJECTED' && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          Bu test rad etildi.
+          {test.globalRejectionReason && (
+            <Typography variant="body2" sx={{ mt: 0.5 }}>
+              Sabab: {test.globalRejectionReason}
+            </Typography>
+          )}
+          Tuzatib qayta yuboring.
+        </Alert>
+      )}
+
       {/* Test Info */}
       <Paper sx={{ p: 3, mb: 3 }}>
         <Typography variant="subtitle2" gutterBottom>{t('detail.info')}</Typography>
         <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
           <Chip label={t(`status.${test.status}`)} color={STATUS_COLORS[test.status] || 'default'} />
+          <Chip
+            label={GLOBAL_STATUS_LABELS[globalStatus]}
+            color={GLOBAL_STATUS_COLORS[globalStatus]}
+            variant="outlined"
+          />
+          {test.category && <Chip label={test.category} variant="outlined" color="primary" />}
           <Chip label={t('card.questions', { count: test.questionCount })} variant="outlined" />
           <Chip label={t('card.variants', { count: test.variantCount })} variant="outlined" />
         </Box>
@@ -198,6 +280,18 @@ export default function TestDetailPage() {
             <Typography variant="caption" color="text.secondary">{t('card.created')}</Typography>
             <Typography variant="body2">{new Date(test.createdAt).toLocaleString()}</Typography>
           </Box>
+          {test.gradeLevel && (
+            <Box>
+              <Typography variant="caption" color="text.secondary">Sinf</Typography>
+              <Typography variant="body2">{test.gradeLevel}-sinf</Typography>
+            </Box>
+          )}
+          {test.globalSubmittedAt && (
+            <Box>
+              <Typography variant="caption" color="text.secondary">Moderatsiyaga yuborildi</Typography>
+              <Typography variant="body2">{new Date(test.globalSubmittedAt).toLocaleString()}</Typography>
+            </Box>
+          )}
         </Box>
 
         {test.difficultyDistribution && (
@@ -345,7 +439,7 @@ export default function TestDetailPage() {
         isPending={publishMutation.isPending || unpublishMutation.isPending}
       />
 
-      {/* Submit to Moderation Dialog */}
+      {/* Submit to Question Moderation Dialog */}
       <SubmitToModerationDialog
         open={submitOpen}
         onClose={() => setSubmitOpen(false)}
@@ -359,6 +453,41 @@ export default function TestDetailPage() {
         submittableCount={submittableQuestionIds.length}
         isLoadingStatuses={questionsLoading}
       />
+
+      {/* Quick Promo Code Dialog */}
+      <QuickPromoDialog
+        open={quickPromoOpen}
+        onClose={() => setQuickPromoOpen(false)}
+        test={test}
+      />
+
+      {/* Submit Test for Global Moderation Dialog */}
+      <Dialog open={submitGlobalOpen} onClose={() => setSubmitGlobalOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Testni global ro'yxatga yuborish</DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            Bu testni barcha foydalanuvchilarga ko'rinadigan global testlar ro'yxatiga yuborishni xohlaysizmi?
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Yuborilgan test moderator tomonidan ko'rib chiqiladi. Tasdiqlangandan so'ng:
+          </Typography>
+          <Box component="ul" sx={{ mt: 1, color: 'text.secondary' }}>
+            <li><Typography variant="body2">Barcha o'qituvchi, student, admin va moderatorlarga ko'rinadi</Typography></li>
+            <li><Typography variant="body2">Student to'g'ridan-to'g'ri test ishlashi mumkin bo'ladi</Typography></li>
+            <li><Typography variant="body2">DTM, SCHOOL, OLYMPIAD kabi kategoriyada ko'rsatiladi</Typography></li>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSubmitGlobalOpen(false)}>Bekor qilish</Button>
+          <Button
+            variant="contained"
+            onClick={() => submitForGlobalMutation.mutate()}
+            disabled={submitForGlobalMutation.isPending}
+          >
+            {submitForGlobalMutation.isPending ? 'Yuborilmoqda...' : 'Moderatsiyaga yuborish'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

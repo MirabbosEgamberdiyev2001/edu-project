@@ -20,6 +20,7 @@ import {
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import type { CreateAssignmentRequest, AssignmentDto } from '@/types/assignment';
+import MultiLangInput from '@/features/tests/components/MultiLangInput';
 
 interface AssignmentFormDialogProps {
   open: boolean;
@@ -47,7 +48,8 @@ export default function AssignmentFormDialog({
   const [activeStep, setActiveStep] = useState(0);
 
   const [formData, setFormData] = useState<CreateAssignmentRequest>({
-    title: '',
+    titleTranslations: {},
+    descriptionTranslations: {},
     testHistoryId: '',
     groupId: '',
     durationMinutes: 60,
@@ -62,10 +64,10 @@ export default function AssignmentFormDialog({
   useEffect(() => {
     if (assignment) {
       setFormData({
-        title: assignment.title,
+        titleTranslations: assignment.titleTranslations || { uz_latn: assignment.title },
+        descriptionTranslations: assignment.descriptionTranslations || (assignment.description ? { uz_latn: assignment.description } : {}),
         testHistoryId: assignment.testHistoryId,
         groupId: assignment.groupId,
-        description: assignment.description || undefined,
         startDate: assignment.startDate || undefined,
         endDate: assignment.endDate || undefined,
         durationMinutes: assignment.durationMinutes || 60,
@@ -78,7 +80,8 @@ export default function AssignmentFormDialog({
       });
     } else {
       setFormData({
-        title: '',
+        titleTranslations: {},
+        descriptionTranslations: {},
         testHistoryId: '',
         groupId: '',
         durationMinutes: 60,
@@ -101,7 +104,10 @@ export default function AssignmentFormDialog({
   };
 
   const canProceed = () => {
-    if (activeStep === 0) return !!formData.testHistoryId && !!formData.title;
+    if (activeStep === 0) {
+      const hasTitle = Object.values(formData.titleTranslations || {}).some(v => v?.trim());
+      return !!formData.testHistoryId && hasTitle;
+    }
     if (activeStep === 3) return !!formData.groupId;
     return true;
   };
@@ -120,11 +126,10 @@ export default function AssignmentFormDialog({
 
         {activeStep === 0 && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <TextField
+            <MultiLangInput
               label={t('assignmentTitle')}
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              fullWidth
+              value={formData.titleTranslations || {}}
+              onChange={(v) => setFormData({ ...formData, titleTranslations: v })}
               required
             />
             <FormControl fullWidth required>
@@ -139,13 +144,10 @@ export default function AssignmentFormDialog({
                 ))}
               </Select>
             </FormControl>
-            <TextField
+            <MultiLangInput
               label={t('description')}
-              value={formData.description || ''}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              fullWidth
-              multiline
-              rows={2}
+              value={formData.descriptionTranslations || {}}
+              onChange={(v) => setFormData({ ...formData, descriptionTranslations: v })}
             />
           </Box>
         )}

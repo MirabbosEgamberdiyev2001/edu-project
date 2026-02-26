@@ -7,8 +7,17 @@ export interface GroupDto {
   id: string;
   teacherId: string;
   teacherName: string | null;
+
+  /** Resolved name for the current locale */
   name: string;
+  /** Full translations map — populated for edit forms */
+  nameTranslations: Record<string, string> | null;
+
+  /** Resolved description for the current locale */
   description: string | null;
+  /** Full translations map — populated for edit forms */
+  descriptionTranslations: Record<string, string> | null;
+
   subjectId: string | null;
   subjectName: string | null;
   memberCount: number;
@@ -28,13 +37,13 @@ export interface GroupMemberDto {
 }
 
 export interface CreateGroupRequest {
-  name: string;
-  description?: string;
+  nameTranslations: Record<string, string>;
+  descriptionTranslations?: Record<string, string>;
 }
 
 export interface UpdateGroupRequest {
-  name?: string;
-  description?: string;
+  nameTranslations?: Record<string, string>;
+  descriptionTranslations?: Record<string, string>;
 }
 
 export interface AddMembersRequest {

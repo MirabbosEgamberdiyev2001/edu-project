@@ -9,6 +9,7 @@ import uz.eduplatform.modules.assessment.domain.AssignmentStatus;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -28,7 +29,9 @@ public class AssignmentDto {
     private String testTitle;
 
     private String title;
+    private Map<String, String> titleTranslations;
     private String description;
+    private Map<String, String> descriptionTranslations;
 
     // --- Scheduling ---
     private LocalDateTime startDate;

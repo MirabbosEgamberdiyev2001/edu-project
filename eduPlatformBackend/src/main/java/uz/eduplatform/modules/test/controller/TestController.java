@@ -198,6 +198,18 @@ public class TestController {
         return ResponseEntity.ok(ApiResponse.success(dto));
     }
 
+    @PostMapping("/history/{id}/submit-global")
+    @Operation(summary = "Testni global tasdiqlashga yuborish",
+            description = "O'qituvchi o'z testini moderator tekshiruviga yuboradi. Tasdiqlangandan so'ng barcha rollarda ko'rinadi.")
+    public ResponseEntity<ApiResponse<TestHistoryDto>> submitForGlobal(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
+
+        TestHistoryDto dto = historyService.submitForGlobal(id, principal.getId(), language);
+        return ResponseEntity.ok(ApiResponse.success(dto, "Test moderatsiyaga yuborildi"));
+    }
+
     @DeleteMapping("/history/{id}/publish")
     @Operation(summary = "Testni yopish", description = "Testni public holatidan olib tashlash.")
     public ResponseEntity<ApiResponse<TestHistoryDto>> unpublishTest(

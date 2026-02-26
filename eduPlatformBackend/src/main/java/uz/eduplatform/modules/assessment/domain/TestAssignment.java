@@ -11,6 +11,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Entity
@@ -46,8 +47,16 @@ public class TestAssignment {
     @Column(nullable = false)
     private String title;
 
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "title_translations", columnDefinition = "jsonb")
+    private Map<String, String> titleTranslations;
+
     @Column(columnDefinition = "TEXT")
     private String description;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "description_translations", columnDefinition = "jsonb")
+    private Map<String, String> descriptionTranslations;
 
     // --- Scheduling ---
     @Column(name = "start_time")

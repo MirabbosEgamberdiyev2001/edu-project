@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uz.eduplatform.core.common.dto.PagedResponse;
 import uz.eduplatform.core.common.exception.BusinessException;
 import uz.eduplatform.core.common.exception.ResourceNotFoundException;
+import uz.eduplatform.core.i18n.TranslatedField;
 import uz.eduplatform.modules.assessment.domain.AssignmentStatus;
 import uz.eduplatform.modules.assessment.domain.TestAssignment;
 import uz.eduplatform.modules.assessment.dto.AssignmentDto;
@@ -75,18 +76,34 @@ public class AssignmentService {
             assignedStudentIds = new ArrayList<>(merged);
         }
 
-        // Determine initial status
-        AssignmentStatus status = AssignmentStatus.DRAFT;
+        // Determine initial status:
+        // - Future startDate → SCHEDULED (activates automatically by scheduler)
+        // - No startDate or past startDate → ACTIVE immediately so students see it right away
+        AssignmentStatus status;
         if (request.getStartDate() != null && request.getStartDate().isAfter(LocalDateTime.now())) {
             status = AssignmentStatus.SCHEDULED;
+        } else {
+            status = AssignmentStatus.ACTIVE;
         }
+
+        java.util.Map<String, String> titleTranslations = TranslatedField.clean(request.getTitleTranslations());
+        String resolvedTitle = TranslatedField.resolve(titleTranslations);
+        if (resolvedTitle == null || resolvedTitle.isBlank()) resolvedTitle = request.getTitle();
+        if (resolvedTitle == null || resolvedTitle.isBlank()) {
+            throw BusinessException.ofKey("assessment.validation.title.required");
+        }
+
+        java.util.Map<String, String> descTranslations = TranslatedField.clean(request.getDescriptionTranslations());
 
         TestAssignment assignment = TestAssignment.builder()
                 .testHistoryId(testHistory.getId())
                 .teacherId(teacherId)
                 .groupId(request.getGroupId())
-                .title(request.getTitle())
-                .description(request.getDescription())
+                .title(resolvedTitle)
+                .titleTranslations(titleTranslations)
+                .description(TranslatedField.resolve(descTranslations) != null
+                        ? TranslatedField.resolve(descTranslations) : request.getDescription())
+                .descriptionTranslations(descTranslations)
                 .startTime(request.getStartDate())
                 .endTime(request.getEndDate())
                 .durationMinutes(request.getDurationMinutes())
@@ -170,7 +187,17 @@ public class AssignmentService {
             throw BusinessException.ofKey("assignment.update.completed.cancelled");
         }
 
-        if (request.getTitle() != null) assignment.setTitle(request.getTitle());
+        if (request.getTitleTranslations() != null) {
+            java.util.Map<String, String> cleaned = TranslatedField.clean(request.getTitleTranslations());
+            assignment.setTitleTranslations(cleaned);
+            String resolved = TranslatedField.resolve(cleaned);
+            if (resolved != null && !resolved.isBlank()) assignment.setTitle(resolved);
+        } else if (request.getTitle() != null) {
+            assignment.setTitle(request.getTitle());
+        }
+        if (request.getDescriptionTranslations() != null) {
+            assignment.setDescriptionTranslations(TranslatedField.clean(request.getDescriptionTranslations()));
+        }
         if (request.getDescription() != null) assignment.setDescription(request.getDescription());
         if (request.getStartDate() != null) assignment.setStartTime(request.getStartDate());
         if (request.getEndDate() != null) assignment.setEndTime(request.getEndDate());
@@ -266,6 +293,12 @@ public class AssignmentService {
         // Get average score
         Double avgPct = attemptRepository.averagePercentageByAssignmentId(a.getId());
 
+        String resolvedTitle = TranslatedField.resolve(a.getTitleTranslations());
+        if (resolvedTitle == null || resolvedTitle.isBlank()) resolvedTitle = a.getTitle();
+
+        String resolvedDesc = TranslatedField.resolve(a.getDescriptionTranslations());
+        if (resolvedDesc == null || resolvedDesc.isBlank()) resolvedDesc = a.getDescription();
+
         return AssignmentDto.builder()
                 .id(a.getId())
                 .testHistoryId(a.getTestHistoryId())
@@ -274,8 +307,10 @@ public class AssignmentService {
                 .groupId(a.getGroupId())
                 .groupName(groupName)
                 .testTitle(testTitle)
-                .title(a.getTitle())
-                .description(a.getDescription())
+                .title(resolvedTitle)
+                .titleTranslations(a.getTitleTranslations())
+                .description(resolvedDesc)
+                .descriptionTranslations(a.getDescriptionTranslations())
                 .startDate(a.getStartTime())
                 .endDate(a.getEndTime())
                 .durationMinutes(a.getDurationMinutes())

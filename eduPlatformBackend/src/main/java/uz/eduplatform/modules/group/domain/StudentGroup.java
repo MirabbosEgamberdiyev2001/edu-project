@@ -2,7 +2,9 @@ package uz.eduplatform.modules.group.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.type.SqlTypes;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -10,6 +12,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Entity
@@ -42,6 +45,14 @@ public class StudentGroup {
 
     @Column(columnDefinition = "TEXT")
     private String description;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "name_translations", columnDefinition = "jsonb")
+    private Map<String, String> nameTranslations;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "description_translations", columnDefinition = "jsonb")
+    private Map<String, String> descriptionTranslations;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)

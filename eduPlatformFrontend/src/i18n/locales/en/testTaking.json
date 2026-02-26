@@ -93,5 +93,36 @@
     "redeemed": "Promo code redeemed successfully"
   },
   "examNoQuestions": "No questions available for this exam",
-  "examRetry": "Try Again"
+  "examRetry": "Try Again",
+  "globalTests": {
+    "title": "Global Test Bank",
+    "subtitle": "All tests approved by the moderator. Start any test!",
+    "all": "All",
+    "filter": "Filter",
+    "clearFilter": "Clear",
+    "categoryLabel": "Category",
+    "subject": "Subject",
+    "grade": "Grade",
+    "gradeLabel": "Grade {{grade}}",
+    "found": "{{count}} tests found",
+    "loadError": "Failed to load tests. Please try again.",
+    "empty": "No global tests available yet",
+    "emptyHint": "Change filters or check back later",
+    "startTest": "Start Test",
+    "starting": "Starting...",
+    "questions": "{{count}} questions",
+    "variants": "{{count}} variants",
+    "category": {
+      "DTM": "🎓 DTM",
+      "SCHOOL": "🏫 School",
+      "OLYMPIAD": "🏆 Olympiad",
+      "CERTIFICATE": "📜 Certificate",
+      "ATTESTATSIYA": "📋 Attestation"
+    },
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    }
+  }
 }

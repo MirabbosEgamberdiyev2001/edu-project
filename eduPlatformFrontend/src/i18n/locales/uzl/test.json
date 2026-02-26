@@ -172,5 +172,18 @@
     "noActiveQuestions": "Tanlangan mavzular uchun faol savollar topilmadi. Savollar ACTIVE holatida bo'lishi kerak.",
     "noActiveExplain": "Savollar quyidagi bosqichlardan o'tadi: QORALAMA -> Yuborish -> KUTILMOQDA -> Moderator tasdiqlaydi -> FAOL. Avval savollaringizni moderatsiyaga yuboring.",
     "generateFailed": "Test yaratishda xatolik"
+  },
+  "quickPromo": {
+    "title": "Tezkor Promokod",
+    "description": "Bu test uchun ochiq topshiriq yaratib, promokod oling. O'quvchilar kodni kiritib testni boshlay oladi.",
+    "duration": "Davomiylik (daqiqa)",
+    "maxUses": "Maksimal foydalanish",
+    "unlimited": "Cheksiz",
+    "expiresAt": "Muddati tugash vaqti",
+    "generate": "Promokod yaratish",
+    "success": "Promokod muvaffaqiyatli yaratildi!",
+    "copy": "Nusxalash",
+    "copied": "Promokod nusxalandi!",
+    "shareHint": "Ushbu kodni o'quvchilaringizga ulashing"
   }
 }

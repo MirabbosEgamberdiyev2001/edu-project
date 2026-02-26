@@ -1,10 +1,10 @@
 package uz.eduplatform.modules.group.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -13,11 +13,10 @@ import java.util.UUID;
 @AllArgsConstructor
 public class CreateGroupRequest {
 
-    @NotBlank(message = "{group.validation.name.required}")
-    @Size(max = 255, message = "{group.validation.name.size}")
-    private String name;
+    @NotEmpty(message = "{group.validation.name.required}")
+    private Map<String, String> nameTranslations;
 
-    private String description;
+    private Map<String, String> descriptionTranslations;
 
     private UUID subjectId;
 

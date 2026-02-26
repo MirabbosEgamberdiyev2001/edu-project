@@ -44,7 +44,7 @@ export default function ChildCard({ pairing }: ChildCardProps) {
                 {pairing.childName}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                {new Date(pairing.pairingDate).toLocaleDateString()}
+                {pairing.pairedAt ? new Date(pairing.pairedAt).toLocaleDateString() : ''}
               </Typography>
             </Box>
           </Box>
@@ -58,9 +58,9 @@ export default function ChildCard({ pairing }: ChildCardProps) {
               variant="outlined"
             />
             <Chip
-              label={pairing.pairingStatus}
+              label={pairing.status}
               size="small"
-              color={pairing.pairingStatus === 'ACTIVE' ? 'success' : 'default'}
+              color={pairing.status === 'ACTIVE' ? 'success' : 'default'}
               variant="outlined"
             />
           </Box>

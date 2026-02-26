@@ -15,7 +15,6 @@ import uz.eduplatform.core.i18n.TranslatedField;
 import uz.eduplatform.modules.auth.domain.Role;
 import uz.eduplatform.modules.auth.domain.User;
 import uz.eduplatform.modules.auth.repository.UserRepository;
-import uz.eduplatform.modules.content.domain.Subject;
 import uz.eduplatform.modules.content.repository.SubjectRepository;
 import uz.eduplatform.modules.group.domain.GroupMember;
 import uz.eduplatform.modules.group.domain.GroupStatus;
@@ -49,10 +48,15 @@ public class GroupService {
                     .orElseThrow(() -> new ResourceNotFoundException("Subject", "id", request.getSubjectId()));
         }
 
+        Map<String, String> nameTranslations = TranslatedField.clean(request.getNameTranslations());
+        Map<String, String> descTranslations = TranslatedField.clean(request.getDescriptionTranslations());
+        String resolvedName = TranslatedField.resolve(nameTranslations);
+
         StudentGroup group = StudentGroup.builder()
                 .teacherId(teacherId)
-                .name(request.getName())
-                .description(request.getDescription())
+                .name(resolvedName != null ? resolvedName : "")
+                .nameTranslations(nameTranslations)
+                .descriptionTranslations(descTranslations)
                 .subjectId(request.getSubjectId())
                 .build();
 
@@ -62,7 +66,7 @@ public class GroupService {
             addMembersInternal(group, request.getStudentIds());
         }
 
-        log.info("Created group '{}' by teacher {}", group.getName(), teacherId);
+        log.info("Created group by teacher {}", teacherId);
         return mapToDto(group);
     }
 
@@ -81,24 +85,15 @@ public class GroupService {
             page = groupRepository.findByTeacherIdOrderByCreatedAtDesc(teacherId, pageable);
         }
 
-        List<GroupDto> dtos = page.getContent().stream()
-                .map(this::mapToDto)
-                .toList();
-
-        return PagedResponse.of(dtos, page.getNumber(), page.getSize(),
-                page.getTotalElements(), page.getTotalPages());
+        List<GroupDto> dtos = page.getContent().stream().map(this::mapToDto).toList();
+        return PagedResponse.of(dtos, page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages());
     }
 
     @Transactional(readOnly = true)
     public PagedResponse<GroupDto> getStudentGroups(UUID studentId, Pageable pageable) {
         Page<StudentGroup> page = groupRepository.findGroupsByStudentId(studentId, pageable);
-
-        List<GroupDto> dtos = page.getContent().stream()
-                .map(this::mapToDto)
-                .toList();
-
-        return PagedResponse.of(dtos, page.getNumber(), page.getSize(),
-                page.getTotalElements(), page.getTotalPages());
+        List<GroupDto> dtos = page.getContent().stream().map(this::mapToDto).toList();
+        return PagedResponse.of(dtos, page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages());
     }
 
     @Transactional(readOnly = true)
@@ -106,14 +101,12 @@ public class GroupService {
         StudentGroup group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException("StudentGroup", "id", groupId));
 
-        // Access: teacher owns it OR student is a member
         if (!group.getTeacherId().equals(userId)) {
             boolean isMember = memberRepository.existsByGroupIdAndStudentId(groupId, userId);
             if (!isMember) {
                 throw new BusinessException("error.access.denied", null, HttpStatus.FORBIDDEN);
             }
         }
-
         return mapToDto(group);
     }
 
@@ -122,11 +115,14 @@ public class GroupService {
         StudentGroup group = groupRepository.findByIdAndTeacherId(groupId, teacherId)
                 .orElseThrow(() -> new ResourceNotFoundException("StudentGroup", "id", groupId));
 
-        if (request.getName() != null) {
-            group.setName(request.getName());
+        if (request.getNameTranslations() != null) {
+            Map<String, String> cleaned = TranslatedField.clean(request.getNameTranslations());
+            group.setNameTranslations(cleaned);
+            String resolved = TranslatedField.resolve(cleaned);
+            if (resolved != null) group.setName(resolved);
         }
-        if (request.getDescription() != null) {
-            group.setDescription(request.getDescription());
+        if (request.getDescriptionTranslations() != null) {
+            group.setDescriptionTranslations(TranslatedField.clean(request.getDescriptionTranslations()));
         }
         if (request.getSubjectId() != null) {
             subjectRepository.findByIdAndUserId(request.getSubjectId(), teacherId)
@@ -135,7 +131,7 @@ public class GroupService {
         }
 
         group = groupRepository.save(group);
-        log.info("Updated group '{}' by teacher {}", group.getName(), teacherId);
+        log.info("Updated group {} by teacher {}", groupId, teacherId);
         return mapToDto(group);
     }
 
@@ -143,10 +139,9 @@ public class GroupService {
     public GroupDto archiveGroup(UUID groupId, UUID teacherId) {
         StudentGroup group = groupRepository.findByIdAndTeacherId(groupId, teacherId)
                 .orElseThrow(() -> new ResourceNotFoundException("StudentGroup", "id", groupId));
-
         group.setStatus(GroupStatus.ARCHIVED);
         group = groupRepository.save(group);
-        log.info("Archived group '{}' by teacher {}", group.getName(), teacherId);
+        log.info("Archived group {} by teacher {}", groupId, teacherId);
         return mapToDto(group);
     }
 
@@ -154,30 +149,22 @@ public class GroupService {
     public void deleteGroup(UUID groupId, UUID teacherId) {
         StudentGroup group = groupRepository.findByIdAndTeacherId(groupId, teacherId)
                 .orElseThrow(() -> new ResourceNotFoundException("StudentGroup", "id", groupId));
-
         group.setDeletedAt(LocalDateTime.now());
         groupRepository.save(group);
-        log.info("Soft-deleted group '{}' by teacher {}", group.getName(), teacherId);
+        log.info("Soft-deleted group {} by teacher {}", groupId, teacherId);
     }
-
-    // ── Member Management ──
 
     @Transactional
     public List<GroupMemberDto> addMembers(UUID groupId, UUID teacherId, AddMembersRequest request) {
         StudentGroup group = groupRepository.findByIdAndTeacherId(groupId, teacherId)
                 .orElseThrow(() -> new ResourceNotFoundException("StudentGroup", "id", groupId));
-
         if (group.getStatus() == GroupStatus.ARCHIVED) {
             throw BusinessException.ofKey("group.add.members.archived");
         }
-
         List<GroupMemberDto> added = addMembersInternal(group, request.getStudentIds());
-
         auditService.log(teacherId, "TEACHER", "GROUP_MEMBERS_ADDED", "GROUP",
-                "StudentGroup", groupId,
-                null, Map.of("addedStudentIds", request.getStudentIds().toString(),
-                        "addedCount", added.size()));
-
+                "StudentGroup", groupId, null,
+                Map.of("addedStudentIds", request.getStudentIds().toString(), "addedCount", added.size()));
         return added;
     }
 
@@ -185,16 +172,11 @@ public class GroupService {
     public void removeMember(UUID groupId, UUID teacherId, UUID studentId) {
         groupRepository.findByIdAndTeacherId(groupId, teacherId)
                 .orElseThrow(() -> new ResourceNotFoundException("StudentGroup", "id", groupId));
-
         GroupMember member = memberRepository.findByGroupIdAndStudentId(groupId, studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("GroupMember", "studentId", studentId));
-
         memberRepository.delete(member);
-
         auditService.log(teacherId, "TEACHER", "GROUP_MEMBER_REMOVED", "GROUP",
-                "StudentGroup", groupId,
-                Map.of("removedStudentId", studentId.toString()), null);
-
+                "StudentGroup", groupId, Map.of("removedStudentId", studentId.toString()), null);
         log.info("Removed student {} from group {} by teacher {}", studentId, groupId, teacherId);
     }
 
@@ -202,7 +184,6 @@ public class GroupService {
     public void removeMembersBatch(UUID groupId, UUID teacherId, List<UUID> studentIds) {
         groupRepository.findByIdAndTeacherId(groupId, teacherId)
                 .orElseThrow(() -> new ResourceNotFoundException("StudentGroup", "id", groupId));
-
         int removedCount = 0;
         for (UUID studentId : studentIds) {
             Optional<GroupMember> memberOpt = memberRepository.findByGroupIdAndStudentId(groupId, studentId);
@@ -211,12 +192,9 @@ public class GroupService {
                 removedCount++;
             }
         }
-
         auditService.log(teacherId, "TEACHER", "GROUP_MEMBERS_BATCH_REMOVED", "GROUP",
-                "StudentGroup", groupId,
-                Map.of("removedStudentIds", studentIds.toString()),
+                "StudentGroup", groupId, Map.of("removedStudentIds", studentIds.toString()),
                 Map.of("removedCount", removedCount));
-
         log.info("Teacher {} batch-removed {} members from group {}", teacherId, removedCount, groupId);
     }
 
@@ -224,18 +202,11 @@ public class GroupService {
     public List<GroupMemberDto> getMembers(UUID groupId, UUID userId) {
         StudentGroup group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException("StudentGroup", "id", groupId));
-
-        // Access: teacher or member
         if (!group.getTeacherId().equals(userId)) {
             boolean isMember = memberRepository.existsByGroupIdAndStudentId(groupId, userId);
-            if (!isMember) {
-                throw new BusinessException("error.access.denied", null, HttpStatus.FORBIDDEN);
-            }
+            if (!isMember) throw new BusinessException("error.access.denied", null, HttpStatus.FORBIDDEN);
         }
-
-        return group.getMembers().stream()
-                .map(this::mapMemberToDto)
-                .toList();
+        return group.getMembers().stream().map(this::mapMemberToDto).toList();
     }
 
     @Transactional(readOnly = true)
@@ -245,75 +216,56 @@ public class GroupService {
 
     @Transactional(readOnly = true)
     public PagedResponse<StudentSearchDto> searchStudents(String search, Pageable pageable) {
-        Page<User> page;
-        if (search != null && !search.isBlank()) {
-            page = userRepository.searchUsersByRole(search.trim(), Role.STUDENT, pageable);
-        } else {
-            page = userRepository.findByRole(Role.STUDENT, pageable);
-        }
-
+        Page<User> page = (search != null && !search.isBlank())
+                ? userRepository.searchUsersByRole(search.trim(), Role.STUDENT, pageable)
+                : userRepository.findByRole(Role.STUDENT, pageable);
         List<StudentSearchDto> dtos = page.getContent().stream()
                 .map(u -> StudentSearchDto.builder()
-                        .id(u.getId())
-                        .firstName(u.getFirstName())
-                        .lastName(u.getLastName())
-                        .email(u.getEmail())
-                        .phone(u.getPhone())
-                        .build())
+                        .id(u.getId()).firstName(u.getFirstName())
+                        .lastName(u.getLastName()).email(u.getEmail()).phone(u.getPhone()).build())
                 .toList();
-
-        return PagedResponse.of(dtos, page.getNumber(), page.getSize(),
-                page.getTotalElements(), page.getTotalPages());
+        return PagedResponse.of(dtos, page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages());
     }
 
     // ── Internal Helpers ──
 
     private List<GroupMemberDto> addMembersInternal(StudentGroup group, List<UUID> studentIds) {
         List<GroupMemberDto> added = new ArrayList<>();
-
         for (UUID studentId : studentIds) {
-            // Verify user exists and is a student
             User student = userRepository.findById(studentId).orElse(null);
             if (student == null || student.getRole() != Role.STUDENT) {
                 log.warn("Skipping invalid student ID: {}", studentId);
                 continue;
             }
-
-            // Skip if already a member
-            if (memberRepository.existsByGroupIdAndStudentId(group.getId(), studentId)) {
-                continue;
-            }
-
-            GroupMember member = GroupMember.builder()
-                    .group(group)
-                    .studentId(studentId)
-                    .build();
-
+            if (memberRepository.existsByGroupIdAndStudentId(group.getId(), studentId)) continue;
+            GroupMember member = GroupMember.builder().group(group).studentId(studentId).build();
             member = memberRepository.save(member);
             group.getMembers().add(member);
             added.add(mapMemberToDto(member, student));
         }
-
-        log.info("Added {} members to group '{}'", added.size(), group.getName());
+        log.info("Added {} members to group", added.size());
         return added;
     }
 
     private GroupDto mapToDto(StudentGroup group) {
         String teacherName = userRepository.findById(group.getTeacherId())
-                .map(u -> u.getFirstName() + " " + u.getLastName())
-                .orElse(null);
-
+                .map(u -> u.getFirstName() + " " + u.getLastName()).orElse(null);
         String subjectName = null;
         if (group.getSubjectId() != null) {
             subjectName = subjectRepository.findById(group.getSubjectId())
-                    .map(s -> TranslatedField.resolve(s.getName()))
-                    .orElse(null);
+                    .map(s -> TranslatedField.resolve(s.getName())).orElse(null);
         }
+        String resolvedName = TranslatedField.resolve(group.getNameTranslations());
+        if (resolvedName == null) resolvedName = group.getName();
+        String resolvedDesc = TranslatedField.resolve(group.getDescriptionTranslations());
+        if (resolvedDesc == null) resolvedDesc = group.getDescription();
 
         return GroupDto.builder()
                 .id(group.getId())
-                .name(group.getName())
-                .description(group.getDescription())
+                .name(resolvedName)
+                .nameTranslations(group.getNameTranslations())
+                .description(resolvedDesc)
+                .descriptionTranslations(group.getDescriptionTranslations())
                 .teacherId(group.getTeacherId())
                 .teacherName(teacherName)
                 .subjectId(group.getSubjectId())
@@ -326,8 +278,7 @@ public class GroupService {
     }
 
     private GroupMemberDto mapMemberToDto(GroupMember member) {
-        User student = userRepository.findById(member.getStudentId()).orElse(null);
-        return mapMemberToDto(member, student);
+        return mapMemberToDto(member, userRepository.findById(member.getStudentId()).orElse(null));
     }
 
     private GroupMemberDto mapMemberToDto(GroupMember member, User student) {

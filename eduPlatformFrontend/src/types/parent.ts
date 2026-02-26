@@ -10,8 +10,9 @@ export interface ParentChildDto {
   parentName: string;
   childId: string;
   childName: string;
-  pairingStatus: PairingStatus;
-  pairingDate: string;
+  childEmail: string | null;
+  status: PairingStatus;
+  pairedAt: string | null;
   revokedAt: string | null;
 }
 

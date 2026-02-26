@@ -23,11 +23,17 @@ export const ROUTES = {
   ASSIGNMENT_LIVE: '/assignments/:id/live',
   ASSIGNMENT_RESULTS: '/assignments/:id/results',
 
-  // Test Taking (Student)
+  // Test Taking (Student - group assignments)
   AVAILABLE_TESTS: '/my-tests',
   EXAM: '/exam/:attemptId',
   MY_ATTEMPTS: '/my-attempts',
   ATTEMPT_RESULT: '/attempt-result/:attemptId',
+
+  // Student Section (NEW)
+  STUDENT_DASHBOARD: '/student',
+  GLOBAL_TESTS: '/global-tests',
+  MY_GROUPS_STUDENT: '/my-groups',
+  STUDENT_STATISTICS: '/student-statistics',
 
   // Analytics
   TEACHER_ANALYTICS: '/analytics/teacher',

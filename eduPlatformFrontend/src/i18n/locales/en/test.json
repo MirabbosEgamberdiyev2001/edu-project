@@ -172,5 +172,18 @@
     "noActiveQuestions": "No active questions found for selected topics. Questions must be in ACTIVE status.",
     "noActiveExplain": "Questions go through: DRAFT -> Submit -> PENDING -> Moderator approves -> ACTIVE. Submit your questions for moderation first.",
     "generateFailed": "Failed to generate test"
+  },
+  "quickPromo": {
+    "title": "Quick Promo Code",
+    "description": "Create an open assignment for this test and get a promo code. Students can enter the code to start the test.",
+    "duration": "Duration (minutes)",
+    "maxUses": "Max uses",
+    "unlimited": "Unlimited",
+    "expiresAt": "Expiry date",
+    "generate": "Generate Promo Code",
+    "success": "Promo code generated successfully!",
+    "copy": "Copy",
+    "copied": "Promo code copied!",
+    "shareHint": "Share this code with your students"
   }
 }

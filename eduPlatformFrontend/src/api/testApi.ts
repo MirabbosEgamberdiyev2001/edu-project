@@ -8,6 +8,8 @@ import type {
   TestHistoryDto,
   AvailableQuestionsResponse,
   ExportFormat,
+  GlobalTestStartResponse,
+  TestCategory,
 } from '@/types/test';
 
 const TESTS = '/tests';
@@ -97,4 +99,34 @@ export const testApi = {
 
   getPublicTest: (slug: string) =>
     api.get<ApiResponse<TestHistoryDto>>(`/public-tests/${slug}`),
+
+  // ===== Global Test Moderation (Teacher) =====
+  submitForGlobal: (id: string) =>
+    api.post<ApiResponse<TestHistoryDto>>(`${TESTS}/history/${id}/submit-global`),
+
+  // ===== Global Tests (All roles) =====
+  getGlobalTests: (params?: {
+    category?: TestCategory;
+    subjectId?: string;
+    gradeLevel?: number;
+    page?: number;
+    size?: number;
+  }, signal?: AbortSignal) =>
+    api.get<ApiResponse<PagedResponse<TestHistoryDto>>>('/global-tests', { params, signal }),
+
+  getGlobalTest: (id: string) =>
+    api.get<ApiResponse<TestHistoryDto>>(`/global-tests/${id}`),
+
+  startGlobalTest: (id: string) =>
+    api.post<ApiResponse<GlobalTestStartResponse>>(`/global-tests/${id}/start`),
+
+  // ===== Moderator: Global Test Moderation =====
+  getPendingGlobalTests: (params?: { page?: number; size?: number }) =>
+    api.get<ApiResponse<PagedResponse<TestHistoryDto>>>('/moderation/tests', { params }),
+
+  approveGlobalTest: (id: string) =>
+    api.post<ApiResponse<TestHistoryDto>>(`/moderation/tests/${id}/approve`),
+
+  rejectGlobalTest: (id: string, reason: string) =>
+    api.post<ApiResponse<TestHistoryDto>>(`/moderation/tests/${id}/reject`, { reason }),
 };

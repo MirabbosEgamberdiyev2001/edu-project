@@ -452,11 +452,19 @@ public class TestTakingService {
             remainingSeconds = Math.max(0, remaining.getSeconds());
         }
 
-        // Load questions for IN_PROGRESS exams so the frontend can render the exam UI
+        // Load questions for the exam UI and result page
         List<AttemptQuestionDto> questionDtos = null;
-        if (attempt.getStatus() == AttemptStatus.IN_PROGRESS && assignment != null) {
-            questionDtos = loadQuestionsForAttempt(assignment.getTestHistoryId(),
-                    attempt.getVariantIndex() != null ? attempt.getVariantIndex() : 0);
+        if (assignment != null) {
+            int variantIdx = attempt.getVariantIndex() != null ? attempt.getVariantIndex() : 0;
+            if (attempt.getStatus() == AttemptStatus.IN_PROGRESS) {
+                // During exam: load questions WITHOUT correct answers (security)
+                questionDtos = loadQuestionsForAttempt(assignment.getTestHistoryId(), variantIdx, false, false);
+            } else {
+                // After submission: load questions WITH correct answers/proofs according to assignment settings
+                boolean showAnswers = Boolean.TRUE.equals(assignment.getShowCorrectAnswers());
+                boolean showProofs  = Boolean.TRUE.equals(assignment.getShowProofs());
+                questionDtos = loadQuestionsForAttempt(assignment.getTestHistoryId(), variantIdx, showAnswers, showProofs);
+            }
         }
 
         // Load answers as a map keyed by questionId (completed attempts only)
@@ -467,9 +475,8 @@ public class TestTakingService {
                     .collect(Collectors.toMap(Answer::getQuestionId, this::mapAnswerToDto));
         }
 
-        // totalQuestions: for IN_PROGRESS use the actual question list size (answer records don't
-        // exist yet); for completed attempts use the answer-record count as a proxy.
-        int totalQuestionsInt = questionDtos != null
+        // totalQuestions: prefer the loaded question list; fall back to answer-record count
+        int totalQuestionsInt = (questionDtos != null && !questionDtos.isEmpty())
                 ? questionDtos.size()
                 : (answersMap != null ? answersMap.size() : (int) answerRepository.countByAttemptId(attempt.getId()));
         int answeredQuestionsInt = answersMap != null
@@ -512,7 +519,8 @@ public class TestTakingService {
                 .build();
     }
 
-    private List<AttemptQuestionDto> loadQuestionsForAttempt(UUID testHistoryId, int variantIndex) {
+    private List<AttemptQuestionDto> loadQuestionsForAttempt(
+            UUID testHistoryId, int variantIndex, boolean includeCorrectAnswer, boolean includeProof) {
         if (testHistoryId == null) return List.of();
         try {
             // Convert numeric index to variant code: 0→A, 1→B, etc.
@@ -536,7 +544,7 @@ public class TestTakingService {
                     .map(tq -> {
                         Question q = questionMap.get(tq.getQuestionId());
                         if (q == null) return null;
-                        return AttemptQuestionDto.builder()
+                        AttemptQuestionDto.AttemptQuestionDtoBuilder builder = AttemptQuestionDto.builder()
                                 .id(q.getId())
                                 .questionText(extractText(q.getQuestionText()))
                                 .questionType(q.getQuestionType() != null ? q.getQuestionType().name() : null)
@@ -545,8 +553,14 @@ public class TestTakingService {
                                 .timeLimitSeconds(q.getTimeLimitSeconds())
                                 .media(q.getMedia())
                                 .options(parseJson(q.getOptions()))
-                                .optionsOrder(tq.getOptionsOrder())
-                                .build();
+                                .optionsOrder(tq.getOptionsOrder());
+                        if (includeCorrectAnswer) {
+                            builder.correctAnswer(parseJson(q.getCorrectAnswer()));
+                        }
+                        if (includeProof && q.getProof() != null && !q.getProof().isEmpty()) {
+                            builder.proof(extractText(q.getProof()));
+                        }
+                        return builder.build();
                     })
                     .filter(java.util.Objects::nonNull)
                     .toList();

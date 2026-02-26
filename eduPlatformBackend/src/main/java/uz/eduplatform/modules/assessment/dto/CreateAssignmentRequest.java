@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -22,10 +23,13 @@ public class CreateAssignmentRequest {
     @NotNull(message = "{assessment.validation.test_history_id.required}")
     private UUID testHistoryId;
 
-    @NotBlank(message = "{assessment.validation.title.required}")
     private String title;
 
+    private Map<String, String> titleTranslations;
+
     private String description;
+
+    private Map<String, String> descriptionTranslations;
 
     // --- Scheduling ---
     private LocalDateTime startDate;

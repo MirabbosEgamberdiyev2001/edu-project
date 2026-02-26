@@ -57,11 +57,17 @@ const AssignmentDetailPage = lazy(() => import('@/features/assignments/pages/Ass
 const LiveMonitoringPage = lazy(() => import('@/features/assignments/pages/LiveMonitoringPage'));
 const AssignmentResultsPage = lazy(() => import('@/features/assignments/pages/AssignmentResultsPage'));
 
-// Test Taking pages (Student)
+// Test Taking pages (Student - group assignments)
 const AvailableAssignmentsPage = lazy(() => import('@/features/testTaking/pages/AvailableAssignmentsPage'));
 const ExamPage = lazy(() => import('@/features/testTaking/pages/ExamPage'));
 const MyAttemptsPage = lazy(() => import('@/features/testTaking/pages/MyAttemptsPage'));
 const AttemptResultPage = lazy(() => import('@/features/testTaking/pages/AttemptResultPage'));
+
+// Student Section (NEW)
+const StudentDashboardPage = lazy(() => import('@/features/student/pages/StudentDashboardPage'));
+const GlobalTestsPage = lazy(() => import('@/features/student/pages/GlobalTestsPage'));
+const MyGroupsPage = lazy(() => import('@/features/student/pages/MyGroupsPage'));
+const StudentStatisticsPage = lazy(() => import('@/features/student/pages/StudentStatisticsPage'));
 
 // Analytics pages
 const TeacherAnalyticsPage = lazy(() => import('@/features/analytics/pages/TeacherAnalyticsPage'));
@@ -121,6 +127,9 @@ export const router = createBrowserRouter([
           { path: '/profile', element: <Lazy component={ProfilePage} /> },
           { path: '/settings/change-password', element: <Lazy component={ChangePasswordPage} /> },
 
+          // Global tests — visible to ALL authenticated roles
+          { path: '/global-tests', element: <Lazy component={GlobalTestsPage} /> },
+
           // Teacher/Admin content management routes
           {
             element: <RoleRoute allowedRoles={[Role.TEACHER, Role.ADMIN, Role.SUPER_ADMIN]} />,
@@ -144,7 +153,7 @@ export const router = createBrowserRouter([
             ],
           },
 
-          // Moderator: questions access
+          // Moderator: questions + test moderation access
           {
             element: <RoleRoute allowedRoles={[Role.MODERATOR]} />,
             children: [
@@ -157,10 +166,19 @@ export const router = createBrowserRouter([
           {
             element: <RoleRoute allowedRoles={[Role.STUDENT]} />,
             children: [
+              // Student main dashboard
+              { path: '/student', element: <Lazy component={StudentDashboardPage} /> },
+              // Group assignments from teacher
               { path: '/my-tests', element: <Lazy component={AvailableAssignmentsPage} /> },
               { path: '/my-attempts', element: <Lazy component={MyAttemptsPage} /> },
               { path: '/attempt-result/:attemptId', element: <Lazy component={AttemptResultPage} /> },
+              // Student groups view
+              { path: '/my-groups', element: <Lazy component={MyGroupsPage} /> },
+              // Student statistics
+              { path: '/student-statistics', element: <Lazy component={StudentStatisticsPage} /> },
+              // Student analytics (old)
               { path: '/analytics/student', element: <Lazy component={StudentAnalyticsPage} /> },
+              // Parent pairing
               { path: '/pairing', element: <Lazy component={StudentPairingPage} /> },
             ],
           },

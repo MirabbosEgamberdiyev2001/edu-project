@@ -6,8 +6,10 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Lightweight question representation included in AttemptDto for the exam UI.
- * Correct answers are intentionally excluded from this DTO.
+ * Question representation included in AttemptDto.
+ * During the exam (IN_PROGRESS): correctAnswer and proof are null for security.
+ * After submission (SUBMITTED/GRADED): correctAnswer and proof are populated
+ * only when the assignment's showCorrectAnswers / showProofs flags are true.
  */
 @Data
 @Builder
@@ -32,4 +34,10 @@ public class AttemptQuestionDto {
     private Object options;         // raw options (MCQ choices, matching pairs, etc.)
 
     private List<String> optionsOrder; // variant-specific option order (for shuffled MCQ)
+
+    // Populated only for submitted/graded attempts when showCorrectAnswers = true
+    private Object correctAnswer;
+
+    // Populated only for submitted/graded attempts when showProofs = true (resolved to current language)
+    private String proof;
 }

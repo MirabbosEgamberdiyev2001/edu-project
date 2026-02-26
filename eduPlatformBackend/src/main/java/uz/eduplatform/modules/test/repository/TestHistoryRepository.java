@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import uz.eduplatform.modules.test.domain.GlobalStatus;
+import uz.eduplatform.modules.test.domain.TestCategory;
 import uz.eduplatform.modules.test.domain.TestHistory;
 
 import java.time.LocalDateTime;
@@ -19,6 +21,8 @@ public interface TestHistoryRepository extends JpaRepository<TestHistory, UUID> 
     Page<TestHistory> findByUserIdAndDeletedAtIsNullOrderByCreatedAtDesc(UUID userId, Pageable pageable);
 
     Optional<TestHistory> findByIdAndUserIdAndDeletedAtIsNull(UUID id, UUID userId);
+
+    Optional<TestHistory> findByIdAndDeletedAtIsNull(UUID id);
 
     Optional<TestHistory> findByPublicSlugAndIsPublicTrueAndDeletedAtIsNull(String publicSlug);
 
@@ -36,4 +40,43 @@ public interface TestHistoryRepository extends JpaRepository<TestHistory, UUID> 
             "FROM test_history WHERE created_at >= :since AND deleted_at IS NULL " +
             "GROUP BY week_start ORDER BY week_start", nativeQuery = true)
     List<Object[]> countWeeklyTestCreations(@Param("since") LocalDateTime since);
+
+    // ===== Global Test Queries =====
+
+    Page<TestHistory> findByGlobalStatusAndDeletedAtIsNull(GlobalStatus globalStatus, Pageable pageable);
+
+    Page<TestHistory> findByGlobalStatusAndCategoryAndDeletedAtIsNull(
+            GlobalStatus globalStatus, TestCategory category, Pageable pageable);
+
+    Page<TestHistory> findByGlobalStatusAndSubjectIdAndDeletedAtIsNull(
+            GlobalStatus globalStatus, UUID subjectId, Pageable pageable);
+
+    Page<TestHistory> findByGlobalStatusAndCategoryAndSubjectIdAndDeletedAtIsNull(
+            GlobalStatus globalStatus, TestCategory category, UUID subjectId, Pageable pageable);
+
+    Page<TestHistory> findByGlobalStatusAndGradeLevelAndDeletedAtIsNull(
+            GlobalStatus globalStatus, Integer gradeLevel, Pageable pageable);
+
+    // Native query: avoids Hibernate 6 JPQL null-enum binding issue.
+    // Params are plain Strings/Integer so Spring Data does not attempt enum-type inference.
+    // subjectId is passed as text and compared with subject_id::text to avoid cast problems.
+    @Query(value = "SELECT * FROM test_history " +
+           "WHERE global_status = :status " +
+           "AND (:category IS NULL OR category = :category) " +
+           "AND (:subjectId IS NULL OR subject_id::text = :subjectId) " +
+           "AND (:gradeLevel IS NULL OR grade_level = :gradeLevel) " +
+           "AND deleted_at IS NULL",
+           countQuery = "SELECT COUNT(*) FROM test_history " +
+           "WHERE global_status = :status " +
+           "AND (:category IS NULL OR category = :category) " +
+           "AND (:subjectId IS NULL OR subject_id::text = :subjectId) " +
+           "AND (:gradeLevel IS NULL OR grade_level = :gradeLevel) " +
+           "AND deleted_at IS NULL",
+           nativeQuery = true)
+    Page<TestHistory> findGlobalTests(
+            @Param("status") String status,
+            @Param("category") String category,
+            @Param("subjectId") String subjectId,
+            @Param("gradeLevel") Integer gradeLevel,
+            Pageable pageable);
 }

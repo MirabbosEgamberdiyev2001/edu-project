@@ -70,4 +70,15 @@ public interface TestAssignmentRepository extends JpaRepository<TestAssignment, 
     long countByTeacherIdAndStatus(UUID teacherId, AssignmentStatus status);
 
     long countByStatus(AssignmentStatus status);
+
+    // Find global test assignment for a specific student (for global tests)
+    @Query(value = "SELECT * FROM test_assignments " +
+            "WHERE test_history_id = :testHistoryId " +
+            "AND assigned_student_ids @> :studentIdJson::jsonb " +
+            "AND deleted_at IS NULL " +
+            "LIMIT 1",
+            nativeQuery = true)
+    Optional<TestAssignment> findGlobalAssignmentForStudent(
+            @Param("testHistoryId") UUID testHistoryId,
+            @Param("studentIdJson") String studentIdJson);
 }

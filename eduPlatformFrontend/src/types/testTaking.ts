@@ -45,6 +45,9 @@ export interface AttemptQuestionDto {
   media: Record<string, unknown> | null;
   options: unknown;
   optionsOrder: string[] | null;
+  // Populated for submitted/graded attempts when assignment allows it
+  correctAnswer: unknown | null;
+  proof: string | null;
 }
 
 export interface AttemptAnswerDto {

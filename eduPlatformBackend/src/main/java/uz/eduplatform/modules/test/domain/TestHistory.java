@@ -115,6 +115,27 @@ public class TestHistory {
     @Column(length = 20)
     private TestStatus status = TestStatus.CREATED;
 
+    // ===== Global Test Moderation =====
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "global_status", length = 30)
+    private GlobalStatus globalStatus = GlobalStatus.NONE;
+
+    @Column(name = "global_rejection_reason", columnDefinition = "TEXT")
+    private String globalRejectionReason;
+
+    @Column(name = "global_submitted_at")
+    private LocalDateTime globalSubmittedAt;
+
+    @Column(name = "global_reviewed_at")
+    private LocalDateTime globalReviewedAt;
+
+    @Column(name = "global_reviewed_by")
+    private UUID globalReviewedBy;
+
+    @Column(name = "grade_level")
+    private Integer gradeLevel;
+
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

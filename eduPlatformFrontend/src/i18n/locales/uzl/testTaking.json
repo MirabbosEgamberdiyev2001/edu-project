@@ -93,5 +93,36 @@
     "redeemed": "Promokod muvaffaqiyatli faollashtirildi"
   },
   "examNoQuestions": "Bu imtihon uchun savollar mavjud emas",
-  "examRetry": "Qayta urinish"
+  "examRetry": "Qayta urinish",
+  "globalTests": {
+    "title": "Global Testlar Banki",
+    "subtitle": "Moderator tomonidan tasdiqlangan barcha testlar. Istalgan testni boshlang!",
+    "all": "Barchasi",
+    "filter": "Filtrlash",
+    "clearFilter": "Tozalash",
+    "categoryLabel": "Kategoriya",
+    "subject": "Fan",
+    "grade": "Sinf",
+    "gradeLabel": "{{grade}}-sinf",
+    "found": "{{count}} ta test topildi",
+    "loadError": "Testlarni yuklashda xato yuz berdi. Qayta urinib ko'ring.",
+    "empty": "Hozircha global testlar mavjud emas",
+    "emptyHint": "Filtrlarni o'zgartiring yoki keyinroq qarang",
+    "startTest": "Testni boshlash",
+    "starting": "Boshlanmoqda...",
+    "questions": "{{count}} savol",
+    "variants": "{{count}} variant",
+    "category": {
+      "DTM": "🎓 DTM",
+      "SCHOOL": "🏫 Maktab",
+      "OLYMPIAD": "🏆 Olimpiada",
+      "CERTIFICATE": "📜 Sertifikat",
+      "ATTESTATSIYA": "📋 Attestatsiya"
+    },
+    "difficulty": {
+      "easy": "Oson",
+      "medium": "O'rta",
+      "hard": "Qiyin"
+    }
+  }
 }
