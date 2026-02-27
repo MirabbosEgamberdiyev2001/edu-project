@@ -63,7 +63,7 @@ public class GlobalTestController {
     }
 
     @PostMapping("/{id}/start")
-    @PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasAnyRole('STUDENT', 'TEACHER')")
     @Transactional
     @Operation(summary = "Global testni boshlash",
             description = "Student global testni boshlaydi. Avtomatik assignment yaratiladi va attempt qaytariladi.")

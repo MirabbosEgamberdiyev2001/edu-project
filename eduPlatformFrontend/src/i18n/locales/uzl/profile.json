@@ -40,5 +40,13 @@
   "ipAddress": "IP manzil",
   "device": "Qurilma",
   "lastActivity": "Oxirgi faollik",
-  "noSessions": "Faol seanslar yo'q"
+  "noSessions": "Faol seanslar yo'q",
+  "teacherInfo": "O'qituvchi ma'lumotlari",
+  "bio": "Biografiya",
+  "bioPlaceholder": "O'zingiz haqingizda, pedagoglik tajribangiz haqida...",
+  "workplace": "Ish joyi",
+  "workplacePlaceholder": "Maktab yoki tashkilot nomi",
+  "subject": "O'qitiladigan fan",
+  "selectSubject": "Fanni tanlang",
+  "noSubject": "Ko'rsatilmagan"
 }

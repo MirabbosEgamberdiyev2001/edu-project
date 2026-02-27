@@ -19,16 +19,25 @@ import {
   IconButton,
   Alert,
   CircularProgress,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import LockIcon from '@mui/icons-material/Lock';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ComputerIcon from '@mui/icons-material/Computer';
+import WorkIcon from '@mui/icons-material/Work';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import PersonIcon from '@mui/icons-material/Person';
 import { useAuth } from '@/hooks/useAuth';
 import { userApi } from '@/api/userApi';
 import { authApi } from '@/api/authApi';
+import { subjectApi } from '@/api/subjectApi';
 import { useAuthStore } from '@/stores/authStore';
+import { Role } from '@/types/user';
 import type { UpdateProfileRequest } from '@/types/auth';
 
 export default function ProfilePage() {
@@ -38,9 +47,22 @@ export default function ProfilePage() {
   const setAuth = useAuthStore((s) => s.setAuth);
   const queryClient = useQueryClient();
 
+  const isTeacher = user?.role === Role.TEACHER;
+
   const [editing, setEditing] = useState(false);
   const [firstName, setFirstName] = useState(user?.firstName || '');
   const [lastName, setLastName] = useState(user?.lastName || '');
+  const [bio, setBio] = useState(user?.bio || '');
+  const [workplace, setWorkplace] = useState(user?.workplace || '');
+  const [subjectId, setSubjectId] = useState(user?.subjectId || '');
+
+  const { data: subjectsData } = useQuery({
+    queryKey: ['subjects-for-profile'],
+    queryFn: () => subjectApi.getSubjects({ size: 200 }).then((r) => r.data.data?.content || []),
+    enabled: isTeacher && editing,
+    staleTime: 300_000,
+  });
+  const subjects = subjectsData || [];
 
   const updateProfile = useMutation({
     mutationFn: (data: UpdateProfileRequest) => userApi.updateProfile(data),
@@ -53,27 +75,42 @@ export default function ProfilePage() {
   });
 
   const handleSave = () => {
-    updateProfile.mutate({ firstName, lastName });
+    const payload: UpdateProfileRequest = { firstName, lastName };
+    if (isTeacher) {
+      payload.bio = bio;
+      payload.workplace = workplace;
+      payload.subjectId = subjectId || undefined;
+    }
+    updateProfile.mutate(payload);
   };
 
   const handleCancel = () => {
     setFirstName(user?.firstName || '');
     setLastName(user?.lastName || '');
+    setBio(user?.bio || '');
+    setWorkplace(user?.workplace || '');
+    setSubjectId(user?.subjectId || '');
     setEditing(false);
   };
 
   if (!user) return null;
 
   const VerifyBadge = ({ verified }: { verified: boolean }) =>
-    verified
-      ? <Chip icon={<CheckCircleIcon />} label={t('verified')} size="small" color="success" variant="outlined" />
-      : <Chip icon={<CancelIcon />} label={t('notVerified')} size="small" color="default" variant="outlined" />;
+    verified ? (
+      <Chip icon={<CheckCircleIcon />} label={t('verified')} size="small" color="success" variant="outlined" />
+    ) : (
+      <Chip icon={<CancelIcon />} label={t('notVerified')} size="small" color="default" variant="outlined" />
+    );
 
   return (
     <Box>
       <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" fontWeight={700}>{t('title')}</Typography>
-        <Typography variant="body2" color="text.secondary">{t('subtitle')}</Typography>
+        <Typography variant="h5" fontWeight={700}>
+          {t('title')}
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          {t('subtitle')}
+        </Typography>
       </Box>
 
       {/* Profile Card */}
@@ -83,7 +120,8 @@ export default function ProfilePage() {
             sx={{ width: 72, height: 72, bgcolor: 'primary.main', fontSize: '1.75rem' }}
             src={user.avatarUrl || undefined}
           >
-            {user.firstName[0]?.toUpperCase()}{user.lastName[0]?.toUpperCase()}
+            {user.firstName[0]?.toUpperCase()}
+            {user.lastName[0]?.toUpperCase()}
           </Avatar>
           <Box sx={{ flex: 1 }}>
             <Typography variant="h6" fontWeight={700}>
@@ -103,10 +141,12 @@ export default function ProfilePage() {
 
         <Divider sx={{ mb: 3 }} />
 
-        <Typography variant="subtitle2" gutterBottom>{t('personalInfo')}</Typography>
+        <Typography variant="subtitle2" gutterBottom>
+          {t('personalInfo')}
+        </Typography>
 
         {editing ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 400 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 480 }}>
             <TextField
               size="small"
               label={t('firstName')}
@@ -119,11 +159,62 @@ export default function ProfilePage() {
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
             />
+
+            {isTeacher && (
+              <>
+                <Divider />
+                <Typography variant="subtitle2" color="text.secondary">
+                  {t('teacherInfo')}
+                </Typography>
+                <TextField
+                  size="small"
+                  label={t('workplace')}
+                  placeholder={t('workplacePlaceholder')}
+                  value={workplace}
+                  onChange={(e) => setWorkplace(e.target.value)}
+                  inputProps={{ maxLength: 255 }}
+                />
+                <FormControl size="small">
+                  <InputLabel>{t('subject')}</InputLabel>
+                  <Select
+                    value={subjectId}
+                    label={t('subject')}
+                    onChange={(e) => setSubjectId(e.target.value)}
+                  >
+                    <MenuItem value="">
+                      <em>{t('noSubject')}</em>
+                    </MenuItem>
+                    {subjects.map((s) => (
+                      <MenuItem key={s.id} value={s.id}>
+                        {s.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <TextField
+                  size="small"
+                  label={t('bio')}
+                  placeholder={t('bioPlaceholder')}
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  multiline
+                  rows={3}
+                  inputProps={{ maxLength: 1000 }}
+                />
+              </>
+            )}
+
+            {updateProfile.isError && (
+              <Alert severity="error" sx={{ mt: 1 }}>
+                {t('common:error')}
+              </Alert>
+            )}
+
             <Box sx={{ display: 'flex', gap: 1 }}>
               <Button
                 variant="contained"
                 onClick={handleSave}
-                disabled={updateProfile.isPending || (!firstName.trim() && !lastName.trim())}
+                disabled={updateProfile.isPending}
               >
                 {updateProfile.isPending ? t('saving') : t('saveChanges')}
               </Button>
@@ -133,32 +224,92 @@ export default function ProfilePage() {
             </Box>
           </Box>
         ) : (
-          <Grid container spacing={2}>
-            <InfoItem label={t('firstName')} value={user.firstName} />
-            <InfoItem label={t('lastName')} value={user.lastName} />
-            <InfoItem label={t('email')} value={
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                {user.email || '—'}
-                {user.email && <VerifyBadge verified={user.emailVerified} />}
-              </Box>
-            } />
-            <InfoItem label={t('phone')} value={
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                {user.phone || '—'}
-                {user.phone && <VerifyBadge verified={user.phoneVerified} />}
-              </Box>
-            } />
-            <InfoItem label={t('role')} value={user.role} />
-            <InfoItem label={t('status')} value={user.status} />
-            <InfoItem label={t('lastLogin')} value={user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : '—'} />
-            <InfoItem label={t('memberSince')} value={new Date(user.createdAt).toLocaleDateString()} />
-          </Grid>
+          <>
+            <Grid container spacing={2}>
+              <InfoItem label={t('firstName')} value={user.firstName} />
+              <InfoItem label={t('lastName')} value={user.lastName} />
+              <InfoItem
+                label={t('email')}
+                value={
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {user.email || '—'}
+                    {user.email && <VerifyBadge verified={user.emailVerified} />}
+                  </Box>
+                }
+              />
+              <InfoItem
+                label={t('phone')}
+                value={
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {user.phone || '—'}
+                    {user.phone && <VerifyBadge verified={user.phoneVerified} />}
+                  </Box>
+                }
+              />
+              <InfoItem label={t('role')} value={user.role} />
+              <InfoItem label={t('status')} value={user.status} />
+              <InfoItem
+                label={t('lastLogin')}
+                value={user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : '—'}
+              />
+              <InfoItem
+                label={t('memberSince')}
+                value={new Date(user.createdAt).toLocaleDateString()}
+              />
+            </Grid>
+
+            {isTeacher && (user.workplace || user.subjectName || user.bio) && (
+              <>
+                <Divider sx={{ my: 2 }} />
+                <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <PersonIcon fontSize="small" />
+                  {t('teacherInfo')}
+                </Typography>
+                <Grid container spacing={2}>
+                  {user.workplace && (
+                    <InfoItem
+                      label={t('workplace')}
+                      value={
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <WorkIcon fontSize="small" color="action" />
+                          {user.workplace}
+                        </Box>
+                      }
+                    />
+                  )}
+                  {user.subjectName && (
+                    <InfoItem
+                      label={t('subject')}
+                      value={
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <MenuBookIcon fontSize="small" color="action" />
+                          {user.subjectName}
+                        </Box>
+                      }
+                    />
+                  )}
+                  {user.bio && (
+                    <Grid item xs={12}>
+                      <Typography variant="caption" color="text.secondary">
+                        {t('bio')}
+                      </Typography>
+                      <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+                        {user.bio}
+                      </Typography>
+                    </Grid>
+                  )}
+                </Grid>
+              </>
+            )}
+          </>
         )}
       </Paper>
 
       {/* Actions */}
       <Paper sx={{ p: 3, mb: 3 }}>
-        <Typography variant="subtitle2" gutterBottom>{t('accountInfo')}</Typography>
+        <Typography variant="subtitle2" gutterBottom>
+          {t('accountInfo')}
+        </Typography>
         <Button
           variant="outlined"
           startIcon={<LockIcon />}
@@ -218,7 +369,9 @@ function SessionsSection() {
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
         <Box>
           <Typography variant="subtitle2">{t('activeSessions')}</Typography>
-          <Typography variant="body2" color="text.secondary">{t('activeSessionsDescription')}</Typography>
+          <Typography variant="body2" color="text.secondary">
+            {t('activeSessionsDescription')}
+          </Typography>
         </Box>
         {hasOtherSessions && (
           <Button
@@ -238,7 +391,9 @@ function SessionsSection() {
           <CircularProgress size={24} />
         </Box>
       ) : sessions.length === 0 ? (
-        <Alert severity="info" sx={{ mt: 2 }}>{t('noSessions')}</Alert>
+        <Alert severity="info" sx={{ mt: 2 }}>
+          {t('noSessions')}
+        </Alert>
       ) : (
         <List disablePadding>
           {sessions.map((session) => (
@@ -301,7 +456,9 @@ function SessionsSection() {
 function InfoItem({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <Grid item xs={12} sm={6} md={4}>
-      <Typography variant="caption" color="text.secondary">{label}</Typography>
+      <Typography variant="caption" color="text.secondary">
+        {label}
+      </Typography>
       <Typography variant="body2">{value}</Typography>
     </Grid>
   );

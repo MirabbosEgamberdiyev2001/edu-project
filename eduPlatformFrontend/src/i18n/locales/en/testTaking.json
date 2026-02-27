@@ -167,5 +167,41 @@
     "weakAreas": "Weak Areas",
     "strongAreas": "Strong Areas",
     "scoreTrend": "Score Trend"
+  },
+  "groups": {
+    "title": "My Groups",
+    "subtitle": "Groups assigned by your teacher",
+    "breadcrumb": "My Groups",
+    "errorLoading": "Error loading groups.",
+    "empty": "Not added to any group yet",
+    "emptyHint": "When your teacher adds you to a group, it will appear here",
+    "countDisplay": "{{count}} groups",
+    "activeStatus": "Active",
+    "archiveStatus": "Archive",
+    "subjectLabel": "Subject",
+    "teacherLabel": "Teacher",
+    "membersLabel": "{{count}} students"
+  },
+  "attestation": {
+    "title": "Attestation Tests",
+    "subtitle": "Professional qualification tests. Prepare and confirm your teaching qualifications.",
+    "breadcrumb": "Attestation",
+    "filter": "Filter",
+    "clearFilter": "Clear",
+    "subject": "Subject",
+    "grade": "Grade",
+    "gradeLabel": "Grade {{grade}}",
+    "all": "All",
+    "found": "{{count}} tests found",
+    "loadError": "Failed to load tests. Please try again.",
+    "empty": "No attestation tests available",
+    "emptyHint": "Change filters or check back later",
+    "startTest": "Start Test",
+    "starting": "Starting...",
+    "questions": "{{count}} questions",
+    "myResults": "My Attestation Results",
+    "noResults": "You have not taken any attestation tests yet",
+    "viewResult": "View Result",
+    "defaultSubjectHint": "Filtered by your profile subject"
   }
 }

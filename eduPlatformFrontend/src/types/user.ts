@@ -29,4 +29,8 @@ export interface UserDto {
   status: UserStatus;
   lastLoginAt: string | null;
   createdAt: string;
+  bio: string | null;
+  workplace: string | null;
+  subjectId: string | null;
+  subjectName: string | null;
 }

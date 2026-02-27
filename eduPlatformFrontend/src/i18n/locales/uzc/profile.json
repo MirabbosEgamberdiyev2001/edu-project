@@ -40,5 +40,13 @@
   "ipAddress": "IP манзил",
   "device": "Қурилма",
   "lastActivity": "Охирги фаоллик",
-  "noSessions": "Фаол сеанслар йўқ"
+  "noSessions": "Фаол сеанслар йўқ",
+  "teacherInfo": "Ўқитувчи маълумотлари",
+  "bio": "Биография",
+  "bioPlaceholder": "Ўзингиз ҳақингизда, педагогик тажрибангиз ҳақида...",
+  "workplace": "Иш жойи",
+  "workplacePlaceholder": "Мактаб ёки ташкилот номи",
+  "subject": "Ўқитиладиган фан",
+  "selectSubject": "Фанни танланг",
+  "noSubject": "Кўрсатилмаган"
 }

@@ -63,7 +63,7 @@ public class TestTakingController {
 
     @PostMapping("/assignments/{assignmentId}/start")
     @Operation(summary = "Testni boshlash", description = "Test topshiriqni yechishni boshlash. Vaqt hisobi shu paytdan boshlanadi. IP manzil qayd etiladi.")
-    @PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasAnyRole('STUDENT', 'TEACHER')")
     public ResponseEntity<ApiResponse<AttemptDto>> startAttempt(
             @AuthenticationPrincipal UserPrincipal principal,
             @PathVariable UUID assignmentId,
@@ -85,7 +85,7 @@ public class TestTakingController {
 
     @PostMapping("/attempts/{attemptId}/answers/batch")
     @Operation(summary = "Javoblarni ommaviy saqlash", description = "Bir nechta javobni birdaniga saqlash (auto-save). Frontend har 30 soniyada avtomatik yuboradi.")
-    @PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasAnyRole('STUDENT', 'TEACHER')")
     public ResponseEntity<ApiResponse<BatchSaveAnswerResponse>> saveAnswersBatch(
             @AuthenticationPrincipal UserPrincipal principal,
             @PathVariable UUID attemptId,
@@ -98,7 +98,7 @@ public class TestTakingController {
 
     @PostMapping("/attempts/{attemptId}/answer")
     @Operation(summary = "Bitta javobni saqlash", description = "Test davomida bitta savolga javob saqlash yoki mavjud javobni yangilash.")
-    @PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasAnyRole('STUDENT', 'TEACHER')")
     public ResponseEntity<ApiResponse<AnswerDto>> saveAnswer(
             @AuthenticationPrincipal UserPrincipal principal,
             @PathVariable UUID attemptId,
@@ -110,7 +110,7 @@ public class TestTakingController {
 
     @PostMapping("/attempts/{attemptId}/submit")
     @Operation(summary = "Testni topshirish", description = "Testni yakunlash va baholashga yuborish. Avtomatik baholash darhol amalga oshiriladi.")
-    @PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasAnyRole('STUDENT', 'TEACHER')")
     public ResponseEntity<ApiResponse<AttemptDto>> submitAttempt(
             @AuthenticationPrincipal UserPrincipal principal,
             @PathVariable UUID attemptId) {
@@ -121,7 +121,7 @@ public class TestTakingController {
 
     @PostMapping("/attempts/{attemptId}/tab-switch")
     @Operation(summary = "Tab almashtirishni qayd etish", description = "O'quvchi boshqa tabga o'tganini qayd etish (anti-cheat). Belgilangan chegaradan oshsa, test avtomatik tugatiladi.")
-    @PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasAnyRole('STUDENT', 'TEACHER')")
     public ResponseEntity<ApiResponse<AttemptDto>> reportTabSwitch(
             @AuthenticationPrincipal UserPrincipal principal,
             @PathVariable UUID attemptId) {
@@ -132,7 +132,7 @@ public class TestTakingController {
 
     @GetMapping("/attempts/{attemptId}")
     @Operation(summary = "Urinish tafsilotlari", description = "O'quvchining test urinishi haqida to'liq ma'lumot — javoblar, ball, vaqt, holat.")
-    @PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasAnyRole('STUDENT', 'TEACHER')")
     public ResponseEntity<ApiResponse<AttemptDto>> getAttempt(
             @AuthenticationPrincipal UserPrincipal principal,
             @PathVariable UUID attemptId) {
@@ -143,7 +143,7 @@ public class TestTakingController {
 
     @GetMapping("/my-attempts")
     @Operation(summary = "Urinishlar tarixini olish", description = "O'quvchining barcha test urinishlari tarixini sahifalab olish.")
-    @PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasAnyRole('STUDENT', 'TEACHER')")
     public ResponseEntity<ApiResponse<PagedResponse<AttemptDto>>> getMyAttempts(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestParam(defaultValue = "0") int page,

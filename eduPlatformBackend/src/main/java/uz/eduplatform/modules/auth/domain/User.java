@@ -62,6 +62,15 @@ public class User {
     @Builder.Default
     private String timezone = "Asia/Tashkent";
 
+    @Column(columnDefinition = "TEXT")
+    private String bio;
+
+    @Column(length = 255)
+    private String workplace;
+
+    @Column(name = "subject_id")
+    private UUID subjectId;
+
     @Builder.Default
     @Enumerated(EnumType.STRING)
     private Role role = Role.STUDENT;

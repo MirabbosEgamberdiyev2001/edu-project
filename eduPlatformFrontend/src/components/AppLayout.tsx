@@ -37,6 +37,7 @@ import FamilyRestroomIcon from '@mui/icons-material/FamilyRestroom';
 import LinkIcon from '@mui/icons-material/Link';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import GradingIcon from '@mui/icons-material/Grading';
+import SchoolIcon from '@mui/icons-material/School';
 import { useAuth } from '@/hooks/useAuth';
 import { Role } from '@/types/user';
 import { authApi } from '@/api/authApi';
@@ -67,6 +68,7 @@ function getMenuItems(role: Role, t: (key: string) => string): (NavItem | 'divid
       items.push({ label: t('common:groups'), icon: <GroupsIcon />, path: '/groups' });
       items.push({ label: t('common:assignments'), icon: <AssignmentTurnedInIcon />, path: '/assignments' });
       items.push({ label: t('common:analytics'), icon: <BarChartIcon />, path: '/analytics/teacher' });
+      items.push({ label: t('common:attestation'), icon: <SchoolIcon />, path: '/attestation' });
       break;
 
     case Role.STUDENT:

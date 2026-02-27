@@ -40,5 +40,13 @@
   "ipAddress": "IP Address",
   "device": "Device",
   "lastActivity": "Last Activity",
-  "noSessions": "No active sessions"
+  "noSessions": "No active sessions",
+  "teacherInfo": "Teacher Information",
+  "bio": "Biography",
+  "bioPlaceholder": "Tell about yourself, your teaching experience...",
+  "workplace": "Workplace",
+  "workplacePlaceholder": "School or organization name",
+  "subject": "Teaching Subject",
+  "selectSubject": "Select subject",
+  "noSubject": "Not specified"
 }

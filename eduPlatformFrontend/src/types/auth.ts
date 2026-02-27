@@ -46,6 +46,9 @@ export interface UpdateProfileRequest {
   avatarUrl?: string;
   locale?: string;
   timezone?: string;
+  bio?: string;
+  workplace?: string;
+  subjectId?: string;
 }
 
 // Responses

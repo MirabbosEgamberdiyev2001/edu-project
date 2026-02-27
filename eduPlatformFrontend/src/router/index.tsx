@@ -69,6 +69,9 @@ const GlobalTestsPage = lazy(() => import('@/features/student/pages/GlobalTestsP
 const MyGroupsPage = lazy(() => import('@/features/student/pages/MyGroupsPage'));
 const StudentStatisticsPage = lazy(() => import('@/features/student/pages/StudentStatisticsPage'));
 
+// Teacher Section
+const AttestatsiyaPage = lazy(() => import('@/features/teacher/pages/AttestatsiyaPage'));
+
 // Analytics pages
 const TeacherAnalyticsPage = lazy(() => import('@/features/analytics/pages/TeacherAnalyticsPage'));
 const StudentAnalyticsPage = lazy(() => import('@/features/analytics/pages/StudentAnalyticsPage'));
@@ -113,9 +116,11 @@ export const router = createBrowserRouter([
     children: [
       // Full-screen routes (outside AppLayout - no sidebar)
       {
-        element: <RoleRoute allowedRoles={[Role.STUDENT]} />,
+        element: <RoleRoute allowedRoles={[Role.STUDENT, Role.TEACHER]} />,
         children: [
           { path: '/exam/:attemptId', element: <Lazy component={ExamPage} /> },
+          { path: '/my-attempts', element: <Lazy component={MyAttemptsPage} /> },
+          { path: '/attempt-result/:attemptId', element: <Lazy component={AttemptResultPage} /> },
         ],
       },
 
@@ -149,6 +154,7 @@ export const router = createBrowserRouter([
               { path: '/assignments/:id/live', element: <Lazy component={LiveMonitoringPage} /> },
               { path: '/assignments/:id/results', element: <Lazy component={AssignmentResultsPage} /> },
               { path: '/analytics/teacher', element: <Lazy component={TeacherAnalyticsPage} /> },
+              { path: '/attestation', element: <Lazy component={AttestatsiyaPage} /> },
               { path: '/analytics/group/:groupId', element: <Lazy component={GroupAnalyticsPage} /> },
             ],
           },
@@ -170,8 +176,6 @@ export const router = createBrowserRouter([
               { path: '/student', element: <Lazy component={StudentDashboardPage} /> },
               // Group assignments from teacher
               { path: '/my-tests', element: <Lazy component={AvailableAssignmentsPage} /> },
-              { path: '/my-attempts', element: <Lazy component={MyAttemptsPage} /> },
-              { path: '/attempt-result/:attemptId', element: <Lazy component={AttemptResultPage} /> },
               // Student groups view
               { path: '/my-groups', element: <Lazy component={MyGroupsPage} /> },
               // Student statistics

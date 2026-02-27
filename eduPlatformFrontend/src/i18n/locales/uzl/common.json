@@ -46,5 +46,7 @@
     "title": "Xatolik yuz berdi",
     "description": "Kutilmagan xatolik yuz berdi. Iltimos, sahifani qayta yuklang.",
     "reload": "Sahifani qayta yuklash"
-  }
+  },
+  "attestation": "Attestatsiya",
+  "globalTests": "Global testlar"
 }

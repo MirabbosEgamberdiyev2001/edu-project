@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   Box,
@@ -8,7 +7,6 @@ import {
   Card,
   CardContent,
   Chip,
-  CircularProgress,
   Avatar,
   Divider,
   Alert,
@@ -19,11 +17,13 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import PersonIcon from '@mui/icons-material/Person';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import { useTranslation } from 'react-i18next';
 import { groupApi } from '@/api/groupApi';
 import type { GroupDto } from '@/types/group';
 import PageBreadcrumbs from '@/components/PageBreadcrumbs';
 
 export default function MyGroupsPage() {
+  const { t } = useTranslation('testTaking');
   const { data, isLoading, isError } = useQuery({
     queryKey: ['my-groups-student'],
     queryFn: () => groupApi.getMyGroups({ size: 50 }).then(r => r.data.data?.content || []),
@@ -34,23 +34,23 @@ export default function MyGroupsPage() {
 
   return (
     <Box>
-      <PageBreadcrumbs items={[{ label: 'Mening guruhlarim' }]} />
+      <PageBreadcrumbs items={[{ label: t('groups.breadcrumb') }]} />
 
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
         <GroupsIcon sx={{ fontSize: 32, color: 'primary.main' }} />
         <Box>
           <Typography variant="h5" fontWeight={700}>
-            Mening Guruhlarim
+            {t('groups.title')}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            O'qituvchi tomonidan biriktirilgan guruhlaringiz
+            {t('groups.subtitle')}
           </Typography>
         </Box>
       </Box>
 
       {isError && (
         <Alert severity="error" sx={{ mb: 2 }}>
-          Guruhlarni yuklashda xato yuz berdi.
+          {t('groups.errorLoading')}
         </Alert>
       )}
 
@@ -62,20 +62,20 @@ export default function MyGroupsPage() {
             </Grid>
           ))}
         </Grid>
-      ) : groups.length === 0 ? (
+      ) : isError ? null : groups.length === 0 ? (
         <Paper sx={{ p: 6, textAlign: 'center' }}>
           <GroupsIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
           <Typography variant="h6" color="text.secondary">
-            Hali birorta guruhga qo'shilmagan
+            {t('groups.empty')}
           </Typography>
           <Typography variant="body2" color="text.disabled" sx={{ mt: 1 }}>
-            O'qituvchingiz sizni guruhga qo'shgach, bu yerda ko'rinadi
+            {t('groups.emptyHint')}
           </Typography>
         </Paper>
       ) : (
         <>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            {groups.length} ta guruh
+            {t('groups.countDisplay', { count: groups.length })}
           </Typography>
           <Grid container spacing={2}>
             {groups.map((group) => (
@@ -91,6 +91,7 @@ export default function MyGroupsPage() {
 }
 
 function GroupCard({ group }: { group: GroupDto }) {
+  const { t } = useTranslation('testTaking');
   const initial = group.name?.[0]?.toUpperCase() || 'G';
 
   return (
@@ -113,7 +114,7 @@ function GroupCard({ group }: { group: GroupDto }) {
               {group.name}
             </Typography>
             <Chip
-              label={group.status === 'ACTIVE' ? 'Faol' : 'Arxiv'}
+              label={group.status === 'ACTIVE' ? t('groups.activeStatus') : t('groups.archiveStatus')}
               size="small"
               color={group.status === 'ACTIVE' ? 'success' : 'default'}
             />
@@ -133,7 +134,7 @@ function GroupCard({ group }: { group: GroupDto }) {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <MenuBookIcon fontSize="small" color="action" />
               <Typography variant="body2" color="text.secondary">
-                Fan: <strong>{group.subjectName}</strong>
+                {t('groups.subjectLabel')}: <strong>{group.subjectName}</strong>
               </Typography>
             </Box>
           )}
@@ -141,20 +142,20 @@ function GroupCard({ group }: { group: GroupDto }) {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <PersonIcon fontSize="small" color="action" />
               <Typography variant="body2" color="text.secondary">
-                O'qituvchi: <strong>{group.teacherName}</strong>
+                {t('groups.teacherLabel')}: <strong>{group.teacherName}</strong>
               </Typography>
             </Box>
           )}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <GroupsIcon fontSize="small" color="action" />
             <Typography variant="body2" color="text.secondary">
-              {group.memberCount} ta o'quvchi
+              {t('groups.membersLabel', { count: group.memberCount })}
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <CalendarTodayIcon fontSize="small" color="action" />
             <Typography variant="body2" color="text.secondary">
-              {new Date(group.createdAt).toLocaleDateString('uz-UZ')}
+              {new Date(group.createdAt).toLocaleDateString()}
             </Typography>
           </Box>
         </Stack>

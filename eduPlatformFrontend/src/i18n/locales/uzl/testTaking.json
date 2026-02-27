@@ -167,5 +167,41 @@
     "weakAreas": "Kuchsiz mavzular",
     "strongAreas": "Kuchli mavzular",
     "scoreTrend": "Ball tendensiyasi"
+  },
+  "groups": {
+    "title": "Mening guruhlarim",
+    "subtitle": "O'qituvchi tomonidan biriktirilgan guruhlaringiz",
+    "breadcrumb": "Mening guruhlarim",
+    "errorLoading": "Guruhlarni yuklashda xato yuz berdi.",
+    "empty": "Hali birorta guruhga qo'shilmagan",
+    "emptyHint": "O'qituvchingiz sizni guruhga qo'shgach, bu yerda ko'rinadi",
+    "countDisplay": "{{count}} ta guruh",
+    "activeStatus": "Faol",
+    "archiveStatus": "Arxiv",
+    "subjectLabel": "Fan",
+    "teacherLabel": "O'qituvchi",
+    "membersLabel": "{{count}} ta o'quvchi"
+  },
+  "attestation": {
+    "title": "Attestatsiya Testlari",
+    "subtitle": "Kasbiy malaka testlari. O'qituvchi malakangizni tasdiqlovchi testlarni toping.",
+    "breadcrumb": "Attestatsiya",
+    "filter": "Filtrlash",
+    "clearFilter": "Tozalash",
+    "subject": "Fan",
+    "grade": "Sinf",
+    "gradeLabel": "{{grade}}-sinf",
+    "all": "Barchasi",
+    "found": "{{count}} ta test topildi",
+    "loadError": "Testlarni yuklashda xato yuz berdi. Qayta urinib ko'ring.",
+    "empty": "Attestatsiya testlari mavjud emas",
+    "emptyHint": "Filtrlarni o'zgartiring yoki keyinroq qarang",
+    "startTest": "Testni boshlash",
+    "starting": "Boshlanmoqda...",
+    "questions": "{{count}} savol",
+    "myResults": "Mening attestatsiya natijalarim",
+    "noResults": "Siz hali attestatsiya testlarini topshirmadingiz",
+    "viewResult": "Natijani ko'rish",
+    "defaultSubjectHint": "Profildagi faningiz bo'yicha filtrlangan"
   }
 }
