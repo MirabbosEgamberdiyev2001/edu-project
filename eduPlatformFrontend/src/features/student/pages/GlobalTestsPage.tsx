@@ -30,7 +30,7 @@ import { useTranslation } from 'react-i18next';
 import { globalTestApi } from '@/api/globalTestApi';
 import { subjectApi } from '@/api/subjectApi';
 import { TestCategory, type TestHistoryDto } from '@/types/test';
-import PageBreadcrumbs from '@/components/PageBreadcrumbs';
+import { PageShell } from '@/components/ui';
 
 const CATEGORY_COLORS: Record<string, string> = {
   DTM: '#1565c0',
@@ -86,15 +86,7 @@ export default function GlobalTestsPage() {
   const totalElements = data?.totalElements || 0;
 
   return (
-    <Box>
-      <PageBreadcrumbs items={[{ label: t('globalTests.title') }]} />
-
-      <Typography variant="h5" fontWeight={700} sx={{ mb: 1 }}>
-        {t('globalTests.title')}
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        {t('globalTests.subtitle')}
-      </Typography>
+    <PageShell title={t('globalTests.title')} subtitle={t('globalTests.subtitle')}>
 
       {/* Category Quick Filter */}
       <Box sx={{ display: 'flex', gap: 1, mb: 3, flexWrap: 'wrap' }}>
@@ -108,7 +100,11 @@ export default function GlobalTestsPage() {
           <Chip
             key={cat}
             label={t(`globalTests.category.${cat}`, cat)}
-            onClick={() => { setCategory(cat as TestCategory); setPage(0); }}
+            onClick={() => {
+              setCategory(cat as TestCategory);
+              if (cat === 'ATTESTATSIYA') setGradeLevel('');
+              setPage(0);
+            }}
             color={category === cat ? 'primary' : 'default'}
             variant={category === cat ? 'filled' : 'outlined'}
             sx={{ fontWeight: category === cat ? 700 : 400 }}
@@ -134,7 +130,12 @@ export default function GlobalTestsPage() {
               <Select
                 value={category}
                 label={t('globalTests.categoryLabel')}
-                onChange={(e) => { setCategory(e.target.value as TestCategory | ''); setPage(0); }}
+                onChange={(e) => {
+                  const val = e.target.value as TestCategory | '';
+                  setCategory(val);
+                  if (val === 'ATTESTATSIYA') setGradeLevel('');
+                  setPage(0);
+                }}
               >
                 <MenuItem value="">{t('globalTests.all')}</MenuItem>
                 {Object.values(TestCategory).map(cat => (
@@ -158,21 +159,23 @@ export default function GlobalTestsPage() {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} sm={4}>
-            <FormControl fullWidth size="small">
-              <InputLabel>{t('globalTests.grade')}</InputLabel>
-              <Select
-                value={gradeLevel}
-                label={t('globalTests.grade')}
-                onChange={(e) => { setGradeLevel(e.target.value as number | ''); setPage(0); }}
-              >
-                <MenuItem value="">{t('globalTests.all')}</MenuItem>
-                {GRADE_LEVELS.map(g => (
-                  <MenuItem key={g} value={g}>{t('globalTests.gradeLabel', { grade: g })}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
+          {category !== 'ATTESTATSIYA' && (
+            <Grid item xs={12} sm={4}>
+              <FormControl fullWidth size="small">
+                <InputLabel>{t('globalTests.grade')}</InputLabel>
+                <Select
+                  value={gradeLevel}
+                  label={t('globalTests.grade')}
+                  onChange={(e) => { setGradeLevel(e.target.value as number | ''); setPage(0); }}
+                >
+                  <MenuItem value="">{t('globalTests.all')}</MenuItem>
+                  {GRADE_LEVELS.map(g => (
+                    <MenuItem key={g} value={g}>{t('globalTests.gradeLabel', { grade: g })}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+          )}
         </Grid>
       </Paper>
 
@@ -233,7 +236,7 @@ export default function GlobalTestsPage() {
           />
         </Box>
       )}
-    </Box>
+    </PageShell>
   );
 }
 
@@ -266,7 +269,7 @@ function GlobalTestCard({ test, onStart, isStarting }: {
             size="small"
             sx={{ bgcolor: catColor, color: 'white', fontWeight: 700, fontSize: '0.7rem' }}
           />
-          {test.gradeLevel && (
+          {test.gradeLevel && category !== 'ATTESTATSIYA' && (
             <Chip label={t('globalTests.gradeLabel', { grade: test.gradeLevel })} size="small" variant="outlined" />
           )}
         </Box>

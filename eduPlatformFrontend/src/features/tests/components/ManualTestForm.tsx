@@ -153,7 +153,7 @@ export default function ManualTestForm() {
 
   const canNext = () => {
     switch (activeStep) {
-      case 0: return !!form.subjectId && form.gradeLevel !== null && form.topicIds.length > 0 && Boolean(form.titleTranslations?.[toLocaleKey('uzl')]?.trim());
+      case 0: return !!form.subjectId && Boolean(form.titleTranslations?.[toLocaleKey('uzl')]?.trim());
       case 1: return form.selectedQuestionIds.length > 0;
       case 2: return true;
       case 3: return !!preview.data && !preview.isPending;
@@ -371,7 +371,12 @@ export default function ManualTestForm() {
             </TextField>
             {form.subjectId && (
               <Box>
-                <Typography variant="subtitle2" sx={{ mb: 1 }}>{tSubject('form.gradeLevel')}</Typography>
+                <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                  {tSubject('form.gradeLevel')}
+                  <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                    ({t('common:optional', 'ixtiyoriy')})
+                  </Typography>
+                </Typography>
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                   {GRADES.map((grade) => (
                     <Chip
@@ -379,16 +384,26 @@ export default function ManualTestForm() {
                       label={`${grade}`}
                       color={form.gradeLevel === grade ? 'primary' : 'default'}
                       variant={form.gradeLevel === grade ? 'filled' : 'outlined'}
-                      onClick={() => setForm((prev) => ({ ...prev, gradeLevel: grade, topicIds: [], selectedQuestionIds: [] }))}
+                      onClick={() => setForm((prev) => ({
+                        ...prev,
+                        gradeLevel: prev.gradeLevel === grade ? null : grade,
+                        topicIds: [],
+                        selectedQuestionIds: [],
+                      }))}
                       sx={{ minWidth: 40 }}
                     />
                   ))}
                 </Box>
               </Box>
             )}
-            {form.subjectId && form.gradeLevel !== null && (
+            {form.subjectId && (
               <Box>
-                <Typography variant="subtitle2" gutterBottom>{t('form.selectTopics')}</Typography>
+                <Typography variant="subtitle2" gutterBottom>
+                  {t('form.selectTopics')}
+                  <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                    ({t('common:optional', 'ixtiyoriy')})
+                  </Typography>
+                </Typography>
                 <Paper variant="outlined" sx={{ p: 2, maxHeight: 300, overflow: 'auto' }}>
                   <TopicCheckboxTree
                     subjectId={form.subjectId}
@@ -405,17 +420,13 @@ export default function ManualTestForm() {
       case 1:
         return (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {form.topicIds.length === 0 ? (
-              <Alert severity="warning">{t('errors.noTopics')}</Alert>
-            ) : (
-              <QuestionSelector
-                subjectId={form.subjectId}
-                topicIds={form.topicIds}
-                selectedIds={form.selectedQuestionIds}
-                onSelectionChange={(ids) => updateForm('selectedQuestionIds', ids)}
-                onCreateQuestion={() => setQuestionDialogOpen(true)}
-              />
-            )}
+            <QuestionSelector
+              subjectId={form.subjectId}
+              topicIds={form.topicIds}
+              selectedIds={form.selectedQuestionIds}
+              onSelectionChange={(ids) => updateForm('selectedQuestionIds', ids)}
+              onCreateQuestion={() => setQuestionDialogOpen(true)}
+            />
           </Box>
         );
 

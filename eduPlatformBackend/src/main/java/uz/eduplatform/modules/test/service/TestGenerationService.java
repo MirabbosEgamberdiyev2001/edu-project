@@ -135,10 +135,16 @@ public class TestGenerationService {
             // Override questionCount in request for history saving
             request.setQuestionCount(questionCount);
         } else {
-            // Auto mode: original flow
-            // 2. Fetch ACTIVE questions + teacher's own DRAFT/PENDING
-            List<Question> candidates = questionRepository.findByTopicIdsForTeacher(
-                    request.getTopicIds(), userId);
+            // Auto mode: fetch questions from topics or subject-wide
+            boolean hasTopics = request.getTopicIds() != null && !request.getTopicIds().isEmpty();
+            List<Question> candidates;
+            if (hasTopics) {
+                candidates = questionRepository.findByTopicIdsForTeacher(request.getTopicIds(), userId);
+            } else if (request.getSubjectId() != null) {
+                candidates = questionRepository.findBySubjectIdForTeacher(request.getSubjectId(), userId);
+            } else {
+                throw BusinessException.ofKey("test.no.active.questions");
+            }
 
             if (candidates.isEmpty()) {
                 throw BusinessException.ofKey("test.no.active.questions");

@@ -169,38 +169,43 @@ public class GradingService {
 
     // ==================== Grading Methods ====================
 
+    @SuppressWarnings("unchecked")
     private void gradeMcqSingle(Answer answer, Question question) {
         Object selected = parseJson(answer.getSelectedAnswer());
-        Object correct = parseJson(question.getCorrectAnswer());
-
-        if (Objects.equals(selected, correct)) {
-            answer.setIsCorrect(true);
-            answer.setEarnedPoints(question.getPoints());
-        } else {
+        if (selected == null) {
             answer.setIsCorrect(false);
             answer.setEarnedPoints(BigDecimal.ZERO);
+            return;
         }
+        // Compare by option id (isCorrect flag), NOT by letter-label correctAnswer
+        String correctOptionId = findCorrectOptionId(question.getOptions());
+        boolean isCorrect = correctOptionId != null && correctOptionId.equals(String.valueOf(selected));
+        answer.setIsCorrect(isCorrect);
+        answer.setEarnedPoints(isCorrect ? question.getPoints() : BigDecimal.ZERO);
     }
 
+    @SuppressWarnings("unchecked")
     private void gradeMcqMulti(Answer answer, Question question) {
-        Set<Object> selectedSet = toSet(parseJson(answer.getSelectedAnswer()));
-        Set<Object> correctSet = toSet(parseJson(question.getCorrectAnswer()));
+        Set<Object> selectedRaw = toSet(parseJson(answer.getSelectedAnswer()));
+        Set<String> correctIds = findCorrectOptionIds(question.getOptions());
+        Set<String> selectedIds = selectedRaw.stream().map(String::valueOf).collect(java.util.stream.Collectors.toSet());
 
-        if (selectedSet.equals(correctSet)) {
+        if (selectedIds.equals(correctIds)) {
             answer.setIsCorrect(true);
             answer.setEarnedPoints(question.getPoints());
         } else {
             // Partial credit
-            Set<Object> intersection = new HashSet<>(selectedSet);
-            intersection.retainAll(correctSet);
+            Set<String> intersection = new HashSet<>(selectedIds);
+            intersection.retainAll(correctIds);
 
-            Set<Object> wrongSelections = new HashSet<>(selectedSet);
-            wrongSelections.removeAll(correctSet);
+            Set<String> wrongSelections = new HashSet<>(selectedIds);
+            wrongSelections.removeAll(correctIds);
 
             int correctCount = intersection.size();
             int wrongCount = wrongSelections.size();
+            int totalCorrect = Math.max(1, correctIds.size());
 
-            double partialRatio = Math.max(0, (double) (correctCount - wrongCount) / correctSet.size());
+            double partialRatio = Math.max(0, (double) (correctCount - wrongCount) / totalCorrect);
             BigDecimal partialScore = question.getPoints()
                     .multiply(BigDecimal.valueOf(partialRatio))
                     .setScale(2, RoundingMode.HALF_UP);
@@ -215,13 +220,44 @@ public class GradingService {
         Object selected = parseJson(answer.getSelectedAnswer());
         Object correct = parseJson(question.getCorrectAnswer());
 
-        if (Objects.equals(selected, correct)) {
+        // Normalize to lowercase string to handle Boolean vs String mismatch
+        String selectedStr = selected != null ? String.valueOf(selected).toLowerCase() : null;
+        String correctStr = correct != null ? String.valueOf(correct).toLowerCase() : null;
+
+        if (selectedStr != null && selectedStr.equals(correctStr)) {
             answer.setIsCorrect(true);
             answer.setEarnedPoints(question.getPoints());
         } else {
             answer.setIsCorrect(false);
             answer.setEarnedPoints(BigDecimal.ZERO);
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private String findCorrectOptionId(String optionsJson) {
+        Object parsed = parseJson(optionsJson);
+        if (!(parsed instanceof List<?> optionsList)) return null;
+        for (Object opt : optionsList) {
+            if (opt instanceof Map<?, ?> optMap && Boolean.TRUE.equals(optMap.get("isCorrect"))) {
+                Object id = optMap.get("id");
+                return id != null ? String.valueOf(id) : null;
+            }
+        }
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Set<String> findCorrectOptionIds(String optionsJson) {
+        Object parsed = parseJson(optionsJson);
+        if (!(parsed instanceof List<?> optionsList)) return Set.of();
+        Set<String> correctIds = new HashSet<>();
+        for (Object opt : optionsList) {
+            if (opt instanceof Map<?, ?> optMap && Boolean.TRUE.equals(optMap.get("isCorrect"))) {
+                Object id = optMap.get("id");
+                if (id != null) correctIds.add(String.valueOf(id));
+            }
+        }
+        return correctIds;
     }
 
     private void gradeMatching(Answer answer, Question question) {

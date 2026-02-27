@@ -63,15 +63,15 @@ public interface TestHistoryRepository extends JpaRepository<TestHistory, UUID> 
     // ORDER BY is hardcoded to avoid Hibernate 6 Sort+native-query incompatibility (camelCase vs snake_case).
     @Query(value = "SELECT * FROM test_history " +
            "WHERE global_status = :status " +
-           "AND (CAST(:category AS text) IS NULL OR category::text = CAST(:category AS text)) " +
-           "AND (CAST(:subjectId AS text) IS NULL OR subject_id::text = CAST(:subjectId AS text)) " +
+           "AND (CAST(:category AS text) IS NULL OR CAST(category AS text) = CAST(:category AS text)) " +
+           "AND (CAST(:subjectId AS text) IS NULL OR CAST(subject_id AS text) = CAST(:subjectId AS text)) " +
            "AND (:gradeLevel IS NULL OR grade_level = :gradeLevel) " +
            "AND deleted_at IS NULL " +
            "ORDER BY created_at DESC",
            countQuery = "SELECT COUNT(*) FROM test_history " +
            "WHERE global_status = :status " +
-           "AND (CAST(:category AS text) IS NULL OR category::text = CAST(:category AS text)) " +
-           "AND (CAST(:subjectId AS text) IS NULL OR subject_id::text = CAST(:subjectId AS text)) " +
+           "AND (CAST(:category AS text) IS NULL OR CAST(category AS text) = CAST(:category AS text)) " +
+           "AND (CAST(:subjectId AS text) IS NULL OR CAST(subject_id AS text) = CAST(:subjectId AS text)) " +
            "AND (:gradeLevel IS NULL OR grade_level = :gradeLevel) " +
            "AND deleted_at IS NULL",
            nativeQuery = true)

@@ -112,6 +112,17 @@
   "promoCodeUnlimited": "Чексиз",
   "generatePromoCode": "Промокод яратиш",
   "minutesShort": "дақ",
+  "groupName": "Гуруҳ",
+  "create": "Топшириқ яратиш",
+  "columns": {
+    "title": "Сарлавҳа",
+    "status": "Ҳолат",
+    "startDate": "Бошланиш",
+    "endDate": "Тугаш",
+    "completion": "Бажариш",
+    "avgScore": "Ўрт. балл",
+    "actions": "Амаллар"
+  },
   "success": {
     "created": "Топшириқ муваффақиятли яратилди",
     "updated": "Топшириқ муваффақиятли янгиланди",

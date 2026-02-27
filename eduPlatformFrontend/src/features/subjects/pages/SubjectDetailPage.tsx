@@ -30,7 +30,7 @@ import SubjectDeleteDialog from '../components/SubjectDeleteDialog';
 import TopicTreeView from '@/features/topics/components/TopicTreeView';
 import type { CreateSubjectRequest, UpdateSubjectRequest } from '@/types/subject';
 import { useAuthStore } from '@/stores/authStore';
-import PageBreadcrumbs from '@/components/PageBreadcrumbs';
+import { PageShell } from '@/components/ui';
 
 const GRADES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 
@@ -92,80 +92,54 @@ export default function SubjectDetailPage() {
   };
 
   return (
-    <Box>
-      <PageBreadcrumbs items={[
-        { label: t('common:subjects'), href: '/subjects' },
+    <PageShell
+      title={displayName}
+      subtitle={displayDescription || undefined}
+      breadcrumbs={[
+        { label: t('common:subjects'), to: '/subjects' },
         { label: displayName },
-      ]} />
-
-      {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-        <IconButton onClick={() => navigate('/subjects')} aria-label={t('common:back')}>
-          <ArrowBackIcon />
-        </IconButton>
-        <Box sx={{ flex: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            {subject.icon ? (
-              isImageUrl(subject.icon) ? (
-                <Avatar
-                  src={subject.icon}
-                  variant="rounded"
-                  sx={{ width: 48, height: 48, bgcolor: subject.color || 'primary.main' }}
-                >
-                  <MenuBookIcon />
-                </Avatar>
-              ) : (
-                <Typography variant="h4" component="span">{subject.icon}</Typography>
-              )
-            ) : (
-              <Avatar
-                variant="rounded"
-                sx={{ width: 48, height: 48, bgcolor: subject.color || 'primary.main' }}
-              >
-                <MenuBookIcon />
-              </Avatar>
-            )}
-            <Box>
-              <Typography variant="h5" fontWeight={700}>{displayName}</Typography>
-              {displayDescription && (
-                <Typography variant="body2" color="text.secondary">{displayDescription}</Typography>
-              )}
-            </Box>
-          </Box>
-        </Box>
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          {isAdmin && (
+      ]}
+      actions={
+        isAdmin ? (
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
             <Tooltip title={t('edit')}>
               <IconButton color="primary" onClick={() => setFormOpen(true)}>
                 <EditIcon />
               </IconButton>
             </Tooltip>
-          )}
-          {isAdmin && (subject.isArchived ? (
-            <Tooltip title={t('restore')}>
-              <IconButton color="success" onClick={handleRestore}>
-                <UnarchiveIcon />
-              </IconButton>
-            </Tooltip>
-          ) : (
-            <Tooltip title={t('archive')}>
-              <IconButton color="warning" onClick={handleArchive}>
-                <ArchiveIcon />
-              </IconButton>
-            </Tooltip>
-          ))}
-          {isAdmin && (
+            {subject.isArchived ? (
+              <Tooltip title={t('restore')}>
+                <IconButton color="success" onClick={handleRestore}>
+                  <UnarchiveIcon />
+                </IconButton>
+              </Tooltip>
+            ) : (
+              <Tooltip title={t('archive')}>
+                <IconButton color="warning" onClick={handleArchive}>
+                  <ArchiveIcon />
+                </IconButton>
+              </Tooltip>
+            )}
             <Tooltip title={t('delete')}>
               <IconButton color="error" onClick={() => setDeleteOpen(true)}>
                 <DeleteIcon />
               </IconButton>
             </Tooltip>
-          )}
-        </Box>
-      </Box>
-
-      {/* Stats */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+          </Box>
+        ) : undefined
+      }
+    >
+      {/* Subject icon + Stats */}
+      <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap', alignItems: 'center' }}>
+        {subject.icon && (
+          isImageUrl(subject.icon) ? (
+            <Avatar src={subject.icon} variant="rounded" sx={{ width: 40, height: 40, bgcolor: subject.color || 'primary.main' }}>
+              <MenuBookIcon />
+            </Avatar>
+          ) : (
+            <Typography variant="h4" component="span">{subject.icon}</Typography>
+          )
+        )}
         <Chip
           icon={subject.isActive ? <CheckCircleIcon /> : <CancelIcon />}
           label={subject.isActive ? t('statusActive') : t('statusInactive')}
@@ -253,6 +227,6 @@ export default function SubjectDetailPage() {
         subject={subject}
         isPending={remove.isPending}
       />
-    </Box>
+    </PageShell>
   );
 }

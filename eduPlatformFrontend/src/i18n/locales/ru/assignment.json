@@ -112,6 +112,17 @@
   "promoCodeUnlimited": "Без ограничений",
   "generatePromoCode": "Сгенерировать промокод",
   "minutesShort": "мин",
+  "groupName": "Группа",
+  "create": "Создать задание",
+  "columns": {
+    "title": "Название",
+    "status": "Статус",
+    "startDate": "Начало",
+    "endDate": "Конец",
+    "completion": "Прогресс",
+    "avgScore": "Ср. балл",
+    "actions": "Действия"
+  },
   "success": {
     "created": "Задание успешно создано",
     "updated": "Задание успешно обновлено",

@@ -32,7 +32,7 @@ public class TopicController {
     @Operation(summary = "Fan mavzulari daraxtini olish", description = "Berilgan fan va sinf bo'yicha barcha mavzularni ierarxik daraxt ko'rinishida olish.")
     public ResponseEntity<ApiResponse<List<TopicTreeDto>>> getTopicTree(
             @PathVariable UUID subjectId,
-            @RequestParam Integer gradeLevel,
+            @RequestParam(required = false) Integer gradeLevel,
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
 

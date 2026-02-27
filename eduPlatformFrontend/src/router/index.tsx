@@ -71,6 +71,7 @@ const StudentStatisticsPage = lazy(() => import('@/features/student/pages/Studen
 
 // Teacher Section
 const AttestatsiyaPage = lazy(() => import('@/features/teacher/pages/AttestatsiyaPage'));
+const TeacherDashboardPage = lazy(() => import('@/features/teacher/pages/TeacherDashboardPage'));
 
 // Analytics pages
 const TeacherAnalyticsPage = lazy(() => import('@/features/analytics/pages/TeacherAnalyticsPage'));
@@ -139,6 +140,7 @@ export const router = createBrowserRouter([
           {
             element: <RoleRoute allowedRoles={[Role.TEACHER, Role.ADMIN, Role.SUPER_ADMIN]} />,
             children: [
+              { path: '/teacher-dashboard', element: <Lazy component={TeacherDashboardPage} /> },
               { path: '/subjects', element: <Lazy component={SubjectsPage} /> },
               { path: '/subjects/:id', element: <Lazy component={SubjectDetailPage} /> },
               { path: '/topics', element: <Lazy component={TopicsPage} /> },

@@ -3,7 +3,51 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { useTranslation } from 'react-i18next';
-import type { AttemptResultDto } from '@/types/testTaking';
+import type { AttemptResultDto, DetailedAnswerDto } from '@/types/testTaking';
+
+type OptionItem = { id?: unknown; text?: unknown; isCorrect?: boolean };
+
+/** Look up the text of the option that matches the given student answer id. */
+function resolveStudentAnswerText(
+  options: unknown,
+  studentAnswer: unknown,
+  trueFalseTrue: string,
+  trueFalseFalse: string,
+  questionType: string,
+): string {
+  if (studentAnswer == null) return '-';
+  if (questionType === 'TRUE_FALSE') {
+    const s = String(studentAnswer).toLowerCase();
+    if (s === 'true') return trueFalseTrue;
+    if (s === 'false') return trueFalseFalse;
+  }
+  if (Array.isArray(options) && options.length > 0) {
+    const opts = options as OptionItem[];
+    if (Array.isArray(studentAnswer)) {
+      const texts = (studentAnswer as unknown[]).map((id) => {
+        const opt = opts.find((o) => String(o.id) === String(id));
+        return opt?.text != null ? String(opt.text) : String(id);
+      });
+      return texts.join(', ');
+    }
+    const opt = opts.find((o) => String(o.id) === String(studentAnswer));
+    if (opt?.text != null) return String(opt.text);
+  }
+  return String(studentAnswer);
+}
+
+/** Find the text of the correct option(s) using isCorrect flag. */
+function resolveCorrectOptionText(answer: DetailedAnswerDto): string | null {
+  if (answer.correctAnswer === null) return null;
+  if (answer.questionType === 'TRUE_FALSE') {
+    const s = String(answer.correctAnswer).toLowerCase();
+    return s; // will be shown as-is; caller can localise if needed
+  }
+  const opts = Array.isArray(answer.options) ? (answer.options as OptionItem[]) : [];
+  const correct = opts.filter((o) => o.isCorrect === true);
+  if (correct.length > 0) return correct.map((o) => String(o.text ?? '')).join(', ');
+  return String(answer.correctAnswer);
+}
 
 interface ResultDisplayProps {
   result: AttemptResultDto;
@@ -11,6 +55,8 @@ interface ResultDisplayProps {
 
 export default function ResultDisplay({ result }: ResultDisplayProps) {
   const { t } = useTranslation('testTaking');
+  const trueFalseTrue = t('trueFalseTrue');
+  const trueFalseFalse = t('trueFalseFalse');
 
   const percentage = result.percentage;
   const scoreColor = percentage >= 70 ? 'success.main' : percentage >= 40 ? 'warning.main' : 'error.main';
@@ -83,13 +129,25 @@ export default function ResultDisplay({ result }: ResultDisplayProps) {
           <Divider sx={{ my: 1 }} />
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
             <Typography variant="body2" color="text.secondary">
-              {t('result.yourAnswer')}: <strong>{String(answer.studentAnswer ?? '-')}</strong>
+              {t('result.yourAnswer')}:{' '}
+              <strong>
+                {resolveStudentAnswerText(
+                  answer.options,
+                  answer.studentAnswer,
+                  trueFalseTrue,
+                  trueFalseFalse,
+                  answer.questionType,
+                )}
+              </strong>
             </Typography>
-            {!answer.isCorrect && (
-              <Typography variant="body2" color="success.main">
-                {t('result.correctAnswer')}: <strong>{String(answer.correctAnswer)}</strong>
-              </Typography>
-            )}
+            {!answer.isCorrect && answer.correctAnswer !== null && (() => {
+              const correctText = resolveCorrectOptionText(answer);
+              return correctText ? (
+                <Typography variant="body2" color="success.main">
+                  {t('result.correctAnswer')}: <strong>{correctText}</strong>
+                </Typography>
+              ) : null;
+            })()}
           </Box>
           {answer.proof && (
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1, fontStyle: 'italic' }}>

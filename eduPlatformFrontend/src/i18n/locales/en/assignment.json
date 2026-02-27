@@ -112,6 +112,17 @@
   "promoCodeUnlimited": "Unlimited",
   "generatePromoCode": "Generate Promo Code",
   "minutesShort": "min",
+  "groupName": "Group",
+  "create": "Create Assignment",
+  "columns": {
+    "title": "Title",
+    "status": "Status",
+    "startDate": "Start",
+    "endDate": "End",
+    "completion": "Progress",
+    "avgScore": "Avg. Score",
+    "actions": "Actions"
+  },
   "success": {
     "created": "Assignment created successfully",
     "updated": "Assignment updated successfully",

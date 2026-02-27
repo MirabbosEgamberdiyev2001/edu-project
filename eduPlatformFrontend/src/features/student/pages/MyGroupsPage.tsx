@@ -20,7 +20,7 @@ import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import { useTranslation } from 'react-i18next';
 import { groupApi } from '@/api/groupApi';
 import type { GroupDto } from '@/types/group';
-import PageBreadcrumbs from '@/components/PageBreadcrumbs';
+import { PageShell } from '@/components/ui';
 
 export default function MyGroupsPage() {
   const { t } = useTranslation('testTaking');
@@ -33,20 +33,7 @@ export default function MyGroupsPage() {
   const groups = data || [];
 
   return (
-    <Box>
-      <PageBreadcrumbs items={[{ label: t('groups.breadcrumb') }]} />
-
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-        <GroupsIcon sx={{ fontSize: 32, color: 'primary.main' }} />
-        <Box>
-          <Typography variant="h5" fontWeight={700}>
-            {t('groups.title')}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {t('groups.subtitle')}
-          </Typography>
-        </Box>
-      </Box>
+    <PageShell title={t('groups.title')} subtitle={t('groups.subtitle')}>
 
       {isError && (
         <Alert severity="error" sx={{ mb: 2 }}>
@@ -86,7 +73,7 @@ export default function MyGroupsPage() {
           </Grid>
         </>
       )}
-    </Box>
+    </PageShell>
   );
 }
 

@@ -27,6 +27,7 @@ import { adminApi } from '@/api/adminApi';
 import { useQuery } from '@tanstack/react-query';
 import type { AuditLogDto } from '@/types/admin';
 import type { PagedResponse } from '@/types/subject';
+import { PageShell } from '@/components/ui';
 
 const ACTION_CATEGORIES = ['AUTH', 'USER_MANAGEMENT', 'CONTENT', 'TEST'];
 
@@ -66,11 +67,7 @@ export default function AuditLogPage() {
   });
 
   return (
-    <Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" fontWeight={700}>{t('auditLog.title')}</Typography>
-        <Typography variant="body2" color="text.secondary">{t('auditLog.subtitle')}</Typography>
-      </Box>
+    <PageShell title={t('auditLog.title')} subtitle={t('auditLog.subtitle')}>
 
       {/* Filters */}
       <Paper sx={{ p: 2, mb: 3 }}>
@@ -153,7 +150,7 @@ export default function AuditLogPage() {
           )}
         </>
       )}
-    </Box>
+    </PageShell>
   );
 }
 

@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react';
 import {
   Box,
-  Typography,
   TextField,
   InputAdornment,
   Grid,
@@ -10,7 +9,6 @@ import {
   Pagination,
   Tabs,
   Tab,
-  MenuItem,
   Button,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
@@ -26,6 +24,7 @@ import SubjectFormDialog from '../components/SubjectFormDialog';
 import SubjectDeleteDialog from '../components/SubjectDeleteDialog';
 import { type SubjectDto, type CreateSubjectRequest, type UpdateSubjectRequest } from '@/types/subject';
 import { useDebounce } from '../hooks/useDebounce';
+import { PageShell, EmptyState } from '@/components/ui';
 
 export default function SubjectsPage() {
   const { t } = useTranslation('subject');
@@ -34,7 +33,6 @@ export default function SubjectsPage() {
 
   const [viewTab, setViewTab] = useState(0); // 0 = active, 1 = archived
   const [search, setSearch] = useState('');
-  const [gradeFilter, setGradeFilter] = useState<number | ''>('');
   const [page, setPage] = useState(0);
   const [archivedPage, setArchivedPage] = useState(0);
 
@@ -42,10 +40,9 @@ export default function SubjectsPage() {
 
   const params = useMemo(() => ({
     ...(debouncedSearch && { search: debouncedSearch }),
-    ...(gradeFilter !== '' && { gradeLevel: gradeFilter }),
     page,
     size: 20,
-  }), [debouncedSearch, gradeFilter, page]);
+  }), [debouncedSearch, page]);
 
   const { data, isLoading } = useSubjects(params);
   const { data: archivedData, isLoading: archivedLoading } = useArchivedSubjects({ page: archivedPage, size: 12 });
@@ -55,7 +52,7 @@ export default function SubjectsPage() {
   const [editSubject, setEditSubject] = useState<SubjectDto | null>(null);
   const [deleteSubject, setDeleteSubject] = useState<SubjectDto | null>(null);
 
-  const hasActiveFilters = Boolean(debouncedSearch || gradeFilter !== '');
+  const hasActiveFilters = Boolean(debouncedSearch);
 
   const handleCreate = () => {
     setEditSubject(null);
@@ -95,7 +92,6 @@ export default function SubjectsPage() {
 
   const clearFilters = () => {
     setSearch('');
-    setGradeFilter('');
     setPage(0);
   };
 
@@ -107,24 +103,17 @@ export default function SubjectsPage() {
   const totalPages = isActive ? (data?.totalPages || 0) : (archivedData?.totalPages || 0);
 
   return (
-    <Box>
-      {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box>
-          <Typography variant="h5" fontWeight={700}>{t('title')}</Typography>
-          <Typography variant="body2" color="text.secondary">{t('subtitle')}</Typography>
-        </Box>
-        {isActive && isAdmin && (
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={handleCreate}
-            sx={{ display: { xs: 'none', sm: 'flex' } }}
-          >
+    <PageShell
+      title={t('title')}
+      subtitle={t('subtitle')}
+      actions={
+        isActive && isAdmin ? (
+          <Button variant="contained" startIcon={<AddIcon />} onClick={handleCreate}>
             {t('create')}
           </Button>
-        )}
-      </Box>
+        ) : undefined
+      }
+    >
 
       {isAdmin && (
         <Tabs
@@ -153,20 +142,6 @@ export default function SubjectsPage() {
             }}
             sx={{ minWidth: 220, flex: { xs: 1, sm: 'none' } }}
           />
-
-          <TextField
-            select
-            size="small"
-            label={t('form.gradeLevel')}
-            value={gradeFilter}
-            onChange={(e) => { setGradeFilter(e.target.value === '' ? '' : Number(e.target.value)); setPage(0); }}
-            sx={{ minWidth: 120 }}
-          >
-            <MenuItem value="">{t('allGrades', 'All grades')}</MenuItem>
-            {Array.from({ length: 11 }, (_, i) => i + 1).map((g) => (
-              <MenuItem key={g} value={g}>{g}</MenuItem>
-            ))}
-          </TextField>
 
           {hasActiveFilters && (
             <Button size="small" onClick={clearFilters} startIcon={<FilterListIcon />}>
@@ -207,28 +182,18 @@ export default function SubjectsPage() {
           )}
         </>
       ) : (
-        <Box sx={{ textAlign: 'center', py: 8 }}>
-          <MenuBookIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
-          <Typography variant="h6" color="text.secondary">
-            {hasActiveFilters
-              ? t('emptyFiltered', 'No subjects match your filters')
-              : isActive ? t('empty') : t('emptyArchived')}
-          </Typography>
-          <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
-            {hasActiveFilters
-              ? t('emptyFilteredDescription', 'Try adjusting your search or filters')
-              : isActive ? t('emptyDescription') : t('emptyArchivedDescription')}
-          </Typography>
-          {hasActiveFilters ? (
-            <Button variant="outlined" onClick={clearFilters} startIcon={<FilterListIcon />}>
-              {t('clearFilters', 'Clear filters')}
-            </Button>
-          ) : isActive && isAdmin ? (
-            <Button variant="contained" startIcon={<AddIcon />} onClick={handleCreate}>
-              {t('create')}
-            </Button>
-          ) : null}
-        </Box>
+        <EmptyState
+          icon={<MenuBookIcon sx={{ fontSize: 'inherit' }} />}
+          title={hasActiveFilters ? t('emptyFiltered', 'No subjects match your filters') : isActive ? t('empty') : t('emptyArchived')}
+          description={hasActiveFilters ? t('emptyFilteredDescription', 'Try adjusting your search or filters') : isActive ? t('emptyDescription') : t('emptyArchivedDescription')}
+          action={
+            hasActiveFilters
+              ? { label: t('clearFilters', 'Clear filters'), onClick: clearFilters, icon: <FilterListIcon /> }
+              : isActive && isAdmin
+                ? { label: t('create'), onClick: handleCreate, icon: <AddIcon /> }
+                : undefined
+          }
+        />
       )}
 
       {/* Mobile FAB */}
@@ -262,6 +227,6 @@ export default function SubjectsPage() {
         subject={deleteSubject}
         isPending={remove.isPending}
       />
-    </Box>
+    </PageShell>
   );
 }

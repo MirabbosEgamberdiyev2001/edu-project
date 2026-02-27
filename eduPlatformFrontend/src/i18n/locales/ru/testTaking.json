@@ -53,6 +53,8 @@
   "reviewAnswers": "Обзор ответов",
   "yourAnswer": "Ваш ответ",
   "correctAnswer": "Правильный ответ",
+  "trueFalseTrue": "Правда",
+  "trueFalseFalse": "Ложь",
   "answerPlaceholder": "Ваш ответ...",
   "essayPlaceholder": "Напишите ваш ответ...",
   "testName": "Название теста",

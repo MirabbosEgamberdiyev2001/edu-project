@@ -13,6 +13,7 @@ import StatSummaryCards from '../components/StatSummaryCards';
 import ScoreTrendChart from '../components/ScoreTrendChart';
 import TopStudentsTable from '../components/TopStudentsTable';
 import AtRiskStudentsTable from '../components/AtRiskStudentsTable';
+import { PageShell } from '@/components/ui';
 
 export default function TeacherAnalyticsPage() {
   const { t } = useTranslation('analytics');
@@ -45,16 +46,15 @@ export default function TeacherAnalyticsPage() {
   ];
 
   return (
-    <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box>
-          <Typography variant="h5" fontWeight={700}>{t('teacherTitle')}</Typography>
-          <Typography variant="body2" color="text.secondary">{t('teacherSubtitle')}</Typography>
-        </Box>
+    <PageShell
+      title={t('teacherTitle')}
+      subtitle={t('teacherSubtitle')}
+      actions={
         <Button startIcon={<DownloadIcon />} onClick={exportDashboard} variant="outlined" size="small">
           {t('exportPdf')}
         </Button>
-      </Box>
+      }
+    >
 
       <Box sx={{ mb: 3 }}>
         <StatSummaryCards stats={stats} />
@@ -95,6 +95,6 @@ export default function TeacherAnalyticsPage() {
           </Paper>
         </Grid>
       </Grid>
-    </Box>
+    </PageShell>
   );
 }

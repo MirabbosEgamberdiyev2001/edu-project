@@ -48,5 +48,8 @@
     "reload": "Sahifani qayta yuklash"
   },
   "attestation": "Attestatsiya",
-  "globalTests": "Global testlar"
+  "globalTests": "Global testlar",
+  "quickActions": "Tezkor amallar",
+  "newTest": "Yangi test",
+  "viewAll": "Barchasi"
 }

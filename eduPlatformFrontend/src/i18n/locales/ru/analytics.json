@@ -50,5 +50,8 @@
   "strongAreas": "Сильные стороны",
   "exportPdf": "Экспорт PDF",
   "testCreationTrend": "Тренд создания тестов",
-  "backToGroups": "Назад к группам"
+  "backToGroups": "Назад к группам",
+  "noAtRiskStudents": "Отлично! Нет студентов в зоне риска.",
+  "missedAssignments": "Пропущенные задания",
+  "lastActivity": "Последняя активность"
 }

@@ -97,8 +97,14 @@ export default function ExamPage() {
     if (!currentQuestion) return;
     setLocalAnswers((prev) => ({ ...prev, [currentQuestion.id]: value }));
     // Single save path: debounced batch save via auto-save queue (flushes after 2s)
-    addAnswer({ questionId: currentQuestion.id, response: value });
-  }, [currentQuestion, addAnswer]);
+    addAnswer({ questionId: currentQuestion.id, questionIndex: currentIndex, response: value });
+    // Auto-advance to next question for single-choice types
+    const singleChoiceTypes = ['MCQ_SINGLE', 'TRUE_FALSE'];
+    if (singleChoiceTypes.includes(currentQuestion.questionType) && currentIndex < questions.length - 1) {
+      const idx = currentIndex;
+      setTimeout(() => setCurrentIndex((i) => (i === idx ? i + 1 : i)), 300);
+    }
+  }, [currentQuestion, addAnswer, currentIndex, questions.length]);
 
   const handleTimeUp = useCallback(async () => {
     await flush();
@@ -154,7 +160,7 @@ export default function ExamPage() {
         onTimeUp={handleTimeUp}
       />
 
-      <Box sx={{ pt: 10, px: 2, pb: 4, maxWidth: 900, mx: 'auto' }}>
+      <Box sx={{ pt: 11, px: 2, pb: 4, maxWidth: 900, mx: 'auto' }}>
         <Box sx={{ mb: 3 }}>
           <QuestionNavigation
             totalQuestions={questions.length}

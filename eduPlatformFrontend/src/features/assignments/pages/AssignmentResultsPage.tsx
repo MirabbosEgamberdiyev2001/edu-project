@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -7,9 +7,9 @@ import {
   CircularProgress,
   Grid,
 } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DownloadIcon from '@mui/icons-material/Download';
 import { useTranslation } from 'react-i18next';
+import { PageShell } from '@/components/ui';
 import { useAssignment } from '../hooks/useAssignments';
 import { useAssignmentResults, useExportResults } from '../hooks/useAssignmentResults';
 import ResultsTable from '../components/ResultsTable';
@@ -31,20 +31,25 @@ export default function AssignmentResultsPage() {
   }
 
   return (
-    <Box>
-      <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(`/assignments/${id}`)} sx={{ mb: 2 }}>
-        {t('backToDetail')}
-      </Button>
-
-      <Typography variant="h5" fontWeight={700} sx={{ mb: 1 }}>
-        {t('resultsTitle')}
-      </Typography>
-      {assignment && (
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          {assignment.title} - {assignment.groupName}
-        </Typography>
-      )}
-
+    <PageShell
+      title={t('resultsTitle')}
+      subtitle={assignment ? `${assignment.title} — ${assignment.groupName}` : undefined}
+      breadcrumbs={[
+        { label: t('common:assignments'), to: '/assignments' },
+        { label: assignment?.title || '...', to: `/assignments/${id}` },
+        { label: t('resultsTitle') },
+      ]}
+      actions={
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button size="small" startIcon={<DownloadIcon />} onClick={() => exportResults(id!, 'CSV')}>
+            CSV
+          </Button>
+          <Button size="small" startIcon={<DownloadIcon />} onClick={() => exportResults(id!, 'EXCEL')}>
+            Excel
+          </Button>
+        </Box>
+      }
+    >
       {results && (
         <>
           <Grid container spacing={2} sx={{ mb: 3 }}>
@@ -75,29 +80,11 @@ export default function AssignmentResultsPage() {
           </Grid>
 
           <Paper sx={{ p: 2, mb: 2 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant="h6">{t('studentResults')}</Typography>
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <Button
-                  size="small"
-                  startIcon={<DownloadIcon />}
-                  onClick={() => exportResults(id!, 'CSV')}
-                >
-                  CSV
-                </Button>
-                <Button
-                  size="small"
-                  startIcon={<DownloadIcon />}
-                  onClick={() => exportResults(id!, 'EXCEL')}
-                >
-                  Excel
-                </Button>
-              </Box>
-            </Box>
+            <Typography variant="h6" sx={{ mb: 2 }}>{t('studentResults')}</Typography>
             <ResultsTable students={results.students} />
           </Paper>
         </>
       )}
-    </Box>
+    </PageShell>
   );
 }

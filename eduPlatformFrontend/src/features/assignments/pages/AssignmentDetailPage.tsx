@@ -9,12 +9,12 @@ import {
   Grid,
   Divider,
 } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import CancelIcon from '@mui/icons-material/Cancel';
 import MonitorIcon from '@mui/icons-material/Monitor';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import { useTranslation } from 'react-i18next';
+import { PageShell } from '@/components/ui';
 import { useAssignment } from '../hooks/useAssignments';
 import { useAssignmentMutations } from '../hooks/useAssignmentMutations';
 import { AssignmentStatus } from '@/types/assignment';
@@ -56,29 +56,21 @@ export default function AssignmentDetailPage() {
     : 0;
 
   return (
-    <Box>
-      <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/assignments')} sx={{ mb: 2 }}>
-        {t('backToList')}
-      </Button>
-
+    <PageShell
+      title={assignment.title}
+      subtitle={assignment.description || undefined}
+      breadcrumbs={[
+        { label: t('common:assignments'), to: '/assignments' },
+        { label: assignment.title },
+      ]}
+      actions={
+        <Chip
+          label={t(`status.${assignment.status}`)}
+          color={STATUS_COLORS[assignment.status] || 'default'}
+        />
+      }
+    >
       <Paper sx={{ p: 3, mb: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-          <Box>
-            <Typography variant="h5" fontWeight={700}>{assignment.title}</Typography>
-            {assignment.description && (
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                {assignment.description}
-              </Typography>
-            )}
-          </Box>
-          <Chip
-            label={t(`status.${assignment.status}`)}
-            color={STATUS_COLORS[assignment.status] || 'default'}
-          />
-        </Box>
-
-        <Divider sx={{ my: 2 }} />
-
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6} md={3}>
             <Typography variant="caption" color="text.secondary">{t('group')}</Typography>
@@ -188,6 +180,6 @@ export default function AssignmentDetailPage() {
           </Button>
         )}
       </Box>
-    </Box>
+    </PageShell>
   );
 }

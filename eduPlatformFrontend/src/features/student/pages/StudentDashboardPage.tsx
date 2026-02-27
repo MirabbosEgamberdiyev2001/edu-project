@@ -8,7 +8,6 @@ import {
   Grid,
   Button,
   Chip,
-  CircularProgress,
   Avatar,
   Stack,
   Divider,
@@ -16,6 +15,8 @@ import {
 } from '@mui/material';
 import QuizIcon from '@mui/icons-material/Quiz';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import GroupsIcon from '@mui/icons-material/Groups';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
@@ -26,13 +27,14 @@ import { globalTestApi } from '@/api/globalTestApi';
 import { groupApi } from '@/api/groupApi';
 import { useAuth } from '@/hooks/useAuth';
 import { TestCategory } from '@/types/test';
+import { KpiWidget } from '@/components/ui';
 
 export default function StudentDashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useTranslation('testTaking');
 
-  const { data: analytics } = useQuery({
+  const { data: analytics, isLoading: analyticsLoading } = useQuery({
     queryKey: ['student-analytics-me'],
     queryFn: () => analyticsApi.getMyAnalytics().then(r => r.data.data),
     staleTime: 60_000,
@@ -53,9 +55,14 @@ export default function StudentDashboardPage() {
   const recentTests = globalTestsData?.content?.slice(0, 3) || [];
   const myGroups = groupsData?.content || [];
   const totalGroups = groupsData?.totalElements || 0;
-  const scoreColor = analytics?.overallAverage
-    ? analytics.overallAverage >= 80 ? '#2e7d32' : analytics.overallAverage >= 60 ? '#e65100' : '#c62828'
+
+  const avg = analytics?.overallAverage;
+  const scoreColor = avg !== undefined
+    ? avg >= 80 ? '#2e7d32' : avg >= 60 ? '#e65100' : '#c62828'
     : '#1565c0';
+  const scoreIconBg = avg !== undefined
+    ? avg >= 80 ? '#f0fdf4' : avg >= 60 ? '#fff7ed' : '#fef2f2'
+    : '#eff6ff';
 
   return (
     <Box>
@@ -86,42 +93,44 @@ export default function StudentDashboardPage() {
       </Paper>
 
       {/* Quick Stats */}
-      {analytics && (
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={6} sm={3}>
-            <Paper sx={{ p: 2, textAlign: 'center', border: `2px solid ${scoreColor}`, borderRadius: 2 }}>
-              <Typography variant="h4" fontWeight={800} sx={{ color: scoreColor }}>
-                {analytics.overallAverage.toFixed(0)}%
-              </Typography>
-              <Typography variant="caption" color="text.secondary">{t('dashboard.avgScore')}</Typography>
-            </Paper>
-          </Grid>
-          <Grid item xs={6} sm={3}>
-            <Paper sx={{ p: 2, textAlign: 'center', border: '2px solid #1565c0', borderRadius: 2 }}>
-              <Typography variant="h4" fontWeight={800} color="primary">
-                {analytics.totalAttempts}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">{t('dashboard.totalAttempts')}</Typography>
-            </Paper>
-          </Grid>
-          <Grid item xs={6} sm={3}>
-            <Paper sx={{ p: 2, textAlign: 'center', border: '2px solid #4a148c', borderRadius: 2 }}>
-              <Typography variant="h4" fontWeight={800} sx={{ color: '#4a148c' }}>
-                {analytics.totalAssignments}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">{t('dashboard.assignments')}</Typography>
-            </Paper>
-          </Grid>
-          <Grid item xs={6} sm={3}>
-            <Paper sx={{ p: 2, textAlign: 'center', border: '2px solid #00695c', borderRadius: 2 }}>
-              <Typography variant="h4" fontWeight={800} sx={{ color: '#00695c' }}>
-                {(analytics.completionRate * 100).toFixed(0)}%
-              </Typography>
-              <Typography variant="caption" color="text.secondary">{t('dashboard.completion')}</Typography>
-            </Paper>
-          </Grid>
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Grid item xs={6} sm={3}>
+          <KpiWidget
+            label={t('dashboard.avgScore')}
+            value={analytics ? `${avg!.toFixed(0)}%` : '-'}
+            icon={<TrendingUpIcon sx={{ color: scoreColor }} />}
+            iconBg={scoreIconBg}
+            loading={analyticsLoading}
+          />
         </Grid>
-      )}
+        <Grid item xs={6} sm={3}>
+          <KpiWidget
+            label={t('dashboard.totalAttempts')}
+            value={analytics?.totalAttempts ?? '-'}
+            icon={<QuizIcon sx={{ color: '#1565c0' }} />}
+            iconBg="#eff6ff"
+            loading={analyticsLoading}
+          />
+        </Grid>
+        <Grid item xs={6} sm={3}>
+          <KpiWidget
+            label={t('dashboard.assignments')}
+            value={analytics?.totalAssignments ?? '-'}
+            icon={<AssignmentIcon sx={{ color: '#6a1b9a' }} />}
+            iconBg="#f5f3ff"
+            loading={analyticsLoading}
+          />
+        </Grid>
+        <Grid item xs={6} sm={3}>
+          <KpiWidget
+            label={t('dashboard.completion')}
+            value={analytics ? `${(analytics.completionRate * 100).toFixed(0)}%` : '-'}
+            icon={<AssignmentTurnedInIcon sx={{ color: '#00695c' }} />}
+            iconBg="#f0fdfa"
+            loading={analyticsLoading}
+          />
+        </Grid>
+      </Grid>
 
       {/* Main Navigation Cards */}
       <Grid container spacing={2} sx={{ mb: 3 }}>

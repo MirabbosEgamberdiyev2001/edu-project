@@ -19,6 +19,8 @@ public interface TopicRepository extends JpaRepository<Topic, UUID> {
 
     List<Topic> findBySubjectIdAndParentIsNullOrderBySortOrderAsc(UUID subjectId);
 
+    List<Topic> findBySubjectIdAndUserIdAndParentIsNullOrderBySortOrderAsc(UUID subjectId, UUID userId);
+
     List<Topic> findBySubjectIdOrderBySortOrderAsc(UUID subjectId);
 
     List<Topic> findByParentIdOrderBySortOrderAsc(UUID parentId);

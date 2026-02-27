@@ -138,30 +138,66 @@ export default function AppLayout() {
   };
 
   const drawer = (
-    <Box>
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Toolbar>
         <Logo size="small" />
       </Toolbar>
       <Divider />
-      {menuItems.map((item, index) => {
-        if (item === 'divider') {
-          return <Divider key={`divider-${index}`} sx={{ my: 0.5 }} />;
-        }
-        return (
-          <List key={item.path} disablePadding>
+
+      {/* User info */}
+      <Box sx={{ px: 2, py: 1.5, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <Avatar sx={{ width: 36, height: 36, bgcolor: 'primary.main', fontSize: '0.875rem', flexShrink: 0 }}>
+          {user?.firstName?.[0]?.toUpperCase()}{user?.lastName?.[0]?.toUpperCase()}
+        </Avatar>
+        <Box sx={{ minWidth: 0 }}>
+          <Typography variant="body2" fontWeight={600} noWrap>
+            {user?.firstName} {user?.lastName}
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            {user?.role?.replace(/_/g, ' ')}
+          </Typography>
+        </Box>
+      </Box>
+      <Divider />
+
+      {/* Nav items */}
+      <List disablePadding sx={{ flexGrow: 1, overflowY: 'auto', py: 1 }}>
+        {menuItems.map((item, index) => {
+          if (item === 'divider') {
+            return <Divider key={`divider-${index}`} sx={{ my: 0.5, mx: 2 }} />;
+          }
+          const isSelected =
+            location.pathname === item.path ||
+            (item.path !== '/dashboard' && location.pathname.startsWith(item.path + '/'));
+          return (
             <ListItemButton
-              selected={location.pathname === item.path}
+              key={item.path}
+              selected={isSelected}
               onClick={() => {
                 navigate(item.path);
                 setMobileOpen(false);
               }}
+              sx={{
+                mx: 1,
+                borderRadius: 1,
+                mb: 0.25,
+                '&.Mui-selected': {
+                  bgcolor: '#eff6ff',
+                  color: 'primary.main',
+                  '& .MuiListItemIcon-root': { color: 'primary.main' },
+                  '&:hover': { bgcolor: '#dbeafe' },
+                },
+              }}
             >
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.label} />
+              <ListItemIcon sx={{ minWidth: 36 }}>{item.icon}</ListItemIcon>
+              <ListItemText
+                primary={item.label}
+                primaryTypographyProps={{ variant: 'body2', fontWeight: isSelected ? 600 : 400 }}
+              />
             </ListItemButton>
-          </List>
-        );
-      })}
+          );
+        })}
+      </List>
     </Box>
   );
 

@@ -53,6 +53,8 @@
   "reviewAnswers": "Javoblarni ko'rish",
   "yourAnswer": "Sizning javobingiz",
   "correctAnswer": "To'g'ri javob",
+  "trueFalseTrue": "To'g'ri",
+  "trueFalseFalse": "Noto'g'ri",
   "answerPlaceholder": "Javobingiz...",
   "essayPlaceholder": "Javobingizni yozing...",
   "testName": "Test nomi",

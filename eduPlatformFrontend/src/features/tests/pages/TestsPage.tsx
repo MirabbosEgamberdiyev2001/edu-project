@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   Box,
-  Typography,
   Grid,
   Fab,
+  Button,
   CircularProgress,
   Pagination,
 } from '@mui/material';
@@ -16,6 +16,7 @@ import { useTestMutations } from '../hooks/useTestMutations';
 import TestHistoryCard from '../components/TestHistoryCard';
 import TestDeleteDialog from '../components/TestDeleteDialog';
 import type { TestHistoryDto } from '@/types/test';
+import { PageShell, EmptyState } from '@/components/ui';
 
 export default function TestsPage() {
   const { t } = useTranslation('test');
@@ -41,14 +42,20 @@ export default function TestsPage() {
   const tests = data?.content;
 
   return (
-    <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box>
-          <Typography variant="h5" fontWeight={700}>{t('pageTitle')}</Typography>
-          <Typography variant="body2" color="text.secondary">{t('pageSubtitle')}</Typography>
-        </Box>
-      </Box>
-
+    <PageShell
+      title={t('pageTitle')}
+      subtitle={t('pageSubtitle')}
+      actions={
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => navigate('/tests/generate')}
+          sx={{ display: { xs: 'none', sm: 'flex' } }}
+        >
+          {t('common:newTest')}
+        </Button>
+      }
+    >
       {isLoading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
           <CircularProgress />
@@ -77,21 +84,18 @@ export default function TestsPage() {
           )}
         </>
       ) : (
-        <Box sx={{ textAlign: 'center', py: 8 }}>
-          <AssignmentIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
-          <Typography variant="h6" color="text.secondary">
-            {t('empty.title')}
-          </Typography>
-          <Typography variant="body2" color="text.disabled">
-            {t('empty.description')}
-          </Typography>
-        </Box>
+        <EmptyState
+          icon={<AssignmentIcon sx={{ fontSize: 'inherit' }} />}
+          title={t('empty.title')}
+          description={t('empty.description')}
+          action={{ label: t('common:newTest'), onClick: () => navigate('/tests/generate'), icon: <AddIcon /> }}
+        />
       )}
 
       <Fab
         color="primary"
         onClick={() => navigate('/tests/generate')}
-        sx={{ position: 'fixed', bottom: 32, right: 32 }}
+        sx={{ position: 'fixed', bottom: 32, right: 32, display: { xs: 'flex', sm: 'none' } }}
       >
         <AddIcon />
       </Fab>
@@ -103,6 +107,6 @@ export default function TestsPage() {
         test={deleteTest}
         isPending={remove.isPending}
       />
-    </Box>
+    </PageShell>
   );
 }

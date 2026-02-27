@@ -1,13 +1,5 @@
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Typography,
-  CircularProgress,
-} from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import type { GroupDto } from '@/types/group';
 
 interface GroupDeleteDialogProps {
@@ -22,27 +14,14 @@ export default function GroupDeleteDialog({ open, onClose, onConfirm, group, isP
   const { t } = useTranslation('group');
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle>{t('deleteGroup')}</DialogTitle>
-      <DialogContent>
-        <Typography>
-          {t('deleteConfirm', { name: group?.name || '' })}
-        </Typography>
-        <Typography variant="body2" color="error" sx={{ mt: 1 }}>
-          {t('deleteWarning')}
-        </Typography>
-      </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={onClose}>{t('common:cancel')}</Button>
-        <Button
-          variant="contained"
-          color="error"
-          onClick={onConfirm}
-          disabled={isPending}
-        >
-          {isPending ? <CircularProgress size={20} /> : t('deleteGroup')}
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <ConfirmDialog
+      open={open}
+      onClose={onClose}
+      onConfirm={onConfirm}
+      isPending={isPending}
+      title={t('deleteGroup')}
+      message={t('deleteConfirm', { name: group?.name || '' })}
+      warning={t('deleteWarning')}
+    />
   );
 }

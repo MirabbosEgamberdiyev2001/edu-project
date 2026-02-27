@@ -91,7 +91,21 @@ public class TestValidationService {
     }
 
     public AvailableQuestionsResponse getAvailableQuestions(List<UUID> topicIds, UUID userId) {
-        List<Question> questions = questionRepository.findByTopicIdsForTeacher(topicIds, userId);
+        return getAvailableQuestions(topicIds, null, userId);
+    }
+
+    public AvailableQuestionsResponse getAvailableQuestions(List<UUID> topicIds, UUID subjectId, UUID userId) {
+        boolean hasTopics = topicIds != null && !topicIds.isEmpty();
+        List<Question> questions;
+        if (hasTopics) {
+            questions = questionRepository.findByTopicIdsForTeacher(topicIds, userId);
+        } else if (subjectId != null) {
+            questions = questionRepository.findBySubjectIdForTeacher(subjectId, userId);
+        } else {
+            return AvailableQuestionsResponse.builder()
+                    .totalAvailable(0).easyCount(0).mediumCount(0).hardCount(0).maxPossibleQuestions(0)
+                    .build();
+        }
 
         // Filter only valid MCQ questions with options for test generation
         List<Question> validMcq = questions.stream()
@@ -120,13 +134,27 @@ public class TestValidationService {
     }
 
     public PagedResponse<QuestionDto> getQuestionsForSelection(
-            List<UUID> topicIds, Difficulty difficulty, QuestionStatus status, String search,
+            List<UUID> topicIds, UUID subjectId, Difficulty difficulty, QuestionStatus status, String search,
             Pageable pageable, AcceptLanguage language, UUID userId) {
         String localeKey = language.toLocaleKey();
         String searchTerm = (search != null && !search.isBlank()) ? search.trim() : null;
 
+        boolean useTopics = topicIds != null && !topicIds.isEmpty();
+
+        if (!useTopics && subjectId == null) {
+            return PagedResponse.of(List.of(), pageable.getPageNumber(), pageable.getPageSize(), 0L, 0);
+        }
+
         Page<Question> page;
-        if (searchTerm != null) {
+        if (!useTopics && subjectId != null) {
+            // Subject-wide mode: single native query handles search/difficulty/status
+            Pageable nativePageable = PageRequest.of(
+                    pageable.getPageNumber(), pageable.getPageSize(),
+                    Sort.by(Sort.Direction.DESC, "created_at"));
+            page = questionRepository.searchBySubjectIdForTeacher(subjectId, userId, searchTerm,
+                    difficulty != null ? difficulty.name() : null,
+                    status != null ? status.name() : null, nativePageable);
+        } else if (searchTerm != null) {
             // Native query requires actual DB column names for sorting (created_at, not createdAt)
             Pageable nativePageable = PageRequest.of(
                     pageable.getPageNumber(), pageable.getPageSize(),

@@ -2,7 +2,6 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
-  Typography,
   Grid,
   CircularProgress,
   Pagination,
@@ -11,6 +10,7 @@ import {
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import { useTranslation } from 'react-i18next';
+import { PageShell, EmptyState } from '@/components/ui';
 import { useAvailableAssignments } from '../hooks/useAvailableAssignments';
 import { useAttemptMutations } from '../hooks/useAttemptMutations';
 import AssignmentListCard from '../components/AssignmentListCard';
@@ -35,9 +35,10 @@ export default function AvailableAssignmentsPage() {
   };
 
   return (
-    <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-        <Typography variant="h5" fontWeight={700}>{t('availableTitle')}</Typography>
+    <PageShell
+      title={t('availableTitle')}
+      subtitle={t('availableSubtitle')}
+      actions={
         <Button
           variant="outlined"
           size="small"
@@ -46,9 +47,8 @@ export default function AvailableAssignmentsPage() {
         >
           {t('enterPromoCode')}
         </Button>
-      </Box>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>{t('availableSubtitle')}</Typography>
-
+      }
+    >
       {isLoading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
           <CircularProgress />
@@ -78,17 +78,17 @@ export default function AvailableAssignmentsPage() {
           )}
         </>
       ) : (
-        <Box sx={{ textAlign: 'center', py: 8 }}>
-          <AssignmentIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
-          <Typography variant="h6" color="text.secondary">{t('noAvailable')}</Typography>
-          <Typography variant="body2" color="text.disabled">{t('noAvailableDescription')}</Typography>
-        </Box>
+        <EmptyState
+          icon={<AssignmentIcon />}
+          title={t('noAvailable')}
+          description={t('noAvailableDescription')}
+        />
       )}
 
       <PromoCodeRedeemDialog
         open={promoDialogOpen}
         onClose={() => setPromoDialogOpen(false)}
       />
-    </Box>
+    </PageShell>
   );
 }

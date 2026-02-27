@@ -53,6 +53,8 @@
   "reviewAnswers": "Review Answers",
   "yourAnswer": "Your Answer",
   "correctAnswer": "Correct Answer",
+  "trueFalseTrue": "True",
+  "trueFalseFalse": "False",
   "answerPlaceholder": "Your answer...",
   "essayPlaceholder": "Write your answer...",
   "testName": "Test Name",

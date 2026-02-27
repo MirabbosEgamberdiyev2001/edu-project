@@ -12,7 +12,7 @@ import { useTopicMutations } from '@/features/topics/hooks/useTopicMutations';
 
 interface TopicCheckboxTreeProps {
   subjectId: string;
-  gradeLevel: number;
+  gradeLevel: number | null;
   selected: string[];
   onChange: (selected: string[]) => void;
 }
@@ -31,7 +31,7 @@ export default function TopicCheckboxTree({ subjectId, gradeLevel, selected, onC
       const { data } = await topicApi.getTopicTree(subjectId, gradeLevel);
       return data.data;
     },
-    enabled: !!subjectId && gradeLevel > 0,
+    enabled: !!subjectId,
   });
 
   // Collect all descendant IDs (including self)

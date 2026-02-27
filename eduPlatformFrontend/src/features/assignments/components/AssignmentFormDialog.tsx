@@ -30,9 +30,11 @@ interface AssignmentFormDialogProps {
   isPending: boolean;
   groups: { id: string; name: string }[];
   tests: { id: string; title: string }[];
+  defaultGroupId?: string;
 }
 
-const STEPS = ['selectTest', 'schedule', 'settings', 'assign'];
+const ALL_STEPS = ['selectTest', 'schedule', 'settings', 'assign'];
+const GROUP_STEPS = ['selectTest', 'schedule', 'settings'];
 
 export default function AssignmentFormDialog({
   open,
@@ -42,16 +44,20 @@ export default function AssignmentFormDialog({
   isPending,
   groups,
   tests,
+  defaultGroupId,
 }: AssignmentFormDialogProps) {
   const { t } = useTranslation('assignment');
   const { t: tc } = useTranslation('common');
   const [activeStep, setActiveStep] = useState(0);
 
+  // When defaultGroupId is set (called from group page), skip the "assign" step
+  const STEPS = defaultGroupId ? GROUP_STEPS : ALL_STEPS;
+
   const [formData, setFormData] = useState<CreateAssignmentRequest>({
     titleTranslations: {},
     descriptionTranslations: {},
     testHistoryId: '',
-    groupId: '',
+    groupId: defaultGroupId || '',
     durationMinutes: 60,
     maxAttempts: 1,
     shuffleQuestions: false,
@@ -83,7 +89,7 @@ export default function AssignmentFormDialog({
         titleTranslations: {},
         descriptionTranslations: {},
         testHistoryId: '',
-        groupId: '',
+        groupId: defaultGroupId || '',
         durationMinutes: 60,
         maxAttempts: 1,
         shuffleQuestions: false,
@@ -94,7 +100,7 @@ export default function AssignmentFormDialog({
       });
     }
     setActiveStep(0);
-  }, [assignment, open]);
+  }, [assignment, open, defaultGroupId]);
 
   const handleNext = () => setActiveStep((s) => Math.min(s + 1, STEPS.length - 1));
   const handleBack = () => setActiveStep((s) => Math.max(s - 1, 0));
@@ -108,7 +114,8 @@ export default function AssignmentFormDialog({
       const hasTitle = Object.values(formData.titleTranslations || {}).some(v => v?.trim());
       return !!formData.testHistoryId && hasTitle;
     }
-    if (activeStep === 3) return !!formData.groupId;
+    // Step 3 (assign) only shown when no defaultGroupId
+    if (!defaultGroupId && activeStep === 3) return !!formData.groupId;
     return true;
   };
 

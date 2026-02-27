@@ -50,5 +50,8 @@
   "strongAreas": "Kuchli tomonlar",
   "exportPdf": "PDF eksport",
   "testCreationTrend": "Test yaratish tendensiyasi",
-  "backToGroups": "Guruhlarga qaytish"
+  "backToGroups": "Guruhlarga qaytish",
+  "noAtRiskStudents": "Ajoyib! Xavf ostidagi talabalar topilmadi.",
+  "missedAssignments": "O'tkazib yuborilgan topshiriqlar",
+  "lastActivity": "Oxirgi faoliyat"
 }

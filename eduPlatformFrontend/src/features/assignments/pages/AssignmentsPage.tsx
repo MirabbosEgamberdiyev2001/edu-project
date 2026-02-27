@@ -1,46 +1,73 @@
 import { useState, useMemo } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Box,
-  Typography,
   TextField,
   InputAdornment,
-  Grid,
   Fab,
   CircularProgress,
   Pagination,
   Tabs,
   Tab,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableSortLabel,
+  IconButton,
+  Tooltip,
+  Button,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import AssignmentIcon from '@mui/icons-material/Assignment';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import MonitorIcon from '@mui/icons-material/Monitor';
+import BarChartIcon from '@mui/icons-material/BarChart';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import { useAssignments } from '../hooks/useAssignments';
 import { useAssignmentMutations } from '../hooks/useAssignmentMutations';
 import { useGroups } from '@/features/groups/hooks/useGroups';
 import { useTests } from '@/features/tests/hooks/useTests';
-import AssignmentCard from '../components/AssignmentCard';
 import AssignmentFormDialog from '../components/AssignmentFormDialog';
 import AssignmentDeleteDialog from '../components/AssignmentDeleteDialog';
+import { PageShell, EmptyState, StatusBadge } from '@/components/ui';
 import type { AssignmentDto, CreateAssignmentRequest } from '@/types/assignment';
 import { AssignmentStatus } from '@/types/assignment';
+import { formatDate, formatPercent } from '@/utils/formatters';
 
-const STATUS_TABS: (AssignmentStatus | '')[] = ['', AssignmentStatus.DRAFT, AssignmentStatus.SCHEDULED, AssignmentStatus.ACTIVE, AssignmentStatus.COMPLETED, AssignmentStatus.CANCELLED];
+const STATUS_TABS: (AssignmentStatus | '')[] = [
+  '',
+  AssignmentStatus.DRAFT,
+  AssignmentStatus.SCHEDULED,
+  AssignmentStatus.ACTIVE,
+  AssignmentStatus.COMPLETED,
+  AssignmentStatus.CANCELLED,
+];
+
+type SortKey = 'title' | 'status' | 'startDate' | 'endDate' | 'completedStudents' | 'averageScore' | 'createdAt';
+type SortDir = 'asc' | 'desc';
+
 
 export default function AssignmentsPage() {
   const { t } = useTranslation('assignment');
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [statusTab, setStatusTab] = useState(0);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(searchParams.get('q') || '');
   const [page, setPage] = useState(0);
+  const [sortKey, setSortKey] = useState<SortKey>('createdAt');
+  const [sortDir, setSortDir] = useState<SortDir>('desc');
 
   const params = useMemo(() => ({
     ...(search && { search }),
     ...(STATUS_TABS[statusTab] && { status: STATUS_TABS[statusTab] }),
     page,
-    size: 12,
+    size: 20,
   }), [search, statusTab, page]);
 
   const { data, isLoading } = useAssignments(params);
@@ -62,14 +89,39 @@ export default function AssignmentsPage() {
     [testsData],
   );
 
-  const handleCreate = () => {
-    setEditAssignment(null);
-    setFormOpen(true);
+  // Client-side sort on current page
+  const sortedRows = useMemo(() => {
+    if (!data?.content) return [];
+    return [...data.content].sort((a, b) => {
+      let av: string | number | null = null;
+      let bv: string | number | null = null;
+      if (sortKey === 'title') { av = a.title ?? ''; bv = b.title ?? ''; }
+      else if (sortKey === 'status') { av = a.status; bv = b.status; }
+      else if (sortKey === 'startDate') { av = a.startDate ?? ''; bv = b.startDate ?? ''; }
+      else if (sortKey === 'endDate') { av = a.endDate ?? ''; bv = b.endDate ?? ''; }
+      else if (sortKey === 'completedStudents') { av = a.completedStudents; bv = b.completedStudents; }
+      else if (sortKey === 'averageScore') { av = a.averageScore ?? -1; bv = b.averageScore ?? -1; }
+      else if (sortKey === 'createdAt') { av = a.createdAt; bv = b.createdAt; }
+      if (av === null) return 0;
+      const cmp = av < bv! ? -1 : av > bv! ? 1 : 0;
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+  }, [data?.content, sortKey, sortDir]);
+
+  const toggleSort = (key: SortKey) => {
+    if (key === sortKey) {
+      setSortDir(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortKey(key);
+      setSortDir('asc');
+    }
   };
 
-  const handleEdit = (assignment: AssignmentDto) => {
-    setEditAssignment(assignment);
-    setFormOpen(true);
+  const handleCreate = () => { setEditAssignment(null); setFormOpen(true); };
+  const handleEdit = (a: AssignmentDto) => { setEditAssignment(a); setFormOpen(true); };
+  const handleDelete = (a: AssignmentDto) => setDeleteAssignment(a);
+  const handleDeleteConfirm = () => {
+    if (deleteAssignment) remove.mutate(deleteAssignment.id, { onSuccess: () => setDeleteAssignment(null) });
   };
 
   const handleFormSubmit = (formData: CreateAssignmentRequest) => {
@@ -83,55 +135,40 @@ export default function AssignmentsPage() {
     }
   };
 
-  const handleDelete = (assignment: AssignmentDto) => {
-    setDeleteAssignment(assignment);
-  };
-
-  const handleDeleteConfirm = () => {
-    if (deleteAssignment) {
-      remove.mutate(deleteAssignment.id, { onSuccess: () => setDeleteAssignment(null) });
-    }
-  };
-
-  const handleActivate = (assignment: AssignmentDto) => {
-    activate.mutate(assignment.id);
-  };
-
-  const handleCancel = (assignment: AssignmentDto) => {
-    cancel.mutate(assignment.id);
-  };
-
-  const handleMonitor = (assignment: AssignmentDto) => {
-    navigate(`/assignments/${assignment.id}/live`);
-  };
-
-  const handleResults = (assignment: AssignmentDto) => {
-    navigate(`/assignments/${assignment.id}/results`);
-  };
+  const SortLabel = ({ col }: { col: SortKey }) => (
+    <TableSortLabel
+      active={sortKey === col}
+      direction={sortKey === col ? sortDir : 'asc'}
+      onClick={() => toggleSort(col)}
+    />
+  );
 
   return (
-    <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box>
-          <Typography variant="h5" fontWeight={700}>{t('title')}</Typography>
-          <Typography variant="body2" color="text.secondary">{t('subtitle')}</Typography>
-        </Box>
-      </Box>
-
+    <PageShell
+      title={t('title')}
+      subtitle={t('subtitle')}
+      actions={
+        <Button variant="contained" startIcon={<AddIcon />} onClick={handleCreate}>
+          {t('create')}
+        </Button>
+      }
+    >
+      {/* Status tabs */}
       <Tabs
         value={statusTab}
         onChange={(_, v) => { setStatusTab(v); setPage(0); }}
         sx={{ mb: 2, borderBottom: 1, borderColor: 'divider' }}
+        variant="scrollable"
+        scrollButtons="auto"
       >
-        <Tab label={t('allTab')} sx={{ textTransform: 'none' }} />
-        <Tab label={t('status.DRAFT')} sx={{ textTransform: 'none' }} />
-        <Tab label={t('status.SCHEDULED')} sx={{ textTransform: 'none' }} />
-        <Tab label={t('status.ACTIVE')} sx={{ textTransform: 'none' }} />
-        <Tab label={t('status.COMPLETED')} sx={{ textTransform: 'none' }} />
-        <Tab label={t('status.CANCELLED')} sx={{ textTransform: 'none' }} />
+        <Tab label={t('allTab')} />
+        {STATUS_TABS.slice(1).map((s) => (
+          <Tab key={s} label={t(`status.${s}`)} />
+        ))}
       </Tabs>
 
-      <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+      {/* Search */}
+      <Box sx={{ mb: 2 }}>
         <TextField
           size="small"
           placeholder={t('search')}
@@ -144,7 +181,7 @@ export default function AssignmentsPage() {
               </InputAdornment>
             ),
           }}
-          sx={{ minWidth: 240 }}
+          sx={{ minWidth: 260 }}
         />
       </Box>
 
@@ -152,25 +189,128 @@ export default function AssignmentsPage() {
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
           <CircularProgress />
         </Box>
-      ) : data && data.content.length > 0 ? (
+      ) : sortedRows.length === 0 ? (
+        <EmptyState
+          icon={<AssignmentIcon sx={{ fontSize: 'inherit' }} />}
+          title={t('empty')}
+          description={t('emptyDescription')}
+          action={{ label: t('create'), onClick: handleCreate, icon: <AddIcon /> }}
+        />
+      ) : (
         <>
-          <Grid container spacing={2.5}>
-            {data.content.map((assignment) => (
-              <Grid item xs={12} sm={6} md={4} key={assignment.id}>
-                <AssignmentCard
-                  assignment={assignment}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                  onActivate={handleActivate}
-                  onCancel={handleCancel}
-                  onMonitor={handleMonitor}
-                  onResults={handleResults}
-                />
-              </Grid>
-            ))}
-          </Grid>
-          {data.totalPages > 1 && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <Box sx={{ overflowX: 'auto' }}>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>
+                    {t('columns.title')}
+                    <SortLabel col="title" />
+                  </TableCell>
+                  <TableCell>{t('groupName')}</TableCell>
+                  <TableCell>
+                    {t('columns.status')}
+                    <SortLabel col="status" />
+                  </TableCell>
+                  <TableCell>
+                    {t('columns.startDate')}
+                    <SortLabel col="startDate" />
+                  </TableCell>
+                  <TableCell>
+                    {t('columns.endDate')}
+                    <SortLabel col="endDate" />
+                  </TableCell>
+                  <TableCell align="center">
+                    {t('columns.completion')}
+                    <SortLabel col="completedStudents" />
+                  </TableCell>
+                  <TableCell align="center">
+                    {t('columns.avgScore')}
+                    <SortLabel col="averageScore" />
+                  </TableCell>
+                  <TableCell align="right">{t('columns.actions')}</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {sortedRows.map((assignment) => (
+                  <TableRow
+                    key={assignment.id}
+                    hover
+                    sx={{ cursor: 'pointer' }}
+                    onClick={() => navigate(`/assignments/${assignment.id}`)}
+                  >
+                    <TableCell
+                      sx={{ fontWeight: 500, maxWidth: 220, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                    >
+                      {assignment.title}
+                    </TableCell>
+                    <TableCell sx={{ color: 'text.secondary', fontSize: '0.8125rem' }}>
+                      {assignment.groupName}
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge
+                        status={assignment.status}
+                        label={t(`status.${assignment.status}`)}
+                      />
+                    </TableCell>
+                    <TableCell sx={{ fontSize: '0.8125rem', color: 'text.secondary' }}>
+                      {formatDate(assignment.startDate)}
+                    </TableCell>
+                    <TableCell sx={{ fontSize: '0.8125rem', color: 'text.secondary' }}>
+                      {formatDate(assignment.endDate)}
+                    </TableCell>
+                    <TableCell align="center" sx={{ fontSize: '0.8125rem' }}>
+                      {assignment.completedStudents}/{assignment.totalStudents}
+                    </TableCell>
+                    <TableCell align="center" sx={{ fontSize: '0.8125rem', fontWeight: 500 }}>
+                      {assignment.averageScore != null ? formatPercent(assignment.averageScore) : '-'}
+                    </TableCell>
+                    <TableCell align="right" onClick={(e) => e.stopPropagation()}>
+                      <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
+                        {assignment.status === AssignmentStatus.DRAFT && (
+                          <Tooltip title={t('activate')}>
+                            <IconButton size="small" color="success" onClick={() => activate.mutate(assignment.id)}>
+                              <PlayArrowIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                        {assignment.status === AssignmentStatus.ACTIVE && (
+                          <Tooltip title={t('monitor')}>
+                            <IconButton size="small" color="primary" onClick={() => navigate(`/assignments/${assignment.id}/live`)}>
+                              <MonitorIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                        {[AssignmentStatus.COMPLETED, AssignmentStatus.ACTIVE].includes(assignment.status as AssignmentStatus) && (
+                          <Tooltip title={t('results')}>
+                            <IconButton size="small" onClick={() => navigate(`/assignments/${assignment.id}/results`)}>
+                              <BarChartIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                        {assignment.status === AssignmentStatus.DRAFT && (
+                          <Tooltip title={t('common:edit')}>
+                            <IconButton size="small" onClick={() => handleEdit(assignment)}>
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                        {[AssignmentStatus.DRAFT, AssignmentStatus.SCHEDULED].includes(assignment.status as AssignmentStatus) && (
+                          <Tooltip title={t('common:delete')}>
+                            <IconButton size="small" color="error" onClick={() => handleDelete(assignment)}>
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Box>
+
+          {data && data.totalPages > 1 && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
               <Pagination
                 count={data.totalPages}
                 page={page + 1}
@@ -180,15 +320,10 @@ export default function AssignmentsPage() {
             </Box>
           )}
         </>
-      ) : (
-        <Box sx={{ textAlign: 'center', py: 8 }}>
-          <AssignmentIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
-          <Typography variant="h6" color="text.secondary">{t('empty')}</Typography>
-          <Typography variant="body2" color="text.disabled">{t('emptyDescription')}</Typography>
-        </Box>
       )}
 
-      <Fab color="primary" onClick={handleCreate} sx={{ position: 'fixed', bottom: 32, right: 32 }}>
+      {/* Mobile FAB */}
+      <Fab color="primary" onClick={handleCreate} sx={{ position: 'fixed', bottom: 32, right: 32, display: { sm: 'none' } }}>
         <AddIcon />
       </Fab>
 
@@ -209,6 +344,6 @@ export default function AssignmentsPage() {
         assignment={deleteAssignment}
         isPending={remove.isPending}
       />
-    </Box>
+    </PageShell>
   );
 }

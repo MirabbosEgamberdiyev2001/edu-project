@@ -37,8 +37,9 @@ public class TopicService {
                 .orElseThrow(() -> new ResourceNotFoundException("Subject", "id", subjectId));
 
         String localeKey = language.toLocaleKey();
-        List<Topic> rootTopics = topicRepository
-                .findBySubjectIdAndGradeLevelAndUserIdAndParentIsNullOrderBySortOrderAsc(subjectId, gradeLevel, userId);
+        List<Topic> rootTopics = gradeLevel != null
+                ? topicRepository.findBySubjectIdAndGradeLevelAndUserIdAndParentIsNullOrderBySortOrderAsc(subjectId, gradeLevel, userId)
+                : topicRepository.findBySubjectIdAndUserIdAndParentIsNullOrderBySortOrderAsc(subjectId, userId);
         return rootTopics.stream()
                 .map(t -> buildTreeDto(t, localeKey))
                 .toList();

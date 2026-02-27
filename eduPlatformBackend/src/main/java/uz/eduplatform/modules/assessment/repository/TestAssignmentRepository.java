@@ -26,12 +26,12 @@ public interface TestAssignmentRepository extends JpaRepository<TestAssignment, 
 
     // Find assignments for a specific student (JSONB contains)
     @Query(value = "SELECT * FROM test_assignments " +
-            "WHERE assigned_student_ids @> :studentIdJson::jsonb " +
+            "WHERE assigned_student_ids @> CAST(:studentIdJson AS jsonb) " +
             "AND status IN ('ACTIVE', 'SCHEDULED') " +
             "AND deleted_at IS NULL " +
             "ORDER BY created_at DESC",
             countQuery = "SELECT COUNT(*) FROM test_assignments " +
-                    "WHERE assigned_student_ids @> :studentIdJson::jsonb " +
+                    "WHERE assigned_student_ids @> CAST(:studentIdJson AS jsonb) " +
                     "AND status IN ('ACTIVE', 'SCHEDULED') " +
                     "AND deleted_at IS NULL",
             nativeQuery = true)
@@ -74,7 +74,7 @@ public interface TestAssignmentRepository extends JpaRepository<TestAssignment, 
     // Find global test assignment for a specific student (for global tests)
     @Query(value = "SELECT * FROM test_assignments " +
             "WHERE test_history_id = :testHistoryId " +
-            "AND assigned_student_ids @> :studentIdJson::jsonb " +
+            "AND assigned_student_ids @> CAST(:studentIdJson AS jsonb) " +
             "AND deleted_at IS NULL " +
             "LIMIT 1",
             nativeQuery = true)

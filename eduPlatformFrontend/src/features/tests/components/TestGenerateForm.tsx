@@ -101,7 +101,7 @@ export default function TestGenerateForm() {
   const parsedVariantCount = parseInt(form.variantCount) || 0;
 
   const { data: subjects } = useSubjects({ size: 100 });
-  const { data: available } = useAvailableQuestions(form.topicIds);
+  const { data: available } = useAvailableQuestions(form.topicIds, form.subjectId || undefined);
 
   const steps = [
     t('form.step1Title'),
@@ -138,6 +138,7 @@ export default function TestGenerateForm() {
       title: resolvedTitle,
       titleTranslations: translations,
       ...(form.category && { category: form.category as TestCategory }),
+      ...(form.gradeLevel != null && { gradeLevel: form.gradeLevel }),
       subjectId: form.subjectId,
       topicIds: form.topicIds,
       questionCount: parsedQuestionCount,
@@ -152,7 +153,7 @@ export default function TestGenerateForm() {
 
   const canNext = () => {
     switch (activeStep) {
-      case 0: return !!form.subjectId && form.gradeLevel !== null && form.topicIds.length > 0 && Boolean(form.titleTranslations?.[toLocaleKey('uzl')]?.trim());
+      case 0: return !!form.subjectId && Boolean(form.titleTranslations?.[toLocaleKey('uzl')]?.trim());
       case 1: return parsedQuestionCount > 0 && parsedVariantCount > 0
         && (!available || (available.totalAvailable > 0 && parsedQuestionCount <= available.maxPossibleQuestions));
       case 2: return true;
@@ -373,7 +374,10 @@ export default function TestGenerateForm() {
             </TextField>
             {form.subjectId && (
               <Box>
-                <Typography variant="subtitle2" sx={{ mb: 1 }}>{tSubject('form.gradeLevel')}</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                  <Typography variant="subtitle2">{tSubject('form.gradeLevel')}</Typography>
+                  <Typography variant="caption" color="text.disabled">({t('form.optional', 'ixtiyoriy')})</Typography>
+                </Box>
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                   {GRADES.map((grade) => (
                     <Chip
@@ -381,14 +385,18 @@ export default function TestGenerateForm() {
                       label={`${grade}`}
                       color={form.gradeLevel === grade ? 'primary' : 'default'}
                       variant={form.gradeLevel === grade ? 'filled' : 'outlined'}
-                      onClick={() => setForm((prev) => ({ ...prev, gradeLevel: grade, topicIds: [] }))}
+                      onClick={() => setForm((prev) => ({
+                        ...prev,
+                        gradeLevel: prev.gradeLevel === grade ? null : grade,
+                        topicIds: [],
+                      }))}
                       sx={{ minWidth: 40 }}
                     />
                   ))}
                 </Box>
               </Box>
             )}
-            {form.subjectId && form.gradeLevel !== null && (
+            {form.subjectId && (
               <Box>
                 <Typography variant="subtitle2" gutterBottom>{t('form.selectTopics')}</Typography>
                 <Paper variant="outlined" sx={{ p: 2, maxHeight: 300, overflow: 'auto' }}>

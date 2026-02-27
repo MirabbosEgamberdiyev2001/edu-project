@@ -53,6 +53,8 @@
   "reviewAnswers": "Жавобларни кўриш",
   "yourAnswer": "Сизнинг жавобингиз",
   "correctAnswer": "Тўғри жавоб",
+  "trueFalseTrue": "Тўғри",
+  "trueFalseFalse": "Нотўғри",
   "answerPlaceholder": "Жавобингиз...",
   "essayPlaceholder": "Жавобингизни ёзинг...",
   "testName": "Тест номи",

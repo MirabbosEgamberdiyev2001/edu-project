@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Box, Typography, CircularProgress, Button } from '@mui/material';
+import { Box, CircularProgress, Button } from '@mui/material';
 import LinkIcon from '@mui/icons-material/Link';
 import { useTranslation } from 'react-i18next';
+import { PageShell } from '@/components/ui';
 import { useChildren } from '../hooks/useParent';
 import { useParentMutations } from '../hooks/useParentMutations';
 import ChildrenList from '../components/ChildrenList';
@@ -13,7 +13,6 @@ import { Role } from '@/types/user';
 
 export default function ParentDashboardPage() {
   const { t } = useTranslation('parent');
-  const navigate = useNavigate();
   const { user } = useAuth();
   const { data: children, isLoading } = useChildren();
   const { generatePairingCode, pairWithCode } = useParentMutations();
@@ -30,23 +29,15 @@ export default function ParentDashboardPage() {
   }
 
   return (
-    <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box>
-          <Typography variant="h5" fontWeight={700}>
-            {isParent ? t('myChildrenTitle') : t('familyTitle')}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {isParent ? t('myChildrenSubtitle') : t('familySubtitle')}
-          </Typography>
-        </Box>
-        {isParent && (
-          <Button variant="outlined" startIcon={<LinkIcon />} onClick={() => setShowPairing(true)}>
-            {t('pairChild')}
-          </Button>
-        )}
-      </Box>
-
+    <PageShell
+      title={isParent ? t('myChildrenTitle') : t('familyTitle')}
+      subtitle={isParent ? t('myChildrenSubtitle') : t('familySubtitle')}
+      actions={isParent ? (
+        <Button variant="outlined" startIcon={<LinkIcon />} onClick={() => setShowPairing(true)}>
+          {t('pairChild')}
+        </Button>
+      ) : undefined}
+    >
       {isParent && showPairing && (
         <Box sx={{ mb: 3 }}>
           <PairWithCodeForm
@@ -60,6 +51,6 @@ export default function ParentDashboardPage() {
         children={children}
         isLoading={isLoading}
       />
-    </Box>
+    </PageShell>
   );
 }

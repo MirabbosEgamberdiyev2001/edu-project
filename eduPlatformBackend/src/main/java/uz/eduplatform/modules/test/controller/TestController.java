@@ -28,7 +28,6 @@ import uz.eduplatform.modules.test.service.TestValidationService;
 import uz.eduplatform.modules.test.service.export.ExportFormat;
 import uz.eduplatform.modules.test.service.export.TestExportFacade;
 
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.UUID;
@@ -87,18 +86,20 @@ public class TestController {
     public ResponseEntity<ApiResponse<AvailableQuestionsResponse>> getAvailableQuestions(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language,
-            @RequestParam @NotEmpty @Size(max = 50) List<UUID> topicIds) {
+            @RequestParam(required = false) @Size(max = 50) List<UUID> topicIds,
+            @RequestParam(required = false) UUID subjectId) {
 
-        AvailableQuestionsResponse response = validationService.getAvailableQuestions(topicIds, principal.getId());
+        AvailableQuestionsResponse response = validationService.getAvailableQuestions(topicIds, subjectId, principal.getId());
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @GetMapping("/generate/questions")
-    @Operation(summary = "Qo'lda tanlash uchun savollar", description = "Test uchun savollarni qo'lda tanlash. Mavzu, qiyinlik, holat va matn bo'yicha filtrlash mumkin.")
+    @Operation(summary = "Qo'lda tanlash uchun savollar", description = "Test uchun savollarni qo'lda tanlash. Mavzu yoki fan bo'yicha filtrlash, qiyinlik, holat va matn bo'yicha filtrlash mumkin.")
     public ResponseEntity<ApiResponse<PagedResponse<QuestionDto>>> getQuestionsForSelection(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language,
-            @RequestParam @NotEmpty @Size(max = 50) List<UUID> topicIds,
+            @RequestParam(required = false) @Size(max = 50) List<UUID> topicIds,
+            @RequestParam(required = false) UUID subjectId,
             @RequestParam(required = false) Difficulty difficulty,
             @RequestParam(required = false) QuestionStatus status,
             @RequestParam(required = false) String search,
@@ -106,7 +107,7 @@ public class TestController {
             @RequestParam(defaultValue = "50") int size) {
 
         PagedResponse<QuestionDto> response = validationService.getQuestionsForSelection(
-                topicIds, difficulty, status, search,
+                topicIds, subjectId, difficulty, status, search,
                 PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")),
                 language, principal.getId());
         return ResponseEntity.ok(ApiResponse.success(response));

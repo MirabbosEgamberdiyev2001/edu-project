@@ -165,6 +165,49 @@ public interface QuestionRepository extends JpaRepository<Question, UUID>, JpaSp
                                                @Param("status") String status,
                                                Pageable pageable);
 
+    @EntityGraph(attributePaths = {"topic", "topic.subject", "user"})
+    @Query("SELECT q FROM Question q WHERE q.topic.subject.id = :subjectId " +
+           "AND (q.status IN ('ACTIVE', 'APPROVED') OR (q.user.id = :userId AND q.status IN ('DRAFT', 'PENDING', 'APPROVED')))")
+    Page<Question> findBySubjectIdForTeacherPaged(@Param("subjectId") UUID subjectId,
+                                                   @Param("userId") UUID userId,
+                                                   Pageable pageable);
+
+    @EntityGraph(attributePaths = {"topic", "topic.subject", "user"})
+    @Query("SELECT q FROM Question q WHERE q.topic.subject.id = :subjectId " +
+           "AND (q.status IN ('ACTIVE', 'APPROVED') OR (q.user.id = :userId AND q.status IN ('DRAFT', 'PENDING', 'APPROVED')))")
+    List<Question> findBySubjectIdForTeacher(@Param("subjectId") UUID subjectId,
+                                              @Param("userId") UUID userId);
+
+    @Query(value = "SELECT q.* FROM questions q " +
+            "JOIN topics t ON q.topic_id = t.id " +
+            "WHERE q.deleted_at IS NULL AND t.subject_id = :subjectId AND t.deleted_at IS NULL " +
+            "AND (q.status IN ('ACTIVE', 'APPROVED') OR (q.user_id = :userId AND q.status IN ('DRAFT', 'PENDING', 'APPROVED'))) " +
+            "AND (CAST(:difficulty AS TEXT) IS NULL OR q.difficulty = CAST(:difficulty AS VARCHAR)) " +
+            "AND (CAST(:status AS TEXT) IS NULL OR q.status = CAST(:status AS VARCHAR)) " +
+            "AND (CAST(:search AS TEXT) IS NULL OR " +
+            " LOWER(q.question_text ->> 'uz_latn') LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            " LOWER(q.question_text ->> 'uz_cyrl') LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            " LOWER(q.question_text ->> 'en') LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            " LOWER(q.question_text ->> 'ru') LIKE LOWER(CONCAT('%', :search, '%')))",
+            countQuery = "SELECT COUNT(*) FROM questions q " +
+                    "JOIN topics t ON q.topic_id = t.id " +
+                    "WHERE q.deleted_at IS NULL AND t.subject_id = :subjectId AND t.deleted_at IS NULL " +
+                    "AND (q.status IN ('ACTIVE', 'APPROVED') OR (q.user_id = :userId AND q.status IN ('DRAFT', 'PENDING', 'APPROVED'))) " +
+                    "AND (CAST(:difficulty AS TEXT) IS NULL OR q.difficulty = CAST(:difficulty AS VARCHAR)) " +
+                    "AND (CAST(:status AS TEXT) IS NULL OR q.status = CAST(:status AS VARCHAR)) " +
+                    "AND (CAST(:search AS TEXT) IS NULL OR " +
+                    " LOWER(q.question_text ->> 'uz_latn') LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+                    " LOWER(q.question_text ->> 'uz_cyrl') LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+                    " LOWER(q.question_text ->> 'en') LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+                    " LOWER(q.question_text ->> 'ru') LIKE LOWER(CONCAT('%', :search, '%')))",
+            nativeQuery = true)
+    Page<Question> searchBySubjectIdForTeacher(@Param("subjectId") UUID subjectId,
+                                                @Param("userId") UUID userId,
+                                                @Param("search") String search,
+                                                @Param("difficulty") String difficulty,
+                                                @Param("status") String status,
+                                                Pageable pageable);
+
     long countByDifficulty(Difficulty difficulty);
 
     long countByQuestionType(QuestionType questionType);

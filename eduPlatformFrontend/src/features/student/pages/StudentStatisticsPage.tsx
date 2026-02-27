@@ -16,14 +16,13 @@ import {
   ListItemAvatar,
   Divider,
 } from '@mui/material';
-import BarChartIcon from '@mui/icons-material/BarChart';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import QuizIcon from '@mui/icons-material/Quiz';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import StarIcon from '@mui/icons-material/Star';
 import WarningIcon from '@mui/icons-material/Warning';
 import { analyticsApi } from '@/api/analyticsApi';
-import PageBreadcrumbs from '@/components/PageBreadcrumbs';
+import { PageShell } from '@/components/ui';
 
 export default function StudentStatisticsPage() {
   const { t } = useTranslation('testTaking');
@@ -43,32 +42,21 @@ export default function StudentStatisticsPage() {
 
   if (isError || !data) {
     return (
-      <Box>
-        <PageBreadcrumbs items={[{ label: t('stats.title') }]} />
+      <PageShell title={t('stats.title')}>
         <Alert severity="info" sx={{ mt: 2 }}>
           {t('stats.noData')}
         </Alert>
-      </Box>
+      </PageShell>
     );
   }
 
   const scoreColor = data.overallAverage >= 80 ? 'success' : data.overallAverage >= 60 ? 'warning' : 'error';
 
   return (
-    <Box>
-      <PageBreadcrumbs items={[{ label: t('stats.title') }]} />
-
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-        <BarChartIcon sx={{ fontSize: 32, color: 'primary.main' }} />
-        <Box>
-          <Typography variant="h5" fontWeight={700}>
-            {t('stats.title')}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {data.firstName} {data.lastName} — {t('stats.subtitle')}
-          </Typography>
-        </Box>
-      </Box>
+    <PageShell
+      title={t('stats.title')}
+      subtitle={`${data.firstName} ${data.lastName} — ${t('stats.subtitle')}`}
+    >
 
       {/* Summary Cards */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
@@ -253,7 +241,7 @@ export default function StudentStatisticsPage() {
           </Grid>
         )}
       </Grid>
-    </Box>
+    </PageShell>
   );
 }
 

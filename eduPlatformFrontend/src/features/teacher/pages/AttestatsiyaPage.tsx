@@ -33,7 +33,7 @@ import { globalTestApi } from '@/api/globalTestApi';
 import { subjectApi } from '@/api/subjectApi';
 import { TestCategory, type TestHistoryDto } from '@/types/test';
 import { useAuth } from '@/hooks/useAuth';
-import PageBreadcrumbs from '@/components/PageBreadcrumbs';
+import { PageShell } from '@/components/ui';
 
 const ATTESTATION_COLOR = '#c62828';
 const GRADE_LEVELS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
@@ -89,20 +89,7 @@ export default function AttestatsiyaPage() {
   const isDefaultSubject = subjectId && subjectId === user?.subjectId;
 
   return (
-    <Box>
-      <PageBreadcrumbs items={[{ label: t('attestation.breadcrumb') }]} />
-
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-        <SchoolIcon sx={{ fontSize: 32, color: ATTESTATION_COLOR }} />
-        <Box>
-          <Typography variant="h5" fontWeight={700}>
-            {t('attestation.title')}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {t('attestation.subtitle')}
-          </Typography>
-        </Box>
-      </Box>
+    <PageShell title={t('attestation.title')} subtitle={t('attestation.subtitle')}>
 
       {/* Default subject hint */}
       {isDefaultSubject && user?.subjectName && (
@@ -229,7 +216,7 @@ export default function AttestatsiyaPage() {
           />
         </Box>
       )}
-    </Box>
+    </PageShell>
   );
 }
 

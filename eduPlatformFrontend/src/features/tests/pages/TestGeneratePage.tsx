@@ -1,18 +1,15 @@
 import { useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
-  Box, Typography, IconButton, Tabs, Tab,
+  Tabs, Tab,
   Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button,
 } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import TestGenerateForm from '../components/TestGenerateForm';
 import ManualTestForm from '../components/ManualTestForm';
-import PageBreadcrumbs from '@/components/PageBreadcrumbs';
+import { PageShell } from '@/components/ui';
 
 export default function TestGeneratePage() {
   const { t } = useTranslation('test');
-  const navigate = useNavigate();
   const [mode, setMode] = useState(0);
   const [pendingMode, setPendingMode] = useState<number | null>(null);
 
@@ -34,21 +31,13 @@ export default function TestGeneratePage() {
   }, []);
 
   return (
-    <Box>
-      <PageBreadcrumbs items={[
-        { label: t('common:tests'), href: '/tests' },
+    <PageShell
+      title={t('generate')}
+      breadcrumbs={[
+        { label: t('common:tests'), to: '/tests' },
         { label: t('generate') },
-      ]} />
-
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-        <IconButton onClick={() => navigate('/tests')} aria-label={t('back')}>
-          <ArrowBackIcon />
-        </IconButton>
-        <Typography variant="h5" fontWeight={700}>
-          {t('generate')}
-        </Typography>
-      </Box>
-
+      ]}
+    >
       <Tabs
         value={mode}
         onChange={handleModeChange}
@@ -74,6 +63,6 @@ export default function TestGeneratePage() {
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </PageShell>
   );
 }

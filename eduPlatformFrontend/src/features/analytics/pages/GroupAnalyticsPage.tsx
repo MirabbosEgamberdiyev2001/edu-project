@@ -19,6 +19,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 import { useTranslation } from 'react-i18next';
 import { useGroupStatistics, useExportGroupStatistics } from '../hooks/useGroupStatistics';
 import StatSummaryCards from '../components/StatSummaryCards';
+import { PageShell } from '@/components/ui';
 
 export default function GroupAnalyticsPage() {
   const { groupId } = useParams<{ groupId: string }>();
@@ -55,21 +56,19 @@ export default function GroupAnalyticsPage() {
   ];
 
   return (
-    <Box>
-      <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/groups')} sx={{ mb: 2 }}>
-        {t('backToGroups')}
-      </Button>
-
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box>
-          <Typography variant="h5" fontWeight={700}>{data.groupName}</Typography>
-          <Typography variant="body2" color="text.secondary">{t('groupAnalytics')}</Typography>
-        </Box>
+    <PageShell
+      title={data.groupName}
+      subtitle={t('groupAnalytics')}
+      breadcrumbs={[
+        { label: t('backToGroups'), to: '/groups' },
+        { label: data.groupName },
+      ]}
+      actions={
         <Button startIcon={<DownloadIcon />} onClick={() => exportGroupStats(groupId!)} variant="outlined" size="small">
           {t('exportPdf')}
         </Button>
-      </Box>
-
+      }
+    >
       <Box sx={{ mb: 3 }}>
         <StatSummaryCards stats={stats} />
       </Box>
@@ -143,6 +142,6 @@ export default function GroupAnalyticsPage() {
           </Paper>
         </Grid>
       </Grid>
-    </Box>
+    </PageShell>
   );
 }

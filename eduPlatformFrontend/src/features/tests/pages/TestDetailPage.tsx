@@ -39,7 +39,7 @@ import QuickPromoDialog from '../components/QuickPromoDialog';
 import { testApi } from '@/api/testApi';
 import { resolveTranslation } from '@/utils/i18nUtils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import PageBreadcrumbs from '@/components/PageBreadcrumbs';
+import { PageShell } from '@/components/ui';
 import type { GlobalStatus } from '@/types/test';
 
 const STATUS_COLORS: Record<string, 'default' | 'info' | 'success' | 'warning' | 'error'> = {
@@ -146,20 +146,13 @@ export default function TestDetailPage() {
   const canSubmitForGlobal = globalStatus === 'NONE' || globalStatus === 'REJECTED';
 
   return (
-    <Box>
-      <PageBreadcrumbs items={[
-        { label: t('common:tests'), href: '/tests' },
+    <PageShell
+      title={displayTitle}
+      breadcrumbs={[
+        { label: t('common:tests'), to: '/tests' },
         { label: displayTitle },
-      ]} />
-
-      {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-        <IconButton onClick={() => navigate('/tests')} aria-label={t('common:back')}>
-          <ArrowBackIcon />
-        </IconButton>
-        <Typography variant="h5" fontWeight={700} sx={{ flex: 1 }}>
-          {displayTitle}
-        </Typography>
+      ]}
+      actions={
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Tooltip title={t('edit.title')}>
             <IconButton onClick={() => setEditOpen(true)}>
@@ -171,13 +164,11 @@ export default function TestDetailPage() {
               <PublicIcon />
             </IconButton>
           </Tooltip>
-          {/* Quick Promo Code */}
           <Tooltip title={t('quickPromo.title')}>
             <IconButton color="secondary" onClick={() => setQuickPromoOpen(true)}>
               <AddLinkIcon />
             </IconButton>
           </Tooltip>
-          {/* Submit for Global Moderation */}
           {canSubmitForGlobal && (
             <Tooltip title={t('globalStatus.submitTooltip')}>
               <IconButton
@@ -207,7 +198,8 @@ export default function TestDetailPage() {
             </IconButton>
           </Tooltip>
         </Box>
-      </Box>
+      }
+    >
 
       {/* Global Status Alert */}
       {globalStatus === 'PENDING_MODERATION' && (
@@ -482,6 +474,6 @@ export default function TestDetailPage() {
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </PageShell>
   );
 }

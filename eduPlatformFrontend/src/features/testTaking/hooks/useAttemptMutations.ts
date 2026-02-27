@@ -37,7 +37,7 @@ export function useAttemptMutations() {
   const submitAttempt = useMutation({
     mutationFn: (attemptId: string) => testTakingApi.submitAttempt(attemptId),
     onSuccess: ({ data: resp }) => {
-      toast.success(resp.message);
+      if (resp?.message) toast.success(resp.message);
       queryClient.invalidateQueries({ queryKey: ['test-taking'] });
     },
     onError: (error: AxiosError<ApiError>) => {

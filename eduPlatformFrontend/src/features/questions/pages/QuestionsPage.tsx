@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -22,6 +23,7 @@ import QuizIcon from '@mui/icons-material/Quiz';
 import SendIcon from '@mui/icons-material/Send';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { useTranslation } from 'react-i18next';
+import { PageShell, EmptyState } from '@/components/ui';
 import { useQuestions } from '../hooks/useQuestions';
 import { useQuestionMutations } from '../hooks/useQuestionMutations';
 import QuestionCard from '../components/QuestionCard';
@@ -45,16 +47,35 @@ const PAGE_SIZES = [12, 24, 48];
 
 export default function QuestionsPage() {
   const { t } = useTranslation('question');
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  // ── Filter state ──
-  const [search, setSearch] = useState('');
-  const [questionType, setQuestionType] = useState<QuestionType | ''>('');
-  const [difficulty, setDifficulty] = useState<Difficulty | ''>('');
-  const [status, setStatus] = useState<QuestionStatus | ''>('');
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(12);
+  // ── Filter state (URL-synced) ──
+  const [search, setSearch] = useState(searchParams.get('q') || '');
+  const [questionType, setQuestionType] = useState<QuestionType | ''>(
+    (searchParams.get('type') as QuestionType) || ''
+  );
+  const [difficulty, setDifficulty] = useState<Difficulty | ''>(
+    (searchParams.get('diff') as Difficulty) || ''
+  );
+  const [status, setStatus] = useState<QuestionStatus | ''>(
+    (searchParams.get('status') as QuestionStatus) || ''
+  );
+  const [page, setPage] = useState(Number(searchParams.get('page') || '0'));
+  const [pageSize, setPageSize] = useState(Number(searchParams.get('size') || '12'));
 
   const debouncedSearch = useDebounce(search, 300);
+
+  // Sync URL params when filters change
+  useEffect(() => {
+    const p = new URLSearchParams();
+    if (debouncedSearch) p.set('q', debouncedSearch);
+    if (questionType) p.set('type', questionType);
+    if (difficulty) p.set('diff', difficulty);
+    if (status) p.set('status', status);
+    if (page > 0) p.set('page', String(page));
+    if (pageSize !== 12) p.set('size', String(pageSize));
+    setSearchParams(p, { replace: true });
+  }, [debouncedSearch, questionType, difficulty, status, page, pageSize, setSearchParams]);
 
   const params = useMemo<QuestionListParams>(() => ({
     ...(debouncedSearch && { search: debouncedSearch }),
@@ -214,13 +235,10 @@ export default function QuestionsPage() {
   };
 
   return (
-    <Box>
-      {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box>
-          <Typography variant="h5" fontWeight={700}>{t('title')}</Typography>
-          <Typography variant="body2" color="text.secondary">{t('subtitle')}</Typography>
-        </Box>
+    <PageShell
+      title={t('title')}
+      subtitle={t('subtitle')}
+      actions={
         <Button
           variant="contained"
           startIcon={<AddIcon />}
@@ -229,7 +247,9 @@ export default function QuestionsPage() {
         >
           {t('create')}
         </Button>
-      </Box>
+      }
+    >
+    <Box>
 
       {/* Filters */}
       <Box sx={{ display: 'flex', gap: 1.5, mb: 3, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -397,24 +417,20 @@ export default function QuestionsPage() {
           </Box>
         </>
       ) : (
-        <Box sx={{ textAlign: 'center', py: 8 }}>
-          <QuizIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
-          <Typography variant="h6" color="text.secondary">
-            {hasActiveFilters ? t('emptyFiltered', 'No questions match your filters') : t('empty')}
-          </Typography>
-          <Typography variant="body2" color="text.disabled" sx={{ mb: 2 }}>
-            {hasActiveFilters ? t('emptyFilteredDescription', 'Try adjusting your filters') : t('emptyDescription')}
-          </Typography>
-          {hasActiveFilters ? (
-            <Button variant="outlined" onClick={clearFilters} startIcon={<FilterListIcon />}>
-              {t('filters.clear', 'Clear filters')}
-            </Button>
-          ) : (
-            <Button variant="contained" startIcon={<AddIcon />} onClick={handleCreate}>
-              {t('create')}
-            </Button>
-          )}
-        </Box>
+        <EmptyState
+          icon={<QuizIcon sx={{ fontSize: 'inherit' }} />}
+          title={hasActiveFilters ? t('emptyFiltered', 'No questions match your filters') : t('empty')}
+          description={hasActiveFilters ? t('emptyFilteredDescription', 'Try adjusting your filters') : t('emptyDescription')}
+          action={hasActiveFilters ? {
+            label: t('filters.clear', 'Clear filters'),
+            onClick: clearFilters,
+            icon: <FilterListIcon />,
+          } : {
+            label: t('create'),
+            onClick: handleCreate,
+            icon: <AddIcon />,
+          }}
+        />
       )}
 
       {/* Mobile FAB */}
@@ -447,5 +463,6 @@ export default function QuestionsPage() {
         isPending={remove.isPending}
       />
     </Box>
+    </PageShell>
   );
 }

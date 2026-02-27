@@ -44,6 +44,7 @@ import RoleChangeDialog from '../components/RoleChangeDialog';
 import StatusChangeDialog from '../components/StatusChangeDialog';
 import DeleteUserDialog from '../components/DeleteUserDialog';
 import UnlockUserDialog from '../components/UnlockUserDialog';
+import { PageShell } from '@/components/ui';
 
 const STATUS_COLORS: Record<string, 'success' | 'default' | 'error' | 'warning'> = {
   ACTIVE: 'success',
@@ -126,11 +127,7 @@ export default function AdminUsersPage() {
   };
 
   return (
-    <Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" fontWeight={700}>{t('users.title')}</Typography>
-        <Typography variant="body2" color="text.secondary">{t('users.subtitle')}</Typography>
-      </Box>
+    <PageShell title={t('users.title')} subtitle={t('users.subtitle')}>
 
       {/* Filters */}
       <Paper sx={{ p: 2, mb: 3 }}>
@@ -315,6 +312,6 @@ export default function AdminUsersPage() {
         onClose={() => setDeleteDialogUser(null)}
         onConfirm={handleDelete}
       />
-    </Box>
+    </PageShell>
   );
 }

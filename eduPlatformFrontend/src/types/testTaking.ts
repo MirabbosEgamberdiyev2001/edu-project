@@ -66,6 +66,7 @@ export interface AttemptAnswerDto {
 
 export interface SubmitAnswerRequest {
   questionId: string;
+  questionIndex?: number;
   response: unknown;
 }
 

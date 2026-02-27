@@ -34,19 +34,20 @@ export function useTestDetail(id: string) {
   });
 }
 
-export function useAvailableQuestions(topicIds: string[]) {
+export function useAvailableQuestions(topicIds: string[], subjectId?: string) {
   return useQuery({
-    queryKey: ['tests', 'available', topicIds],
+    queryKey: ['tests', 'available', topicIds, subjectId],
     queryFn: async ({ signal }) => {
-      const { data } = await testApi.getAvailableQuestions(topicIds, signal);
+      const { data } = await testApi.getAvailableQuestions(topicIds, subjectId, signal);
       return data.data;
     },
-    enabled: topicIds.length > 0,
+    enabled: topicIds.length > 0 || !!subjectId,
   });
 }
 
 export function useQuestionsForSelection(params: {
   topicIds: string[];
+  subjectId?: string;
   difficulty?: string;
   status?: string;
   search?: string;
@@ -59,7 +60,7 @@ export function useQuestionsForSelection(params: {
       const { data } = await testApi.getQuestionsForSelection(params, signal);
       return data.data;
     },
-    enabled: params.topicIds.length > 0,
+    enabled: params.topicIds.length > 0 || !!params.subjectId,
     placeholderData: keepPreviousData,
   });
 }

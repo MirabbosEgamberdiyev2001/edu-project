@@ -12,7 +12,6 @@ import {
   Divider,
   Avatar,
 } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SecurityIcon from '@mui/icons-material/Security';
 import EditIcon from '@mui/icons-material/Edit';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
@@ -29,6 +28,7 @@ import {
   useUnlockUser,
   useDeleteUser,
 } from '../hooks/useAdminUsers';
+import { PageShell } from '@/components/ui';
 import RoleChangeDialog from '../components/RoleChangeDialog';
 import StatusChangeDialog from '../components/StatusChangeDialog';
 import DeleteUserDialog from '../components/DeleteUserDialog';
@@ -125,14 +125,55 @@ export default function AdminUserDetailPage() {
       : <CancelIcon fontSize="small" sx={{ color: 'text.disabled', ml: 0.5 }} />;
 
   return (
-    <Box>
-      {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/admin/users')}>
-          {t('common:back', 'Back')}
-        </Button>
-      </Box>
-
+    <PageShell
+      title={`${user.firstName} ${user.lastName}`}
+      breadcrumbs={[
+        { label: t('users.title'), to: '/admin/users' },
+        { label: `${user.firstName} ${user.lastName}` },
+      ]}
+      actions={!isProtected ? (
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<SecurityIcon />}
+            onClick={() => setRoleDialogOpen(true)}
+          >
+            {t('users.changeRole')}
+          </Button>
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<EditIcon />}
+            onClick={() => setStatusDialogOpen(true)}
+          >
+            {t('users.changeStatus')}
+          </Button>
+          {user.failedLoginAttempts > 0 && (
+            <Button
+              size="small"
+              variant="outlined"
+              color="warning"
+              startIcon={<LockOpenIcon />}
+              onClick={() => setUnlockDialogOpen(true)}
+            >
+              {t('users.unlock')}
+            </Button>
+          )}
+          {isSuperAdmin && (
+            <Button
+              size="small"
+              variant="outlined"
+              color="error"
+              startIcon={<DeleteIcon />}
+              onClick={() => setDeleteDialogOpen(true)}
+            >
+              {t('users.deleteUser')}
+            </Button>
+          )}
+        </Box>
+      ) : undefined}
+    >
       {/* User Info Card */}
       <Paper sx={{ p: 3, mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
@@ -142,10 +183,7 @@ export default function AdminUserDetailPage() {
           >
             {user.firstName[0]?.toUpperCase()}{user.lastName[0]?.toUpperCase()}
           </Avatar>
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="h5" fontWeight={700}>
-              {user.firstName} {user.lastName}
-            </Typography>
+          <Box>
             <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
               <Chip
                 label={user.role}
@@ -160,49 +198,6 @@ export default function AdminUserDetailPage() {
               />
             </Box>
           </Box>
-          {/* Actions */}
-          {!isProtected && (
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-              <Button
-                size="small"
-                variant="outlined"
-                startIcon={<SecurityIcon />}
-                onClick={() => setRoleDialogOpen(true)}
-              >
-                {t('users.changeRole')}
-              </Button>
-              <Button
-                size="small"
-                variant="outlined"
-                startIcon={<EditIcon />}
-                onClick={() => setStatusDialogOpen(true)}
-              >
-                {t('users.changeStatus')}
-              </Button>
-              {user.failedLoginAttempts > 0 && (
-                <Button
-                  size="small"
-                  variant="outlined"
-                  color="warning"
-                  startIcon={<LockOpenIcon />}
-                  onClick={() => setUnlockDialogOpen(true)}
-                >
-                  {t('users.unlock')}
-                </Button>
-              )}
-              {isSuperAdmin && (
-                <Button
-                  size="small"
-                  variant="outlined"
-                  color="error"
-                  startIcon={<DeleteIcon />}
-                  onClick={() => setDeleteDialogOpen(true)}
-                >
-                  {t('users.deleteUser')}
-                </Button>
-              )}
-            </Box>
-          )}
         </Box>
 
         <Divider sx={{ my: 2 }} />
@@ -270,7 +265,7 @@ export default function AdminUserDetailPage() {
         onClose={() => setDeleteDialogOpen(false)}
         onConfirm={handleDelete}
       />
-    </Box>
+    </PageShell>
   );
 }
 

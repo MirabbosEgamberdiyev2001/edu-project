@@ -112,6 +112,17 @@
   "promoCodeUnlimited": "Cheksiz",
   "generatePromoCode": "Promokod yaratish",
   "minutesShort": "daq",
+  "groupName": "Guruh",
+  "create": "Topshiriq yaratish",
+  "columns": {
+    "title": "Sarlavha",
+    "status": "Holat",
+    "startDate": "Boshlanish",
+    "endDate": "Tugash",
+    "completion": "Bajarish",
+    "avgScore": "O'rt. ball",
+    "actions": "Amallar"
+  },
   "success": {
     "created": "Topshiriq muvaffaqiyatli yaratildi",
     "updated": "Topshiriq muvaffaqiyatli yangilandi",

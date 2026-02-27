@@ -28,7 +28,6 @@ public class GenerateTestRequest {
     @NotNull(message = "{test.validation.subject.id.required}")
     private UUID subjectId;
 
-    @NotEmpty(message = "{test.validation.topic.ids.required}")
     private List<UUID> topicIds;
 
     @Min(value = 1, message = "{test.validation.question.count.min}")

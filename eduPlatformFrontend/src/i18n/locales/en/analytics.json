@@ -50,5 +50,8 @@
   "strongAreas": "Strong Areas",
   "exportPdf": "Export PDF",
   "testCreationTrend": "Test Creation Trend",
-  "backToGroups": "Back to Groups"
+  "backToGroups": "Back to Groups",
+  "noAtRiskStudents": "Great! No at-risk students found.",
+  "missedAssignments": "Missed assignments",
+  "lastActivity": "Last active"
 }

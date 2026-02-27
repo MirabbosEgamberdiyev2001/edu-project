@@ -24,14 +24,18 @@ export const testApi = {
   validate: (data: GenerateTestRequest) =>
     api.post<ApiResponse<void>>(`${TESTS}/generate/validate`, data),
 
-  getAvailableQuestions: (topicIds: string[], signal?: AbortSignal) =>
+  getAvailableQuestions: (topicIds: string[], subjectId?: string, signal?: AbortSignal) =>
     api.get<ApiResponse<AvailableQuestionsResponse>>(`${TESTS}/generate/available`, {
-      params: { topicIds: topicIds.join(',') },
+      params: {
+        ...(topicIds.length > 0 ? { topicIds: topicIds.join(',') } : {}),
+        ...(subjectId ? { subjectId } : {}),
+      },
       signal,
     }),
 
   getQuestionsForSelection: (params: {
     topicIds: string[];
+    subjectId?: string;
     difficulty?: string;
     status?: string;
     search?: string;
@@ -40,7 +44,8 @@ export const testApi = {
   }, signal?: AbortSignal) =>
     api.get<ApiResponse<PagedResponse<QuestionDto>>>(`${TESTS}/generate/questions`, {
       params: {
-        topicIds: params.topicIds.join(','),
+        ...(params.topicIds.length > 0 ? { topicIds: params.topicIds.join(',') } : {}),
+        ...(params.subjectId ? { subjectId: params.subjectId } : {}),
         difficulty: params.difficulty || undefined,
         status: params.status || undefined,
         search: params.search || undefined,

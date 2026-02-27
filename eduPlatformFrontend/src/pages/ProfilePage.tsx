@@ -39,6 +39,7 @@ import { subjectApi } from '@/api/subjectApi';
 import { useAuthStore } from '@/stores/authStore';
 import { Role } from '@/types/user';
 import type { UpdateProfileRequest } from '@/types/auth';
+import { PageShell } from '@/components/ui';
 
 export default function ProfilePage() {
   const { t } = useTranslation('profile');
@@ -103,15 +104,7 @@ export default function ProfilePage() {
     );
 
   return (
-    <Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" fontWeight={700}>
-          {t('title')}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {t('subtitle')}
-        </Typography>
-      </Box>
+    <PageShell title={t('title')} subtitle={t('subtitle')}>
 
       {/* Profile Card */}
       <Paper sx={{ p: 3, mb: 3 }}>
@@ -321,7 +314,7 @@ export default function ProfilePage() {
 
       {/* Active Sessions */}
       <SessionsSection />
-    </Box>
+    </PageShell>
   );
 }
 

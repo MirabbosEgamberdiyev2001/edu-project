@@ -48,5 +48,8 @@
     "reload": "Reload page"
   },
   "attestation": "Attestation",
-  "globalTests": "Global Tests"
+  "globalTests": "Global Tests",
+  "quickActions": "Quick Actions",
+  "newTest": "New Test",
+  "viewAll": "View All"
 }

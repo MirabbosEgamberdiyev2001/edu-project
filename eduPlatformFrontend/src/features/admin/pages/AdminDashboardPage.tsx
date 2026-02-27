@@ -33,6 +33,7 @@ import { Role } from '@/types/user';
 import StatCard from '../components/StatCard';
 import MiniBarChart from '../components/MiniBarChart';
 import TrendChart from '../components/TrendChart';
+import { PageShell } from '@/components/ui';
 
 export default function AdminDashboardPage() {
   const { t } = useTranslation('admin');
@@ -54,11 +55,7 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" fontWeight={700}>{t('dashboard.title')}</Typography>
-        <Typography variant="body2" color="text.secondary">{t('dashboard.subtitle')}</Typography>
-      </Box>
+    <PageShell title={t('dashboard.title')} subtitle={t('dashboard.subtitle')}>
 
       {/* Stat Cards */}
       {stats && (
@@ -281,6 +278,6 @@ export default function AdminDashboardPage() {
           </Grid>
         </Paper>
       )}
-    </Box>
+    </PageShell>
   );
 }

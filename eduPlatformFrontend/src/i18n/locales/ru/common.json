@@ -48,5 +48,8 @@
     "reload": "Перезагрузить страницу"
   },
   "attestation": "Аттестация",
-  "globalTests": "Глобальные тесты"
+  "globalTests": "Глобальные тесты",
+  "quickActions": "Быстрые действия",
+  "newTest": "Новый тест",
+  "viewAll": "Все"
 }

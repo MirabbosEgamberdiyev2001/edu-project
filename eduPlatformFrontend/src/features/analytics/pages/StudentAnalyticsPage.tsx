@@ -1,6 +1,5 @@
 import {
   Box,
-  Typography,
   Paper,
   CircularProgress,
   Grid,
@@ -12,6 +11,7 @@ import ScoreTrendChart from '../components/ScoreTrendChart';
 import SubjectBreakdownChart from '../components/SubjectBreakdownChart';
 import WeakAreasCard from '../components/WeakAreasCard';
 import WeeklyActivityCard from '../components/WeeklyActivityCard';
+import { PageShell } from '@/components/ui';
 
 export default function StudentAnalyticsPage() {
   const { t } = useTranslation('analytics');
@@ -42,10 +42,7 @@ export default function StudentAnalyticsPage() {
   ];
 
   return (
-    <Box>
-      <Typography variant="h5" fontWeight={700} sx={{ mb: 1 }}>{t('studentTitle')}</Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>{t('studentSubtitle')}</Typography>
-
+    <PageShell title={t('studentTitle')} subtitle={t('studentSubtitle')}>
       <Box sx={{ mb: 3 }}>
         <StatSummaryCards stats={stats} />
       </Box>
@@ -75,6 +72,6 @@ export default function StudentAnalyticsPage() {
           </Paper>
         </Grid>
       </Grid>
-    </Box>
+    </PageShell>
   );
 }

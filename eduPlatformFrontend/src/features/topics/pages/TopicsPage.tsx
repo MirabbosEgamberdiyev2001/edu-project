@@ -16,7 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { useSubjects } from '@/features/subjects/hooks/useSubjects';
 import TopicTreeView from '../components/TopicTreeView';
 import { resolveTranslation } from '@/utils/i18nUtils';
-import PageBreadcrumbs from '@/components/PageBreadcrumbs';
+import { PageShell } from '@/components/ui';
 
 const GRADES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 
@@ -32,19 +32,14 @@ export default function TopicsPage() {
   const selectedSubjectName = selectedSubject ? resolveTranslation(selectedSubject.nameTranslations) || selectedSubject.name : '';
 
   return (
-    <Box>
-      {selectedSubjectId && (
-        <PageBreadcrumbs items={[
-          { label: t('common:topics') },
-          { label: selectedSubjectName },
-        ]} />
-      )}
-
-      {/* Header */}
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" fontWeight={700}>{t('pageTitle')}</Typography>
-        <Typography variant="body2" color="text.secondary">{t('pageSubtitle')}</Typography>
-      </Box>
+    <PageShell
+      title={t('pageTitle')}
+      subtitle={t('pageSubtitle')}
+      breadcrumbs={selectedSubjectId ? [
+        { label: t('common:topics'), to: '/topics' },
+        { label: selectedSubjectName },
+      ] : undefined}
+    >
 
       {/* Subject selector */}
       <Paper sx={{ p: 2, mb: 3 }}>
@@ -129,6 +124,6 @@ export default function TopicsPage() {
           <Typography variant="body2" color="text.disabled">{t('selectSubjectDescription')}</Typography>
         </Box>
       ) : null}
-    </Box>
+    </PageShell>
   );
 }

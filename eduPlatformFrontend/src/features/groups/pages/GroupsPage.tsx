@@ -1,11 +1,11 @@
 import { useState, useMemo } from 'react';
 import {
   Box,
-  Typography,
   TextField,
   InputAdornment,
   Grid,
   Fab,
+  Button,
   CircularProgress,
   Pagination,
   Tabs,
@@ -22,6 +22,7 @@ import GroupFormDialog from '../components/GroupFormDialog';
 import GroupDeleteDialog from '../components/GroupDeleteDialog';
 import { GroupStatus, type GroupDto, type CreateGroupRequest, type UpdateGroupRequest } from '@/types/group';
 import { useDebounce } from '@/features/subjects/hooks/useDebounce';
+import { PageShell, EmptyState } from '@/components/ui';
 
 export default function GroupsPage() {
   const { t } = useTranslation('group');
@@ -93,14 +94,17 @@ export default function GroupsPage() {
   const setCurrentPage = isActive ? setPage : setArchivedPage;
 
   return (
-    <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box>
-          <Typography variant="h5" fontWeight={700}>{t('title')}</Typography>
-          <Typography variant="body2" color="text.secondary">{t('subtitle')}</Typography>
-        </Box>
-      </Box>
-
+    <PageShell
+      title={t('title')}
+      subtitle={t('subtitle')}
+      actions={
+        isActive ? (
+          <Button variant="contained" startIcon={<AddIcon />} onClick={handleCreate} sx={{ display: { xs: 'none', sm: 'flex' } }}>
+            {t('create')}
+          </Button>
+        ) : undefined
+      }
+    >
       <Tabs
         value={viewTab}
         onChange={(_, v) => setViewTab(v)}
@@ -159,22 +163,19 @@ export default function GroupsPage() {
           )}
         </>
       ) : (
-        <Box sx={{ textAlign: 'center', py: 8 }}>
-          <GroupIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
-          <Typography variant="h6" color="text.secondary">
-            {isActive ? t('empty') : t('emptyArchived')}
-          </Typography>
-          <Typography variant="body2" color="text.disabled">
-            {isActive ? t('emptyDescription') : t('emptyArchivedDescription')}
-          </Typography>
-        </Box>
+        <EmptyState
+          icon={<GroupIcon sx={{ fontSize: 'inherit' }} />}
+          title={isActive ? t('empty') : t('emptyArchived')}
+          description={isActive ? t('emptyDescription') : t('emptyArchivedDescription')}
+          action={isActive ? { label: t('create'), onClick: handleCreate, icon: <AddIcon /> } : undefined}
+        />
       )}
 
       {isActive && (
         <Fab
           color="primary"
           onClick={handleCreate}
-          sx={{ position: 'fixed', bottom: 32, right: 32 }}
+          sx={{ position: 'fixed', bottom: 32, right: 32, display: { xs: 'flex', sm: 'none' } }}
         >
           <AddIcon />
         </Fab>
@@ -195,6 +196,6 @@ export default function GroupsPage() {
         group={deleteGroup}
         isPending={remove.isPending}
       />
-    </Box>
+    </PageShell>
   );
 }

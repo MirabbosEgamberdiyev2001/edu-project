@@ -50,5 +50,8 @@
   "strongAreas": "Кучли томонлар",
   "exportPdf": "PDF экспорт",
   "testCreationTrend": "Тест яратиш тенденцияси",
-  "backToGroups": "Гуруҳларга қайтиш"
+  "backToGroups": "Гуруҳларга қайтиш",
+  "noAtRiskStudents": "Ажойиб! Хавф остидаги талабалар топилмади.",
+  "missedAssignments": "Ўтказиб юборилган топшириқлар",
+  "lastActivity": "Охирги фаолият"
 }

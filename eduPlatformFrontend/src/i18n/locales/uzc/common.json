@@ -48,5 +48,8 @@
     "reload": "Саҳифани қайта юклаш"
   },
   "attestation": "Аттестация",
-  "globalTests": "Глобал тестлар"
+  "globalTests": "Глобал тестлар",
+  "quickActions": "Тезкор амаллар",
+  "newTest": "Янги тест",
+  "viewAll": "Барчаси"
 }

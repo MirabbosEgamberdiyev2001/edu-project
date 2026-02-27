@@ -51,7 +51,7 @@ const statusColor = {
   ARCHIVED: 'default' as const,
 };
 
-export default function QuestionSelector({ topicIds, selectedIds, onSelectionChange, onCreateQuestion }: QuestionSelectorProps) {
+export default function QuestionSelector({ subjectId, topicIds, selectedIds, onSelectionChange, onCreateQuestion }: QuestionSelectorProps) {
   const { t } = useTranslation('test');
   const { t: tQ } = useTranslation('question');
 
@@ -63,6 +63,7 @@ export default function QuestionSelector({ topicIds, selectedIds, onSelectionCha
 
   const { data, isLoading, isError, error } = useQuestionsForSelection({
     topicIds,
+    subjectId: topicIds.length === 0 ? subjectId : undefined,
     difficulty: filterDifficulty || undefined,
     status: filterStatus || undefined,
     page,

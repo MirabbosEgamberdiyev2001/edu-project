@@ -174,7 +174,7 @@ public class TestTakingService {
                         Answer.builder()
                                 .attempt(attempt)
                                 .questionId(answerReq.getQuestionId())
-                                .questionIndex(answerReq.getQuestionIndex())
+                                .questionIndex(answerReq.getQuestionIndex() != null ? answerReq.getQuestionIndex() : 0)
                                 .build());
 
                 answer.setSelectedAnswer(toJson(answerReq.getSelectedAnswer()));
@@ -235,7 +235,7 @@ public class TestTakingService {
                 .orElse(Answer.builder()
                         .attempt(attempt)
                         .questionId(request.getQuestionId())
-                        .questionIndex(request.getQuestionIndex())
+                        .questionIndex(request.getQuestionIndex() != null ? request.getQuestionIndex() : 0)
                         .build());
 
         answer.setSelectedAnswer(toJson(request.getSelectedAnswer()));
@@ -425,6 +425,9 @@ public class TestTakingService {
 
     private void checkTimeExpired(TestAttempt attempt) {
         TestAssignment assignment = attempt.getAssignment();
+        if (assignment == null || assignment.getDurationMinutes() == null) {
+            return; // No time limit — skip expiry check
+        }
         LocalDateTime deadline = attempt.getStartedAt().plusMinutes(assignment.getDurationMinutes());
         if (LocalDateTime.now().isAfter(deadline)) {
             // Auto-submit
@@ -446,7 +449,8 @@ public class TestTakingService {
     private AttemptDto mapToDto(TestAttempt attempt, TestAssignment assignment, String studentName) {
         // Calculate remaining seconds
         Long remainingSeconds = null;
-        if (attempt.getStatus() == AttemptStatus.IN_PROGRESS && assignment != null) {
+        if (attempt.getStatus() == AttemptStatus.IN_PROGRESS && assignment != null
+                && assignment.getDurationMinutes() != null) {
             LocalDateTime deadline = attempt.getStartedAt().plusMinutes(assignment.getDurationMinutes());
             Duration remaining = Duration.between(LocalDateTime.now(), deadline);
             remainingSeconds = Math.max(0, remaining.getSeconds());
@@ -472,7 +476,10 @@ public class TestTakingService {
         if (attempt.getStatus() != AttemptStatus.IN_PROGRESS) {
             List<Answer> answers = answerRepository.findByAttemptIdOrderByQuestionIndexAsc(attempt.getId());
             answersMap = answers.stream()
-                    .collect(Collectors.toMap(Answer::getQuestionId, this::mapAnswerToDto));
+                    .collect(Collectors.toMap(
+                            Answer::getQuestionId,
+                            this::mapAnswerToDto,
+                            (a, b) -> b)); // keep latest answer if same question appears twice
         }
 
         // totalQuestions: prefer the loaded question list; fall back to answer-record count
@@ -572,7 +579,7 @@ public class TestTakingService {
 
     private String extractText(Map<String, String> textMap) {
         if (textMap == null || textMap.isEmpty()) return "";
-        for (String lang : new String[]{"uz", "en", "ru", "uz_Cyrl"}) {
+        for (String lang : new String[]{"uz_latn", "uz_cyrl", "en", "ru"}) {
             String val = textMap.get(lang);
             if (val != null && !val.isBlank()) return val;
         }
