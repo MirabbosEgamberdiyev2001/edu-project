@@ -57,12 +57,6 @@ const GLOBAL_STATUS_COLORS: Record<GlobalStatus, 'default' | 'info' | 'success' 
   REJECTED: 'error',
 };
 
-const GLOBAL_STATUS_LABELS: Record<GlobalStatus, string> = {
-  NONE: 'Global emas',
-  PENDING_MODERATION: 'Moderatsiya kutilmoqda',
-  APPROVED: 'Global tasdiqlangan ✓',
-  REJECTED: 'Rad etildi',
-};
 
 export default function TestDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -185,7 +179,7 @@ export default function TestDetailPage() {
           </Tooltip>
           {/* Submit for Global Moderation */}
           {canSubmitForGlobal && (
-            <Tooltip title="Global testlar ro'yxatiga yuborish">
+            <Tooltip title={t('globalStatus.submitTooltip')}>
               <IconButton
                 color="primary"
                 onClick={() => setSubmitGlobalOpen(true)}
@@ -218,23 +212,23 @@ export default function TestDetailPage() {
       {/* Global Status Alert */}
       {globalStatus === 'PENDING_MODERATION' && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          Bu test moderatsiya navbatida. Tasdiqlangandan so'ng barcha foydalanuvchilarga ko'rinadi.
+          {t('globalStatus.pendingAlert')}
         </Alert>
       )}
       {globalStatus === 'APPROVED' && (
         <Alert severity="success" sx={{ mb: 2 }}>
-          Bu test global tasdiqlangan! Barcha foydalanuvchilarga ko'rinadi.
+          {t('globalStatus.approvedAlert')}
         </Alert>
       )}
       {globalStatus === 'REJECTED' && (
         <Alert severity="error" sx={{ mb: 2 }}>
-          Bu test rad etildi.
+          {t('globalStatus.rejectedAlert')}
           {test.globalRejectionReason && (
             <Typography variant="body2" sx={{ mt: 0.5 }}>
-              Sabab: {test.globalRejectionReason}
+              {t('globalStatus.rejectedReason')} {test.globalRejectionReason}
             </Typography>
           )}
-          Tuzatib qayta yuboring.
+          {t('globalStatus.rejectedHint')}
         </Alert>
       )}
 
@@ -244,7 +238,7 @@ export default function TestDetailPage() {
         <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
           <Chip label={t(`status.${test.status}`)} color={STATUS_COLORS[test.status] || 'default'} />
           <Chip
-            label={GLOBAL_STATUS_LABELS[globalStatus]}
+            label={t(`globalStatus.${globalStatus}`)}
             color={GLOBAL_STATUS_COLORS[globalStatus]}
             variant="outlined"
           />
@@ -282,13 +276,13 @@ export default function TestDetailPage() {
           </Box>
           {test.gradeLevel && (
             <Box>
-              <Typography variant="caption" color="text.secondary">Sinf</Typography>
-              <Typography variant="body2">{test.gradeLevel}-sinf</Typography>
+              <Typography variant="caption" color="text.secondary">{t('form.className')}</Typography>
+              <Typography variant="body2">{t('globalStatus.grade', { level: test.gradeLevel })}</Typography>
             </Box>
           )}
           {test.globalSubmittedAt && (
             <Box>
-              <Typography variant="caption" color="text.secondary">Moderatsiyaga yuborildi</Typography>
+              <Typography variant="caption" color="text.secondary">{t('globalStatus.submittedAt')}</Typography>
               <Typography variant="body2">{new Date(test.globalSubmittedAt).toLocaleString()}</Typography>
             </Box>
           )}
@@ -463,28 +457,28 @@ export default function TestDetailPage() {
 
       {/* Submit Test for Global Moderation Dialog */}
       <Dialog open={submitGlobalOpen} onClose={() => setSubmitGlobalOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Testni global ro'yxatga yuborish</DialogTitle>
+        <DialogTitle>{t('submitGlobal.title')}</DialogTitle>
         <DialogContent>
           <Typography variant="body1" sx={{ mb: 2 }}>
-            Bu testni barcha foydalanuvchilarga ko'rinadigan global testlar ro'yxatiga yuborishni xohlaysizmi?
+            {t('submitGlobal.description')}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Yuborilgan test moderator tomonidan ko'rib chiqiladi. Tasdiqlangandan so'ng:
+            {t('submitGlobal.moderatorNote')}
           </Typography>
           <Box component="ul" sx={{ mt: 1, color: 'text.secondary' }}>
-            <li><Typography variant="body2">Barcha o'qituvchi, student, admin va moderatorlarga ko'rinadi</Typography></li>
-            <li><Typography variant="body2">Student to'g'ridan-to'g'ri test ishlashi mumkin bo'ladi</Typography></li>
-            <li><Typography variant="body2">DTM, SCHOOL, OLYMPIAD kabi kategoriyada ko'rsatiladi</Typography></li>
+            <li><Typography variant="body2">{t('submitGlobal.benefit1')}</Typography></li>
+            <li><Typography variant="body2">{t('submitGlobal.benefit2')}</Typography></li>
+            <li><Typography variant="body2">{t('submitGlobal.benefit3')}</Typography></li>
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setSubmitGlobalOpen(false)}>Bekor qilish</Button>
+          <Button onClick={() => setSubmitGlobalOpen(false)}>{t('submitGlobal.cancel')}</Button>
           <Button
             variant="contained"
             onClick={() => submitForGlobalMutation.mutate()}
             disabled={submitForGlobalMutation.isPending}
           >
-            {submitForGlobalMutation.isPending ? 'Yuborilmoqda...' : 'Moderatsiyaga yuborish'}
+            {submitForGlobalMutation.isPending ? t('submitGlobal.submitting') : t('submitGlobal.submit')}
           </Button>
         </DialogActions>
       </Dialog>

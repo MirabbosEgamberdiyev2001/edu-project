@@ -124,5 +124,48 @@
       "medium": "O'rta",
       "hard": "Qiyin"
     }
+  },
+  "dashboard": {
+    "welcome": "Xush kelibsiz, {{name}}!",
+    "welcomeSubtitle": "Bugun ham test ishlashni unutmang",
+    "studentBadge": "O'quvchi",
+    "avgScore": "O'rtacha ball",
+    "totalAttempts": "Jami urinish",
+    "assignments": "Topshiriq",
+    "completion": "Bajarish",
+    "myTests": "Mening Testlarim",
+    "myTestsDesc": "O'qituvchi bergan testlar",
+    "globalTests": "Global Testlar",
+    "globalTestsDesc": "Barcha tasdiqlangan testlar",
+    "myGroups": "Mening Guruhlarim",
+    "myGroupsDesc": "{{count}} ta guruh",
+    "statistics": "Statistika",
+    "statisticsDesc": "O'z natijalarim",
+    "recentGlobalTests": "Yangi Global Testlar",
+    "viewAll": "Barchasi",
+    "startTest": "Boshlash",
+    "noGlobalTests": "Hozircha global testlar mavjud emas",
+    "myGroupsTitle": "Guruhlarim",
+    "viewGroups": "Ko'rish",
+    "notInGroup": "Guruhga qo'shilmagan",
+    "memberCount": "{{count}} o'quvchi",
+    "active": "Faol",
+    "archive": "Arxiv",
+    "categoriesTitle": "Kategoriyalar bo'yicha testlar",
+    "questionsCount": "{{count}} savol"
+  },
+  "stats": {
+    "title": "Mening Statistikam",
+    "subtitle": "Umumiy ko'rsatkichlar",
+    "noData": "Statistika hali mavjud emas. Test ishlab ko'ring!",
+    "avgScore": "O'rtacha ball",
+    "totalAttempts": "Jami urinishlar",
+    "assignments": "Topshirishlar",
+    "completionRate": "Bajarish darajasi",
+    "subjectBreakdown": "Fanlar bo'yicha natijalar",
+    "attempts": "{{count}} ta urinish",
+    "weakAreas": "Kuchsiz mavzular",
+    "strongAreas": "Kuchli mavzular",
+    "scoreTrend": "Ball tendensiyasi"
   }
 }

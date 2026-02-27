@@ -185,5 +185,30 @@
     "copy": "Nusxalash",
     "copied": "Promokod nusxalandi!",
     "shareHint": "Ushbu kodni o'quvchilaringizga ulashing"
+  },
+  "globalStatus": {
+    "NONE": "Global emas",
+    "PENDING_MODERATION": "Moderatsiya kutilmoqda",
+    "APPROVED": "Global tasdiqlangan ✓",
+    "REJECTED": "Rad etildi",
+    "submitTooltip": "Global testlar ro'yxatiga yuborish",
+    "grade": "{{level}}-sinf",
+    "submittedAt": "Moderatsiyaga yuborildi",
+    "pendingAlert": "Bu test moderatsiya navbatida. Tasdiqlangandan so'ng barcha foydalanuvchilarga ko'rinadi.",
+    "approvedAlert": "Bu test global tasdiqlangan! Barcha foydalanuvchilarga ko'rinadi.",
+    "rejectedAlert": "Bu test rad etildi.",
+    "rejectedReason": "Sabab:",
+    "rejectedHint": "Tuzatib qayta yuboring."
+  },
+  "submitGlobal": {
+    "title": "Testni global ro'yxatga yuborish",
+    "description": "Bu testni barcha foydalanuvchilarga ko'rinadigan global testlar ro'yxatiga yuborishni xohlaysizmi?",
+    "moderatorNote": "Yuborilgan test moderator tomonidan ko'rib chiqiladi. Tasdiqlangandan so'ng:",
+    "benefit1": "Barcha o'qituvchi, student, admin va moderatorlarga ko'rinadi",
+    "benefit2": "Student to'g'ridan-to'g'ri test ishlashi mumkin bo'ladi",
+    "benefit3": "DTM, SCHOOL, OLYMPIAD kabi kategoriyada ko'rsatiladi",
+    "cancel": "Bekor qilish",
+    "submit": "Moderatsiyaga yuborish",
+    "submitting": "Yuborilmoqda..."
   }
 }

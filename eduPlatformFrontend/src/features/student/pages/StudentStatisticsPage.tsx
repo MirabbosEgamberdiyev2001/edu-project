@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Typography,
@@ -17,7 +18,6 @@ import {
 } from '@mui/material';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import QuizIcon from '@mui/icons-material/Quiz';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import StarIcon from '@mui/icons-material/Star';
@@ -26,6 +26,7 @@ import { analyticsApi } from '@/api/analyticsApi';
 import PageBreadcrumbs from '@/components/PageBreadcrumbs';
 
 export default function StudentStatisticsPage() {
+  const { t } = useTranslation('testTaking');
   const { data, isLoading, isError } = useQuery({
     queryKey: ['student-analytics-me'],
     queryFn: () => analyticsApi.getMyAnalytics().then(r => r.data.data),
@@ -43,9 +44,9 @@ export default function StudentStatisticsPage() {
   if (isError || !data) {
     return (
       <Box>
-        <PageBreadcrumbs items={[{ label: 'Statistika' }]} />
+        <PageBreadcrumbs items={[{ label: t('stats.title') }]} />
         <Alert severity="info" sx={{ mt: 2 }}>
-          Statistika hali mavjud emas. Test ishlab ko'ring!
+          {t('stats.noData')}
         </Alert>
       </Box>
     );
@@ -55,16 +56,16 @@ export default function StudentStatisticsPage() {
 
   return (
     <Box>
-      <PageBreadcrumbs items={[{ label: 'Mening Statistikam' }]} />
+      <PageBreadcrumbs items={[{ label: t('stats.title') }]} />
 
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
         <BarChartIcon sx={{ fontSize: 32, color: 'primary.main' }} />
         <Box>
           <Typography variant="h5" fontWeight={700}>
-            Mening Statistikam
+            {t('stats.title')}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {data.firstName} {data.lastName} — umumiy ko'rsatkichlar
+            {data.firstName} {data.lastName} — {t('stats.subtitle')}
           </Typography>
         </Box>
       </Box>
@@ -73,7 +74,7 @@ export default function StudentStatisticsPage() {
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid item xs={6} sm={3}>
           <StatCard
-            title="O'rtacha ball"
+            title={t('stats.avgScore')}
             value={`${data.overallAverage.toFixed(1)}%`}
             color={scoreColor === 'success' ? '#2e7d32' : scoreColor === 'warning' ? '#e65100' : '#c62828'}
             icon={<TrendingUpIcon />}
@@ -81,7 +82,7 @@ export default function StudentStatisticsPage() {
         </Grid>
         <Grid item xs={6} sm={3}>
           <StatCard
-            title="Jami urinishlar"
+            title={t('stats.totalAttempts')}
             value={data.totalAttempts.toString()}
             color="#1565c0"
             icon={<QuizIcon />}
@@ -89,7 +90,7 @@ export default function StudentStatisticsPage() {
         </Grid>
         <Grid item xs={6} sm={3}>
           <StatCard
-            title="Topshirishlar"
+            title={t('stats.assignments')}
             value={data.totalAssignments.toString()}
             color="#4a148c"
             icon={<CheckCircleIcon />}
@@ -97,7 +98,7 @@ export default function StudentStatisticsPage() {
         </Grid>
         <Grid item xs={6} sm={3}>
           <StatCard
-            title="Bajarish darajasi"
+            title={t('stats.completionRate')}
             value={`${(data.completionRate * 100).toFixed(0)}%`}
             color="#00695c"
             icon={<StarIcon />}
@@ -111,7 +112,7 @@ export default function StudentStatisticsPage() {
           <Grid item xs={12} md={6}>
             <Paper sx={{ p: 3, height: '100%' }}>
               <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2 }}>
-                Fanlar bo'yicha natijalar
+                {t('stats.subjectBreakdown')}
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {data.subjectBreakdown.map(subj => (
@@ -132,7 +133,7 @@ export default function StudentStatisticsPage() {
                       sx={{ borderRadius: 4, height: 8 }}
                     />
                     <Typography variant="caption" color="text.secondary">
-                      {subj.totalAttempts} ta urinish
+                      {t('stats.attempts', { count: subj.totalAttempts })}
                     </Typography>
                   </Box>
                 ))}
@@ -148,7 +149,7 @@ export default function StudentStatisticsPage() {
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                 <WarningIcon color="error" fontSize="small" />
                 <Typography variant="subtitle1" fontWeight={700}>
-                  Kuchsiz mavzular
+                  {t('stats.weakAreas')}
                 </Typography>
               </Box>
               <List dense>
@@ -188,7 +189,7 @@ export default function StudentStatisticsPage() {
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                 <StarIcon color="success" fontSize="small" />
                 <Typography variant="subtitle1" fontWeight={700}>
-                  Kuchli mavzular
+                  {t('stats.strongAreas')}
                 </Typography>
               </Box>
               <List dense>
@@ -226,7 +227,7 @@ export default function StudentStatisticsPage() {
           <Grid item xs={12} md={6}>
             <Paper sx={{ p: 3 }}>
               <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2 }}>
-                Ball tendensiyasi
+                {t('stats.scoreTrend')}
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 {data.scoreTrend.slice(-10).map((point, idx) => (

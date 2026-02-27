@@ -124,5 +124,48 @@
       "medium": "Medium",
       "hard": "Hard"
     }
+  },
+  "dashboard": {
+    "welcome": "Welcome, {{name}}!",
+    "welcomeSubtitle": "Don't forget to take a test today",
+    "studentBadge": "Student",
+    "avgScore": "Average Score",
+    "totalAttempts": "Total Attempts",
+    "assignments": "Assignments",
+    "completion": "Completion",
+    "myTests": "My Tests",
+    "myTestsDesc": "Tests assigned by teacher",
+    "globalTests": "Global Tests",
+    "globalTestsDesc": "All approved tests",
+    "myGroups": "My Groups",
+    "myGroupsDesc": "{{count}} groups",
+    "statistics": "Statistics",
+    "statisticsDesc": "My results",
+    "recentGlobalTests": "Recent Global Tests",
+    "viewAll": "View All",
+    "startTest": "Start",
+    "noGlobalTests": "No global tests available yet",
+    "myGroupsTitle": "My Groups",
+    "viewGroups": "View",
+    "notInGroup": "Not in any group",
+    "memberCount": "{{count}} students",
+    "active": "Active",
+    "archive": "Archive",
+    "categoriesTitle": "Tests by Category",
+    "questionsCount": "{{count}} questions"
+  },
+  "stats": {
+    "title": "My Statistics",
+    "subtitle": "Overall performance indicators",
+    "noData": "Statistics not available yet. Try taking a test!",
+    "avgScore": "Average Score",
+    "totalAttempts": "Total Attempts",
+    "assignments": "Assignments",
+    "completionRate": "Completion Rate",
+    "subjectBreakdown": "Results by Subject",
+    "attempts": "{{count}} attempts",
+    "weakAreas": "Weak Areas",
+    "strongAreas": "Strong Areas",
+    "scoreTrend": "Score Trend"
   }
 }

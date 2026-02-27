@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -58,7 +57,7 @@ public class GlobalTestController {
 
         PagedResponse<TestHistoryDto> response = testHistoryService.getApprovedGlobalTests(
                 category, subjectId, gradeLevel,
-                PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")),
+                PageRequest.of(page, size),
                 language);
         return ResponseEntity.ok(ApiResponse.success(response));
     }

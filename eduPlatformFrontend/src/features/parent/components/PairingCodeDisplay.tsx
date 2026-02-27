@@ -123,8 +123,8 @@ export default function PairingCodeDisplay({ data, isPending, onGenerate }: Pair
         sx={{ mb: 2 }}
       >
         {isExpired
-          ? t('codeExpires', { minutes: 0 })
-          : t('codeExpires', { minutes: remainingMinutes })}
+          ? t('codeExpired')
+          : t('codeExpiry', { minutes: remainingMinutes })}
       </Typography>
 
       <Button

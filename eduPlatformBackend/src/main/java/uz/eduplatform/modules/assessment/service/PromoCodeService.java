@@ -156,7 +156,7 @@ public class PromoCodeService {
                 return code;
             }
         }
-        throw new BusinessException("Failed to generate unique promo code. Please try again.");
+        throw BusinessException.ofKey("promo.code.generation.failed");
     }
 
     private PromoCodeDto mapToDto(AssignmentPromoCode pc) {

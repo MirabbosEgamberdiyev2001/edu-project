@@ -16,7 +16,7 @@ export function useRedeemPromoCode() {
     mutationFn: (data: RedeemPromoCodeRequest) => testTakingApi.redeemPromoCode(data),
     onSuccess: ({ data: resp }) => {
       toast.success(resp.message || t('promoCode.redeemed'));
-      queryClient.invalidateQueries({ queryKey: ['available-assignments'] });
+      queryClient.invalidateQueries({ queryKey: ['test-taking', 'available'] });
     },
     onError: (error: AxiosError<ApiError>) => {
       toast.error(error.response?.data?.message || tc('error'));

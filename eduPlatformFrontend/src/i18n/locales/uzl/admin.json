@@ -198,7 +198,8 @@
     "bulkSuccess": "{{total}} tadan {{success}} ta savol muvaffaqiyatli bajarildi",
     "bulkFailed": "{{failed}} ta savol bajarilmadi",
     "viewQuestion": "Savolni ko'rish",
-    "proof": "Isbotlash/Tushuntirish"
+    "proof": "Isbotlash/Tushuntirish",
+    "approveGlobal": "Tasdiqlash — Global qilish"
   },
   "nav": {
     "dashboard": "Admin paneli",

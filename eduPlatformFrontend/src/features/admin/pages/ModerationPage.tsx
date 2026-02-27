@@ -463,6 +463,7 @@ function GlobalTestRow({ test, onApprove, onReject, approving }: {
   onReject: () => void;
   approving: boolean;
 }) {
+  const { t } = useTranslation('admin');
   const category = test.category || '';
   return (
     <TableRow hover>
@@ -502,12 +503,12 @@ function GlobalTestRow({ test, onApprove, onReject, approving }: {
         </Typography>
       </TableCell>
       <TableCell align="right">
-        <Tooltip title="Tasdiqlash — Global qilish">
+        <Tooltip title={t('moderation.approveGlobal')}>
           <IconButton size="small" color="success" onClick={onApprove} disabled={approving}>
             <CheckCircleIcon fontSize="small" />
           </IconButton>
         </Tooltip>
-        <Tooltip title="Rad etish">
+        <Tooltip title={t('moderation.reject')}>
           <IconButton size="small" color="error" onClick={onReject}>
             <CancelIcon fontSize="small" />
           </IconButton>

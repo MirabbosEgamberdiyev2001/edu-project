@@ -124,5 +124,48 @@
       "medium": "Средний",
       "hard": "Сложный"
     }
+  },
+  "dashboard": {
+    "welcome": "Добро пожаловать, {{name}}!",
+    "welcomeSubtitle": "Не забудьте пройти тест сегодня",
+    "studentBadge": "Ученик",
+    "avgScore": "Средний балл",
+    "totalAttempts": "Всего попыток",
+    "assignments": "Задания",
+    "completion": "Выполнение",
+    "myTests": "Мои тесты",
+    "myTestsDesc": "Тесты от учителя",
+    "globalTests": "Глобальные тесты",
+    "globalTestsDesc": "Все одобренные тесты",
+    "myGroups": "Мои группы",
+    "myGroupsDesc": "{{count}} групп",
+    "statistics": "Статистика",
+    "statisticsDesc": "Мои результаты",
+    "recentGlobalTests": "Последние глобальные тесты",
+    "viewAll": "Все",
+    "startTest": "Начать",
+    "noGlobalTests": "Глобальных тестов пока нет",
+    "myGroupsTitle": "Мои группы",
+    "viewGroups": "Просмотр",
+    "notInGroup": "Не состоит в группе",
+    "memberCount": "{{count}} учеников",
+    "active": "Активный",
+    "archive": "Архив",
+    "categoriesTitle": "Тесты по категориям",
+    "questionsCount": "{{count}} вопросов"
+  },
+  "stats": {
+    "title": "Моя статистика",
+    "subtitle": "Общие показатели успеваемости",
+    "noData": "Статистика пока недоступна. Пройдите тест!",
+    "avgScore": "Средний балл",
+    "totalAttempts": "Всего попыток",
+    "assignments": "Задания",
+    "completionRate": "Процент выполнения",
+    "subjectBreakdown": "Результаты по предметам",
+    "attempts": "{{count}} попыток",
+    "weakAreas": "Слабые темы",
+    "strongAreas": "Сильные темы",
+    "scoreTrend": "Тенденция баллов"
   }
 }

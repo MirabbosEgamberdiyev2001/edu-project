@@ -198,7 +198,8 @@
     "bulkSuccess": "{{success}} of {{total}} questions processed successfully",
     "bulkFailed": "{{failed}} questions failed to process",
     "viewQuestion": "View Question",
-    "proof": "Proof/Explanation"
+    "proof": "Proof/Explanation",
+    "approveGlobal": "Approve — Make Global"
   },
   "nav": {
     "dashboard": "Admin Panel",

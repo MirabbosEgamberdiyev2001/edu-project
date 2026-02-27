@@ -185,5 +185,30 @@
     "copy": "Copy",
     "copied": "Promo code copied!",
     "shareHint": "Share this code with your students"
+  },
+  "globalStatus": {
+    "NONE": "Not global",
+    "PENDING_MODERATION": "Pending moderation",
+    "APPROVED": "Globally approved ✓",
+    "REJECTED": "Rejected",
+    "submitTooltip": "Submit to global tests list",
+    "grade": "Grade {{level}}",
+    "submittedAt": "Submitted for moderation",
+    "pendingAlert": "This test is in the moderation queue. It will be visible to all users once approved.",
+    "approvedAlert": "This test is globally approved! It is visible to all users.",
+    "rejectedAlert": "This test was rejected.",
+    "rejectedReason": "Reason:",
+    "rejectedHint": "Fix the issues and resubmit."
+  },
+  "submitGlobal": {
+    "title": "Submit Test to Global List",
+    "description": "Do you want to submit this test to the global tests list visible to all users?",
+    "moderatorNote": "The submitted test will be reviewed by a moderator. Once approved:",
+    "benefit1": "Visible to all teachers, students, admins and moderators",
+    "benefit2": "Students will be able to take the test directly",
+    "benefit3": "Shown in categories like DTM, SCHOOL, OLYMPIAD",
+    "cancel": "Cancel",
+    "submit": "Submit for Moderation",
+    "submitting": "Submitting..."
   }
 }

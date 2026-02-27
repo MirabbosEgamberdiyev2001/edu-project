@@ -26,7 +26,7 @@ import AssignmentDeleteDialog from '../components/AssignmentDeleteDialog';
 import type { AssignmentDto, CreateAssignmentRequest } from '@/types/assignment';
 import { AssignmentStatus } from '@/types/assignment';
 
-const STATUS_TABS: (AssignmentStatus | '')[] = ['', AssignmentStatus.DRAFT, AssignmentStatus.ACTIVE, AssignmentStatus.COMPLETED, AssignmentStatus.CANCELLED];
+const STATUS_TABS: (AssignmentStatus | '')[] = ['', AssignmentStatus.DRAFT, AssignmentStatus.SCHEDULED, AssignmentStatus.ACTIVE, AssignmentStatus.COMPLETED, AssignmentStatus.CANCELLED];
 
 export default function AssignmentsPage() {
   const { t } = useTranslation('assignment');
@@ -125,6 +125,7 @@ export default function AssignmentsPage() {
       >
         <Tab label={t('allTab')} sx={{ textTransform: 'none' }} />
         <Tab label={t('status.DRAFT')} sx={{ textTransform: 'none' }} />
+        <Tab label={t('status.SCHEDULED')} sx={{ textTransform: 'none' }} />
         <Tab label={t('status.ACTIVE')} sx={{ textTransform: 'none' }} />
         <Tab label={t('status.COMPLETED')} sx={{ textTransform: 'none' }} />
         <Tab label={t('status.CANCELLED')} sx={{ textTransform: 'none' }} />

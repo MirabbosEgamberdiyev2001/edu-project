@@ -59,17 +59,19 @@ public interface TestHistoryRepository extends JpaRepository<TestHistory, UUID> 
 
     // Native query: avoids Hibernate 6 JPQL null-enum binding issue.
     // Params are plain Strings/Integer so Spring Data does not attempt enum-type inference.
-    // subjectId is passed as text and compared with subject_id::text to avoid cast problems.
+    // CAST(:param AS text) IS NULL pattern solves PostgreSQL type inference error with null JDBC params.
+    // ORDER BY is hardcoded to avoid Hibernate 6 Sort+native-query incompatibility (camelCase vs snake_case).
     @Query(value = "SELECT * FROM test_history " +
            "WHERE global_status = :status " +
-           "AND (:category IS NULL OR category = :category) " +
-           "AND (:subjectId IS NULL OR subject_id::text = :subjectId) " +
+           "AND (CAST(:category AS text) IS NULL OR category::text = CAST(:category AS text)) " +
+           "AND (CAST(:subjectId AS text) IS NULL OR subject_id::text = CAST(:subjectId AS text)) " +
            "AND (:gradeLevel IS NULL OR grade_level = :gradeLevel) " +
-           "AND deleted_at IS NULL",
+           "AND deleted_at IS NULL " +
+           "ORDER BY created_at DESC",
            countQuery = "SELECT COUNT(*) FROM test_history " +
            "WHERE global_status = :status " +
-           "AND (:category IS NULL OR category = :category) " +
-           "AND (:subjectId IS NULL OR subject_id::text = :subjectId) " +
+           "AND (CAST(:category AS text) IS NULL OR category::text = CAST(:category AS text)) " +
+           "AND (CAST(:subjectId AS text) IS NULL OR subject_id::text = CAST(:subjectId AS text)) " +
            "AND (:gradeLevel IS NULL OR grade_level = :gradeLevel) " +
            "AND deleted_at IS NULL",
            nativeQuery = true)

@@ -177,7 +177,7 @@ export default function GlobalTestsPage() {
       </Paper>
 
       {/* Results Count */}
-      {!isLoading && (
+      {!isLoading && !isError && (
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           {t('globalTests.found', { count: totalElements })}
         </Typography>
@@ -198,7 +198,7 @@ export default function GlobalTestsPage() {
             </Grid>
           ))}
         </Grid>
-      ) : tests.length === 0 ? (
+      ) : isError ? null : tests.length === 0 ? (
         <Paper sx={{ p: 6, textAlign: 'center' }}>
           <QuizIcon sx={{ fontSize: 60, color: 'text.disabled', mb: 2 }} />
           <Typography variant="h6" color="text.secondary">

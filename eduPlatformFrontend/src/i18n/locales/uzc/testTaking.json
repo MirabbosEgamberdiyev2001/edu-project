@@ -124,5 +124,48 @@
       "medium": "Ўрта",
       "hard": "Қийин"
     }
+  },
+  "dashboard": {
+    "welcome": "Хуш келибсиз, {{name}}!",
+    "welcomeSubtitle": "Бугун ҳам тест ишлашни унутманг",
+    "studentBadge": "Ўқувчи",
+    "avgScore": "Ўртача балл",
+    "totalAttempts": "Жами уриниш",
+    "assignments": "Топшириқ",
+    "completion": "Бажариш",
+    "myTests": "Менинг Тестларим",
+    "myTestsDesc": "Ўқитувчи берган тестлар",
+    "globalTests": "Глобал Тестлар",
+    "globalTestsDesc": "Барча тасдиқланган тестлар",
+    "myGroups": "Менинг Гуруҳларим",
+    "myGroupsDesc": "{{count}} та гуруҳ",
+    "statistics": "Статистика",
+    "statisticsDesc": "Ўз натижаларим",
+    "recentGlobalTests": "Янги Глобал Тестлар",
+    "viewAll": "Барчаси",
+    "startTest": "Бошлаш",
+    "noGlobalTests": "Ҳозирча глобал тестлар мавжуд эмас",
+    "myGroupsTitle": "Гуруҳларим",
+    "viewGroups": "Кўриш",
+    "notInGroup": "Гуруҳга қўшилмаган",
+    "memberCount": "{{count}} ўқувчи",
+    "active": "Фаол",
+    "archive": "Архив",
+    "categoriesTitle": "Категориялар бўйича тестлар",
+    "questionsCount": "{{count}} савол"
+  },
+  "stats": {
+    "title": "Менинг Статистикам",
+    "subtitle": "Умумий кўрсаткичлар",
+    "noData": "Статистика ҳали мавжуд эмас. Тест ишлаб кўринг!",
+    "avgScore": "Ўртача балл",
+    "totalAttempts": "Жами уринишлар",
+    "assignments": "Топширишлар",
+    "completionRate": "Бажариш даражаси",
+    "subjectBreakdown": "Фанлар бўйича натижалар",
+    "attempts": "{{count}} та уриниш",
+    "weakAreas": "Кучсиз мавзулар",
+    "strongAreas": "Кучли мавзулар",
+    "scoreTrend": "Балл тенденцияси"
   }
 }

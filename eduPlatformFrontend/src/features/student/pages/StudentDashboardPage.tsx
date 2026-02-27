@@ -1,14 +1,12 @@
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Typography,
   Paper,
   Grid,
   Button,
-  Card,
-  CardContent,
-  CardActions,
   Chip,
   CircularProgress,
   Avatar,
@@ -21,8 +19,6 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import GroupsIcon from '@mui/icons-material/Groups';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import StarIcon from '@mui/icons-material/Star';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import PublicIcon from '@mui/icons-material/Public';
 import { analyticsApi } from '@/api/analyticsApi';
@@ -31,17 +27,10 @@ import { groupApi } from '@/api/groupApi';
 import { useAuth } from '@/hooks/useAuth';
 import { TestCategory } from '@/types/test';
 
-const CATEGORY_LABELS: Record<string, string> = {
-  DTM: '🎓 DTM',
-  SCHOOL: '🏫 Maktab',
-  OLYMPIAD: '🏆 Olimpiada',
-  CERTIFICATE: '📜 Sertifikat',
-  ATTESTATSIYA: '📋 Attestatsiya',
-};
-
 export default function StudentDashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useTranslation('testTaking');
 
   const { data: analytics } = useQuery({
     queryKey: ['student-analytics-me'],
@@ -86,13 +75,13 @@ export default function StudentDashboardPage() {
           </Avatar>
           <Box sx={{ flex: 1 }}>
             <Typography variant="h5" fontWeight={700}>
-              Xush kelibsiz, {user?.firstName}!
+              {t('dashboard.welcome', { name: user?.firstName })}
             </Typography>
             <Typography variant="body2" sx={{ opacity: 0.85 }}>
-              Bugun ham test ishlashni unutmang
+              {t('dashboard.welcomeSubtitle')}
             </Typography>
           </Box>
-          <Chip label="O'quvchi" sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white' }} />
+          <Chip label={t('dashboard.studentBadge')} sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white' }} />
         </Box>
       </Paper>
 
@@ -104,7 +93,7 @@ export default function StudentDashboardPage() {
               <Typography variant="h4" fontWeight={800} sx={{ color: scoreColor }}>
                 {analytics.overallAverage.toFixed(0)}%
               </Typography>
-              <Typography variant="caption" color="text.secondary">O'rtacha ball</Typography>
+              <Typography variant="caption" color="text.secondary">{t('dashboard.avgScore')}</Typography>
             </Paper>
           </Grid>
           <Grid item xs={6} sm={3}>
@@ -112,7 +101,7 @@ export default function StudentDashboardPage() {
               <Typography variant="h4" fontWeight={800} color="primary">
                 {analytics.totalAttempts}
               </Typography>
-              <Typography variant="caption" color="text.secondary">Jami urinish</Typography>
+              <Typography variant="caption" color="text.secondary">{t('dashboard.totalAttempts')}</Typography>
             </Paper>
           </Grid>
           <Grid item xs={6} sm={3}>
@@ -120,7 +109,7 @@ export default function StudentDashboardPage() {
               <Typography variant="h4" fontWeight={800} sx={{ color: '#4a148c' }}>
                 {analytics.totalAssignments}
               </Typography>
-              <Typography variant="caption" color="text.secondary">Topshiriq</Typography>
+              <Typography variant="caption" color="text.secondary">{t('dashboard.assignments')}</Typography>
             </Paper>
           </Grid>
           <Grid item xs={6} sm={3}>
@@ -128,7 +117,7 @@ export default function StudentDashboardPage() {
               <Typography variant="h4" fontWeight={800} sx={{ color: '#00695c' }}>
                 {(analytics.completionRate * 100).toFixed(0)}%
               </Typography>
-              <Typography variant="caption" color="text.secondary">Bajarish</Typography>
+              <Typography variant="caption" color="text.secondary">{t('dashboard.completion')}</Typography>
             </Paper>
           </Grid>
         </Grid>
@@ -138,8 +127,8 @@ export default function StudentDashboardPage() {
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid item xs={12} sm={6} md={3}>
           <NavCard
-            title="Mening Testlarim"
-            desc="O'qituvchi bergan testlar"
+            title={t('dashboard.myTests')}
+            desc={t('dashboard.myTestsDesc')}
             icon={<AssignmentIcon sx={{ fontSize: 36, color: '#1565c0' }} />}
             onClick={() => navigate('/my-tests')}
             color="#1565c0"
@@ -147,8 +136,8 @@ export default function StudentDashboardPage() {
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <NavCard
-            title="Global Testlar"
-            desc="Barcha tasdiqlangan testlar"
+            title={t('dashboard.globalTests')}
+            desc={t('dashboard.globalTestsDesc')}
             icon={<PublicIcon sx={{ fontSize: 36, color: '#2e7d32' }} />}
             onClick={() => navigate('/global-tests')}
             color="#2e7d32"
@@ -156,8 +145,8 @@ export default function StudentDashboardPage() {
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <NavCard
-            title="Mening Guruhlarim"
-            desc={`${totalGroups} ta guruh`}
+            title={t('dashboard.myGroups')}
+            desc={t('dashboard.myGroupsDesc', { count: totalGroups })}
             icon={<GroupsIcon sx={{ fontSize: 36, color: '#6a1b9a' }} />}
             onClick={() => navigate('/my-groups')}
             color="#6a1b9a"
@@ -165,8 +154,8 @@ export default function StudentDashboardPage() {
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <NavCard
-            title="Statistika"
-            desc="O'z natijalarim"
+            title={t('dashboard.statistics')}
+            desc={t('dashboard.statisticsDesc')}
             icon={<BarChartIcon sx={{ fontSize: 36, color: '#c62828' }} />}
             onClick={() => navigate('/student-statistics')}
             color="#c62828"
@@ -180,19 +169,19 @@ export default function StudentDashboardPage() {
           <Paper sx={{ p: 3 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
               <Typography variant="subtitle1" fontWeight={700}>
-                Yangi Global Testlar
+                {t('dashboard.recentGlobalTests')}
               </Typography>
               <Button
                 size="small"
                 endIcon={<ArrowForwardIcon />}
                 onClick={() => navigate('/global-tests')}
               >
-                Barchasi
+                {t('dashboard.viewAll')}
               </Button>
             </Box>
             {recentTests.length === 0 ? (
               <Alert severity="info" variant="outlined">
-                Hozircha global testlar mavjud emas
+                {t('dashboard.noGlobalTests')}
               </Alert>
             ) : (
               <Stack spacing={1.5}>
@@ -203,9 +192,16 @@ export default function StudentDashboardPage() {
                         <Typography variant="body2" fontWeight={600}>{test.title}</Typography>
                         <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
                           {test.category && (
-                            <Chip label={CATEGORY_LABELS[test.category] || test.category} size="small" />
+                            <Chip
+                              label={t(`globalTests.category.${test.category}`, { defaultValue: test.category })}
+                              size="small"
+                            />
                           )}
-                          <Chip label={`${test.questionCount} savol`} size="small" variant="outlined" />
+                          <Chip
+                            label={t('dashboard.questionsCount', { count: test.questionCount })}
+                            size="small"
+                            variant="outlined"
+                          />
                           <Typography variant="caption" color="text.secondary" sx={{ alignSelf: 'center' }}>
                             {test.subjectName}
                           </Typography>
@@ -218,7 +214,7 @@ export default function StudentDashboardPage() {
                         onClick={() => navigate('/global-tests')}
                         sx={{ flexShrink: 0 }}
                       >
-                        Boshlash
+                        {t('dashboard.startTest')}
                       </Button>
                     </Box>
                     <Divider sx={{ mt: 1.5 }} />
@@ -229,22 +225,22 @@ export default function StudentDashboardPage() {
           </Paper>
         </Grid>
 
-        {/* My Groups + Weak Areas */}
+        {/* My Groups + Categories */}
         <Grid item xs={12} md={5}>
           <Stack spacing={2}>
             {/* My Groups */}
             <Paper sx={{ p: 3 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                 <Typography variant="subtitle1" fontWeight={700}>
-                  Guruhlarim
+                  {t('dashboard.myGroupsTitle')}
                 </Typography>
                 <Button size="small" endIcon={<ArrowForwardIcon />} onClick={() => navigate('/my-groups')}>
-                  Ko'rish
+                  {t('dashboard.viewGroups')}
                 </Button>
               </Box>
               {myGroups.length === 0 ? (
                 <Typography variant="body2" color="text.secondary">
-                  Guruhga qo'shilmagan
+                  {t('dashboard.notInGroup')}
                 </Typography>
               ) : (
                 <Stack spacing={1}>
@@ -256,11 +252,11 @@ export default function StudentDashboardPage() {
                       <Box sx={{ flex: 1 }}>
                         <Typography variant="body2" fontWeight={600}>{group.name}</Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {group.teacherName} • {group.memberCount} o'quvchi
+                          {group.teacherName} • {t('dashboard.memberCount', { count: group.memberCount })}
                         </Typography>
                       </Box>
                       <Chip
-                        label={group.status === 'ACTIVE' ? 'Faol' : 'Arxiv'}
+                        label={group.status === 'ACTIVE' ? t('dashboard.active') : t('dashboard.archive')}
                         size="small"
                         color={group.status === 'ACTIVE' ? 'success' : 'default'}
                       />
@@ -273,7 +269,7 @@ export default function StudentDashboardPage() {
             {/* Categories */}
             <Paper sx={{ p: 3 }}>
               <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2 }}>
-                Kategoriyalar bo'yicha testlar
+                {t('dashboard.categoriesTitle')}
               </Typography>
               <Stack spacing={1}>
                 {Object.values(TestCategory).map(cat => (
@@ -285,7 +281,7 @@ export default function StudentDashboardPage() {
                     onClick={() => navigate(`/global-tests?category=${cat}`)}
                     sx={{ justifyContent: 'flex-start', fontWeight: 600 }}
                   >
-                    {CATEGORY_LABELS[cat] || cat}
+                    {t(`globalTests.category.${cat}`, { defaultValue: cat })}
                   </Button>
                 ))}
               </Stack>
