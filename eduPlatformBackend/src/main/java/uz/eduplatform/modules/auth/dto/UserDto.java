@@ -30,4 +30,8 @@ public class UserDto {
     private UserStatus status;
     private LocalDateTime lastLoginAt;
     private LocalDateTime createdAt;
+    private String bio;
+    private String workplace;
+    private UUID subjectId;
+    private String subjectName;
 }
