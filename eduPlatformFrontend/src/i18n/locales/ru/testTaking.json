@@ -63,7 +63,6 @@
   "correctAnswers": "Правильные ответы",
   "wrongAnswers": "Неправильные ответы",
   "skipped": "Пропущено",
-  "timeTaken": "Затраченное время",
   "submittedAt": "Время сдачи",
   "reviewAnswers": "Обзор ответов",
   "yourAnswer": "Ваш ответ",
@@ -232,5 +231,18 @@
     "noResults": "Вы ещё не проходили тесты аттестации",
     "viewResult": "Посмотреть результат",
     "defaultSubjectHint": "Отфильтровано по предмету вашего профиля"
+  },
+  "exam": {
+    "answeredOf": "{{answered}} / {{total}}",
+    "allAnswered": "Все отвечены",
+    "navLabel": "Навигация по вопросам",
+    "questionBtn": "Вопрос {{number}}",
+    "legend": {
+      "current": "Текущий",
+      "answered": "Отвечен",
+      "unanswered": "Не отвечен"
+    },
+    "finishLabel": "Завершить экзамен",
+    "submitWarning": "{{count}} вопросов без ответа"
   }
 }

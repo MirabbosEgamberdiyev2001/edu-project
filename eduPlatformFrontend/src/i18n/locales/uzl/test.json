@@ -69,9 +69,17 @@
     "proofs": "Isbotlar",
     "pdf": "PDF",
     "docx": "DOCX",
+    "html": "HTML",
     "downloading": "Yuklanmoqda...",
     "downloaded": "Muvaffaqiyatli yuklandi",
-    "error": "Eksport qilishda xatolik yuz berdi"
+    "error": "Eksport qilishda xatolik yuz berdi",
+    "tooltipPdf": "PDF — yangi oyna, brauzer print dialogi",
+    "tooltipDocx": "Word (.doc) — to'g'ridan-to'g'ri Microsoft Word 2013+ da ochiladi",
+    "tooltipHtml": "HTML — har qanday brauzerda ochish va saqlash",
+    "descTest": "Barcha savollar javob variantlari bilan, to'g'ri javob ko'rsatilmaydi",
+    "descAnswerKey": "Barcha variantlar uchun ixcham javoblar jadvali",
+    "descCombined": "Test savollari + javoblar kaliti birgalikda",
+    "descProofs": "To'g'ri javoblar belgilangan + to'liq isbotlar"
   },
   "status": {
     "CREATED": "Yaratilgan",

@@ -24,6 +24,7 @@ import { useTranslation } from 'react-i18next';
 import type { QuestionDto } from '@/types/question';
 import { QuestionStatus } from '@/types/question';
 import { resolveTranslation } from '@/utils/i18nUtils';
+import { MathText } from '@/components/math';
 
 interface QuestionCardProps {
   question: QuestionDto;
@@ -127,22 +128,18 @@ export default function QuestionCard({
           </IconButton>
         </Box>
 
-        {/* Question text — body1 for readability */}
-        <Typography
+        {/* Question text — MathText renders LaTeX; maxHeight limits card preview height */}
+        <MathText
+          text={displayText}
           variant="body1"
-          fontWeight={600}
-          color="text.primary"
           sx={{
             mb: 1.5,
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
+            fontWeight: 600,
+            maxHeight: '3.4em',
             overflow: 'hidden',
             lineHeight: 1.6,
           }}
-        >
-          {displayText}
-        </Typography>
+        />
 
         {/* Subject · Topic */}
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>

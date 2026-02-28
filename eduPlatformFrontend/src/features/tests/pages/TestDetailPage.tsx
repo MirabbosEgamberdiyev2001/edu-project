@@ -25,9 +25,13 @@ import SendIcon from '@mui/icons-material/Send';
 import PublicIcon from '@mui/icons-material/Public';
 import PublishedWithChangesIcon from '@mui/icons-material/PublishedWithChanges';
 import AddLinkIcon from '@mui/icons-material/AddLink';
+import PrintIcon from '@mui/icons-material/Print';
+import DescriptionIcon from '@mui/icons-material/Description';
 import { useTestDetail } from '../hooks/useTests';
 import { useTestMutations } from '../hooks/useTestMutations';
 import { useQuestionMutations } from '@/features/questions/hooks/useQuestionMutations';
+import { MathText } from '@/components/math';
+import { generateMultiVariantDocument, downloadFile, printHtml, type ExportVariant } from '@/utils/mathExport';
 import { useQuestionsByIds } from '@/features/questions/hooks/useQuestions';
 import { QuestionStatus } from '@/types/question';
 import TestExportButtons from '../components/TestExportButtons';
@@ -116,6 +120,67 @@ export default function TestDetailPage() {
       .map(q => q.id);
   }, [questionsData]);
 
+  // Build ExportVariant[] for client-side PDF/DOCX/Word generation.
+  // Respects per-variant question order (questionIds) and option shuffle order (optionsOrder).
+  const exportVariants = useMemo((): ExportVariant[] => {
+    if (!questionsData || !test?.variants?.length) return [];
+    const LABELS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+    const qMap = new Map(questionsData.map((q) => [q.id, q]));
+
+    return test.variants.map((variant) => ({
+      code: variant.code,
+      questions: variant.questionIds
+        .map((qId, idx) => {
+          const q = qMap.get(qId);
+          if (!q) return null;
+
+          const rawOpts = Array.isArray(q.options)
+            ? (q.options as Array<Record<string, unknown>>)
+            : [];
+
+          // Reorder options per variant's optionsOrder[idx] (array of option IDs)
+          const orderIds: string[] = Array.isArray(variant.optionsOrder?.[idx])
+            ? (variant.optionsOrder[idx] as string[])
+            : [];
+          const reorderedOpts = orderIds.length > 0
+            ? (() => {
+                const optMap = new Map(rawOpts.map((o) => [String(o.id ?? ''), o]));
+                return orderIds.map((id) => optMap.get(id)).filter(Boolean) as typeof rawOpts;
+              })()
+            : rawOpts;
+
+          // Resolve correctAnswerText for non-MCQ types (SHORT_ANSWER, FILL_BLANK, ESSAY, TRUE_FALSE etc.)
+          // MCQ correct answers are determined by isCorrect flag on each option, not this field.
+          const ca = q.correctAnswer;
+          const correctAnswerText: string | undefined = (() => {
+            if (ca == null) return undefined;
+            if (typeof ca === 'string') return ca.trim() || undefined;
+            if (Array.isArray(ca)) return undefined; // MCQ option ID arrays — handled via isCorrect
+            if (typeof ca === 'object') {
+              return resolveTranslation(ca as Record<string, string>) || undefined;
+            }
+            return String(ca).trim() || undefined;
+          })();
+
+          return {
+            questionText: resolveTranslation(q.questionTextTranslations) || q.questionText || '',
+            points: q.points,
+            questionType: q.questionType,
+            options: reorderedOpts.map((opt, i) => ({
+              label: LABELS[i] ?? String(i + 1),
+              text: typeof opt.text === 'object' && opt.text !== null
+                ? resolveTranslation(opt.text as Record<string, string>) || ''
+                : String(opt.text ?? ''),
+              isCorrect: Boolean(opt.isCorrect),
+            })),
+            correctAnswerText,
+            proof: resolveTranslation(q.proofTranslations) || q.proof || undefined,
+          };
+        })
+        .filter(Boolean) as ExportVariant['questions'],
+    }));
+  }, [questionsData, test?.variants]);
+
   if (isLoading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
@@ -154,6 +219,21 @@ export default function TestDetailPage() {
       ]}
       actions={
         <Box sx={{ display: 'flex', gap: 1 }}>
+          <Tooltip title="Print / PDF">
+            <IconButton onClick={() => printHtml(generateMultiVariantDocument(exportVariants, displayTitle))}>
+              <PrintIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Export to Word (.doc)">
+            <IconButton
+              onClick={() => {
+                const safeName = displayTitle.replace(/[^\w\s-]/g, '').trim().slice(0, 60);
+                downloadFile(`${safeName || 'test'}.doc`, generateMultiVariantDocument(exportVariants, displayTitle), 'application/msword');
+              }}
+            >
+              <DescriptionIcon />
+            </IconButton>
+          </Tooltip>
           <Tooltip title={t('edit.title')}>
             <IconButton onClick={() => setEditOpen(true)}>
               <EditIcon />
@@ -340,25 +420,30 @@ export default function TestDetailPage() {
                       {idx + 1}.
                     </Typography>
                     <Box sx={{ flex: 1 }}>
-                      <Typography variant="body2" sx={{ fontWeight: 600, wordBreak: 'break-word' }}>
-                        {resolveTranslation(q.questionTextTranslations) || q.questionText}
-                      </Typography>
+                      <MathText
+                        text={resolveTranslation(q.questionTextTranslations) || q.questionText || ''}
+                        variant="body2"
+                        sx={{ fontWeight: 600, wordBreak: 'break-word' }}
+                      />
                       {options.length > 0 && (
                         <Box sx={{ mt: 0.5, pl: 1 }}>
-                          {options.map((opt, oi) => (
-                            <Typography
-                              key={oi}
-                              variant="caption"
-                              sx={{
-                                display: 'block',
-                                color: opt.isCorrect ? 'success.main' : 'text.secondary',
-                                fontWeight: opt.isCorrect ? 700 : 400,
-                              }}
-                            >
-                              {String.fromCharCode(65 + oi)}) {opt.text}
-                              {opt.isCorrect && ` ✓`}
-                            </Typography>
-                          ))}
+                          {options.map((opt, oi) => {
+                            const optText = typeof opt.text === 'object' && opt.text !== null
+                              ? resolveTranslation(opt.text as Record<string, string>) || ''
+                              : (String(opt.text ?? ''));
+                            return (
+                              <MathText
+                                key={oi}
+                                text={`${String.fromCharCode(65 + oi)}) ${optText}${opt.isCorrect ? ' ✓' : ''}`}
+                                variant="caption"
+                                sx={{
+                                  display: 'block',
+                                  color: opt.isCorrect ? 'success.main' : 'text.secondary',
+                                  fontWeight: opt.isCorrect ? 700 : 400,
+                                }}
+                              />
+                            );
+                          })}
                         </Box>
                       )}
                     </Box>
@@ -388,7 +473,7 @@ export default function TestDetailPage() {
 
       {/* Export */}
       <Paper sx={{ p: 3, mb: 3 }}>
-        <TestExportButtons testId={test.id} />
+        <TestExportButtons testId={test.id} variants={exportVariants} testTitle={displayTitle} />
       </Paper>
 
       <Divider sx={{ my: 2 }} />

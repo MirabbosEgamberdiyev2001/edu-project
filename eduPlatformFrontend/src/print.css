@@ -1,0 +1,86 @@
+/*
+ * Print / PDF stylesheet
+ *
+ * Applied automatically when the user triggers browser Print (Ctrl+P / Cmd+P)
+ * or when window.print() is called for PDF generation.
+ * KaTeX formulas render via the embedded MathML (output: 'htmlAndMathml').
+ */
+
+@media print {
+  /* ── Hide all navigation / interactive chrome ── */
+  .MuiAppBar-root,
+  .MuiDrawer-root,
+  .MuiDrawer-paper,
+  .MuiSpeedDial-root,
+  .MuiBottomNavigation-root,
+  .no-print {
+    display: none !important;
+  }
+
+  /* ── Page setup ── */
+  @page {
+    margin: 2cm 2.5cm;
+    size: A4;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  /* ── Strip box-shadows and colored backgrounds for print ── */
+  .MuiPaper-root,
+  .MuiCard-root {
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+    background: #fff !important;
+  }
+
+  /* ── KaTeX visual rendering ── */
+  .katex {
+    font-size: 1.1em !important;
+    color: #000 !important;
+  }
+
+  /* Display-mode formula: centered, no page break inside */
+  .katex-display {
+    margin: 0.75em 0 !important;
+    text-align: center;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Inline formula: no break across lines */
+  .katex-html {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Hide MathML accessibility layer from print output
+     (MathML is still used by PDF interpreters but shouldn't add visual noise) */
+  .katex .katex-mathml {
+    position: absolute !important;
+    clip: rect(1px, 1px, 1px, 1px) !important;
+    overflow: hidden !important;
+    height: 1px !important;
+    width: 1px !important;
+  }
+
+  /* ── Typography ── */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  p, li {
+    orphans: 3;
+    widows: 3;
+  }
+
+  /* ── Question blocks: never split a question across pages ── */
+  .print-question-block {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}

@@ -69,9 +69,17 @@
     "proofs": "Proofs",
     "pdf": "PDF",
     "docx": "DOCX",
+    "html": "HTML",
     "downloading": "Downloading...",
     "downloaded": "Downloaded successfully",
-    "error": "Export failed"
+    "error": "Export failed",
+    "tooltipPdf": "PDF — new window, browser print dialog",
+    "tooltipDocx": "Word (.doc) — opens directly in Microsoft Word 2013+",
+    "tooltipHtml": "HTML — open or save in any browser",
+    "descTest": "All questions with options, no answers shown",
+    "descAnswerKey": "Compact answer table for all variants",
+    "descCombined": "Test questions + answer key appended",
+    "descProofs": "Correct answers highlighted + full proofs"
   },
   "status": {
     "CREATED": "Created",

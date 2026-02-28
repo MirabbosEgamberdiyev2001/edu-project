@@ -63,7 +63,6 @@
   "correctAnswers": "To'g'ri javoblar",
   "wrongAnswers": "Noto'g'ri javoblar",
   "skipped": "O'tkazilgan",
-  "timeTaken": "Sarflangan vaqt",
   "submittedAt": "Topshirilgan vaqt",
   "reviewAnswers": "Javoblarni ko'rish",
   "yourAnswer": "Sizning javobingiz",
@@ -232,5 +231,18 @@
     "noResults": "Siz hali attestatsiya testlarini topshirmadingiz",
     "viewResult": "Natijani ko'rish",
     "defaultSubjectHint": "Profildagi faningiz bo'yicha filtrlangan"
+  },
+  "exam": {
+    "answeredOf": "{{answered}} / {{total}}",
+    "allAnswered": "Hammasi javoblandi",
+    "navLabel": "Savollar navigatsiyasi",
+    "questionBtn": "Savol {{number}}",
+    "legend": {
+      "current": "Joriy",
+      "answered": "Javoblangan",
+      "unanswered": "Javoblanmagan"
+    },
+    "finishLabel": "Imtihonni yakunlash",
+    "submitWarning": "{{count}} savol javoblanmagan"
   }
 }

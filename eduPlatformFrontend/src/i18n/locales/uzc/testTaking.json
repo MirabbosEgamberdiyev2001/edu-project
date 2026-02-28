@@ -63,7 +63,6 @@
   "correctAnswers": "Тўғри жавоблар",
   "wrongAnswers": "Нотўғри жавоблар",
   "skipped": "Ўтказилган",
-  "timeTaken": "Сарфланган вақт",
   "submittedAt": "Топширилган вақт",
   "reviewAnswers": "Жавобларни кўриш",
   "yourAnswer": "Сизнинг жавобингиз",
@@ -232,5 +231,18 @@
     "noResults": "Сиз ҳали аттестация тестларини топширмадингиз",
     "viewResult": "Натижани кўриш",
     "defaultSubjectHint": "Профилдаги фанингиз бўйича фильтрланган"
+  },
+  "exam": {
+    "answeredOf": "{{answered}} / {{total}}",
+    "allAnswered": "Ҳаммаси жавобланди",
+    "navLabel": "Саволлар навигацияси",
+    "questionBtn": "Савол {{number}}",
+    "legend": {
+      "current": "Жорий",
+      "answered": "Жавобланган",
+      "unanswered": "Жавобланмаган"
+    },
+    "finishLabel": "Имтиҳонни якунлаш",
+    "submitWarning": "{{count}} савол жавобланмаган"
   }
 }

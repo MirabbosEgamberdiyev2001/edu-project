@@ -52,5 +52,28 @@
   "myGroups": "Мои группы",
   "quickActions": "Быстрые действия",
   "newTest": "Новый тест",
-  "viewAll": "Все"
+  "viewAll": "Все",
+  "formula": {
+    "title": "Вставить формулу",
+    "modeLabel": "Тип отображения",
+    "inline": "Встроенная формула",
+    "inlineDesc": "Встраивается в строку текста",
+    "display": "Формула-блок",
+    "blockDesc": "Отображается на отдельной строке по центру",
+    "insert": "Вставить формулу",
+    "addTooltip": "Добавить формулу",
+    "hint": "Введите LaTeX или нажмите символ выше",
+    "previewLabel": "LaTeX:",
+    "previewSection": "Предпросмотр",
+    "emptyPreview": "Введите формулу для предпросмотра",
+    "exampleHint": "Например: x^2+1, \\frac{a}{b}, \\sqrt{x}",
+    "errorEmpty": "Формула пуста",
+    "errorInvalid": "Неверный синтаксис формулы",
+    "validFormula": "Формула корректна",
+    "catBasic": "Основные",
+    "catFractions": "Дроби",
+    "catRoots": "Корни",
+    "catGreek": "Греческие",
+    "catAdvanced": "Дополнительно"
+  }
 }

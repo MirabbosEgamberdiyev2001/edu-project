@@ -30,6 +30,8 @@ import PersonIcon from '@mui/icons-material/Person';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
+import PrintIcon from '@mui/icons-material/Print';
+import DescriptionIcon from '@mui/icons-material/Description';
 import { useTranslation } from 'react-i18next';
 import { useQuestion, useQuestionVersions } from '../hooks/useQuestions';
 import { useQuestionMutations } from '../hooks/useQuestionMutations';
@@ -38,7 +40,9 @@ import type { QuestionDto, CreateQuestionRequest, UpdateQuestionRequest } from '
 import { resolveTranslation } from '@/utils/i18nUtils';
 import { LANGUAGE_LABELS } from '@/config';
 import QuestionFormDialog from '../components/QuestionFormDialog';
+import { MathText } from '@/components/math';
 import QuestionDeleteDialog from '../components/QuestionDeleteDialog';
+import { generateWordDocument, downloadFile, printHtml } from '@/utils/mathExport';
 
 const KNOWN_LOCALE_KEYS = ['uz_latn', 'uz_cyrl', 'en', 'ru'] as const;
 
@@ -153,7 +157,7 @@ export default function QuestionDetailPage() {
                 }}
               >
                 <Chip label={labels[i]} size="small" color={isCorrect ? 'success' : 'default'} />
-                <Typography variant="body2" sx={{ flex: 1 }}>{text}</Typography>
+                <MathText text={text} variant="body2" sx={{ flex: 1 }} />
                 {isCorrect && <CheckCircleIcon color="success" fontSize="small" />}
               </Paper>
             );
@@ -194,7 +198,7 @@ export default function QuestionDetailPage() {
                   sx={{ p: 1.5, display: 'flex', alignItems: 'center', gap: 1.5 }}
                 >
                   <Chip label={label} size="small" />
-                  <Typography variant="body2" sx={{ flex: 1 }}>{text}</Typography>
+                  <MathText text={text} variant="body2" sx={{ flex: 1 }} />
                 </Paper>
               );
             })}
@@ -212,29 +216,23 @@ export default function QuestionDetailPage() {
 
     // String answer (e.g., "A,C" for MCQ or "true"/"false")
     if (typeof answer === 'string') {
-      // Translate true/false for TRUE_FALSE questions
-      if (answer === 'true') return <Typography variant="body2">{t('form.true')}</Typography>;
-      if (answer === 'false') return <Typography variant="body2">{t('form.false')}</Typography>;
-      return <Typography variant="body2">{answer}</Typography>;
+      if (answer === 'true') return <MathText text={t('form.true')} variant="body2" />;
+      if (answer === 'false') return <MathText text={t('form.false')} variant="body2" />;
+      return <MathText text={answer} variant="body2" />;
     }
 
-    // Object answer - could be multilingual map {"uz_latn": "...", "en": "..."}
+    // Object answer — could be multilingual map {"uz_latn": "...", "en": "..."}
     if (typeof answer === 'object') {
       const resolved = resolveTranslation(answer as Record<string, string>);
-      if (resolved) {
-        return <Typography variant="body2">{resolved}</Typography>;
-      }
-      // Fallback: show as readable text
-      return (
-        <Typography variant="body2">
-          {Object.values(answer as Record<string, unknown>)
-            .filter(v => typeof v === 'string' && (v as string).trim())
-            .join(' / ')}
-        </Typography>
-      );
+      if (resolved) return <MathText text={resolved} variant="body2" />;
+      // Fallback: join all non-empty string values
+      const joined = Object.values(answer as Record<string, unknown>)
+        .filter(v => typeof v === 'string' && (v as string).trim())
+        .join(' / ');
+      return <MathText text={joined} variant="body2" />;
     }
 
-    return <Typography variant="body2">{String(answer)}</Typography>;
+    return <MathText text={String(answer)} variant="body2" />;
   }
 
   return (
@@ -251,6 +249,59 @@ export default function QuestionDetailPage() {
           <Tooltip title={t('detail.versionHistory')}>
             <IconButton onClick={() => setVersionsOpen(true)}>
               <HistoryIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Print / PDF">
+            <IconButton
+              onClick={() => {
+                const LABELS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+                const rawOpts = Array.isArray(question.options)
+                  ? (question.options as Array<Record<string, unknown>>)
+                  : [];
+                const exportOpts = rawOpts.map((opt, i) => ({
+                  label: LABELS[i] ?? String(i + 1),
+                  text: opt.textTranslations
+                    ? (resolveTranslation(opt.textTranslations as Record<string, string>) || '')
+                    : typeof opt.text === 'object' && opt.text !== null
+                      ? (resolveTranslation(opt.text as Record<string, string>) || '')
+                      : String(opt.text ?? ''),
+                  isCorrect: Boolean(opt.isCorrect),
+                }));
+                printHtml(generateWordDocument(
+                  [{ questionText: displayText, points: question.points, options: exportOpts, proof: displayProof || undefined }],
+                  displayText.slice(0, 80),
+                  { showCorrectAnswers: true, showProofs: true },
+                ));
+              }}
+            >
+              <PrintIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Export to Word (.doc)">
+            <IconButton
+              onClick={() => {
+                const LABELS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+                const rawOpts = Array.isArray(question.options)
+                  ? (question.options as Array<Record<string, unknown>>)
+                  : [];
+                const exportOpts = rawOpts.map((opt, i) => ({
+                  label: LABELS[i] ?? String(i + 1),
+                  text: opt.textTranslations
+                    ? (resolveTranslation(opt.textTranslations as Record<string, string>) || '')
+                    : typeof opt.text === 'object' && opt.text !== null
+                      ? (resolveTranslation(opt.text as Record<string, string>) || '')
+                      : String(opt.text ?? ''),
+                  isCorrect: Boolean(opt.isCorrect),
+                }));
+                const html = generateWordDocument(
+                  [{ questionText: displayText, points: question.points, options: exportOpts, proof: displayProof || undefined }],
+                  displayText.slice(0, 80),
+                  { showCorrectAnswers: true, showProofs: true },
+                );
+                downloadFile('question.doc', html, 'application/msword');
+              }}
+            >
+              <DescriptionIcon />
             </IconButton>
           </Tooltip>
           {canEdit && (
@@ -298,9 +349,7 @@ export default function QuestionDetailPage() {
         </Box>
 
         {/* Question text */}
-        <Typography variant="h6" sx={{ mb: 2, lineHeight: 1.6 }}>
-          {displayText}
-        </Typography>
+        <MathText text={displayText} variant="h6" sx={{ mb: 2, lineHeight: 1.6 }} />
 
         {/* Translations */}
         {question.questionTextTranslations && Object.keys(question.questionTextTranslations).length > 1 && (
@@ -315,9 +364,10 @@ export default function QuestionDetailPage() {
                 const frontLang = LOCALE_KEY_TO_FRONTEND[localeKey] || localeKey;
                 const label = LANGUAGE_LABELS[frontLang] || localeKey;
                 return (
-                  <Typography key={localeKey} variant="body2" color="text.secondary">
-                    <Chip label={label} size="small" sx={{ mr: 1, fontSize: 10 }} /> {text}
-                  </Typography>
+                  <Box key={localeKey} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mt: 0.5 }}>
+                    <Chip label={label} size="small" sx={{ fontSize: 10, flexShrink: 0, mt: 0.25 }} />
+                    <MathText text={text} variant="body2" sx={{ color: 'text.secondary', flex: 1 }} />
+                  </Box>
                 );
               })}
             </Box>
@@ -350,7 +400,7 @@ export default function QuestionDetailPage() {
               {t('form.proof')}
             </Typography>
             <Paper variant="outlined" sx={{ p: 2, bgcolor: 'action.hover' }}>
-              <Typography variant="body2">{displayProof}</Typography>
+              <MathText text={displayProof} variant="body2" />
             </Paper>
           </>
         )}

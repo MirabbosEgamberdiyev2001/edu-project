@@ -160,7 +160,7 @@ export default function ExamPage() {
         onTimeUp={handleTimeUp}
       />
 
-      <Box sx={{ pt: 11, px: 2, pb: 2, maxWidth: 900, mx: 'auto', width: '100%' }}>
+      <Box sx={{ pt: { xs: 9, sm: 10 }, px: { xs: 1.5, sm: 2 }, pb: 2, maxWidth: 860, mx: 'auto', width: '100%' }}>
         <Box sx={{ mb: 3 }}>
           <QuestionNavigation
             totalQuestions={questions.length}
@@ -185,38 +185,39 @@ export default function ExamPage() {
         </Paper>
       </Box>
 
-      {/* Sticky bottom navigation bar */}
+      {/* Sticky bottom navigation bar — lightweight, border only */}
       <Paper
-        elevation={3}
+        elevation={0}
         sx={{
           position: 'sticky',
           bottom: 0,
           zIndex: 10,
-          px: 3,
-          py: 1.5,
+          px: { xs: 2, sm: 3 },
+          py: 1.25,
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           borderTop: '1px solid',
           borderColor: 'divider',
           borderRadius: 0,
+          bgcolor: 'background.paper',
         }}
       >
         <Button
           startIcon={<NavigateBeforeIcon />}
           onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
           disabled={currentIndex === 0}
+          size="medium"
         >
           {t('prev')}
         </Button>
-        <Typography variant="caption" color="text.secondary">
-          {currentIndex + 1} / {questions.length}
-        </Typography>
+
         {currentIndex < questions.length - 1 ? (
           <Button
             endIcon={<NavigateNextIcon />}
             variant="contained"
             onClick={() => setCurrentIndex((i) => Math.min(questions.length - 1, i + 1))}
+            size="medium"
           >
             {t('next')}
           </Button>
@@ -224,8 +225,10 @@ export default function ExamPage() {
           <Button
             endIcon={<SendIcon />}
             variant="contained"
-            color="success"
+            color="primary"
             onClick={() => setSubmitOpen(true)}
+            aria-label={t('exam.finishLabel')}
+            size="medium"
           >
             {t('finish')}
           </Button>

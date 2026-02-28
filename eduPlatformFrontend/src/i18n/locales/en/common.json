@@ -52,5 +52,28 @@
   "myGroups": "My Groups",
   "quickActions": "Quick Actions",
   "newTest": "New Test",
-  "viewAll": "View All"
+  "viewAll": "View All",
+  "formula": {
+    "title": "Insert Formula",
+    "modeLabel": "Display type",
+    "inline": "Inline formula",
+    "inlineDesc": "Flows within the text line",
+    "display": "Block formula",
+    "blockDesc": "Displayed on a separate centered line",
+    "insert": "Insert Formula",
+    "addTooltip": "Add formula",
+    "hint": "Type LaTeX or click a symbol above",
+    "previewLabel": "LaTeX:",
+    "previewSection": "Preview",
+    "emptyPreview": "Enter a formula to see preview",
+    "exampleHint": "e.g. x^2+1, \\frac{a}{b}, \\sqrt{x}",
+    "errorEmpty": "Formula is empty",
+    "errorInvalid": "Invalid formula syntax",
+    "validFormula": "Formula is valid",
+    "catBasic": "Basic",
+    "catFractions": "Fractions",
+    "catRoots": "Roots",
+    "catGreek": "Greek",
+    "catAdvanced": "Advanced"
+  }
 }

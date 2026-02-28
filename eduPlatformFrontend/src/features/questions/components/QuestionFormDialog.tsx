@@ -38,6 +38,7 @@ import TopicFormDialog from '@/features/topics/components/TopicFormDialog';
 import { resolveTranslation } from '@/utils/i18nUtils';
 import { SUPPORTED_LANGUAGES, LANGUAGE_LABELS } from '@/config';
 import type { TopicTreeDto, CreateTopicRequest } from '@/types/topic';
+import { MathTextField } from '@/components/math';
 
 interface QuestionFormDialogProps {
   open: boolean;
@@ -615,12 +616,12 @@ export default function QuestionFormDialog({
           ))}
         </Tabs>
 
-        <TextField
+        <MathTextField
           label={`${t('form.questionText')} (${LANGUAGE_LABELS[currentFrontendLang]})`}
           placeholder={t('form.questionTextPlaceholder')}
           value={questionText[currentKey] || ''}
-          onChange={(e) =>
-            setQuestionText({ ...questionText, [currentKey]: e.target.value })
+          onChange={(v) =>
+            setQuestionText({ ...questionText, [currentKey]: v })
           }
           fullWidth
           multiline
@@ -716,9 +717,9 @@ export default function QuestionFormDialog({
                 size="small"
               />
             )}
-            <TextField
+            <MathTextField
               value={option.text[currentKey] || ''}
-              onChange={(e) => handleOptionTextChange(index, currentKey, e.target.value)}
+              onChange={(v) => handleOptionTextChange(index, currentKey, v)}
               placeholder={`${t('form.optionText')} ${index + 1}`}
               size="small"
               fullWidth
@@ -789,10 +790,10 @@ export default function QuestionFormDialog({
           ))}
         </Tabs>
 
-        <TextField
+        <MathTextField
           label={`${t('form.correctAnswer')} (${LANGUAGE_LABELS[currentFrontendLang]})`}
           value={correctAnswer[currentKey] || ''}
-          onChange={(e) => setCorrectAnswer({ ...correctAnswer, [currentKey]: e.target.value })}
+          onChange={(v) => setCorrectAnswer({ ...correctAnswer, [currentKey]: v })}
           fullWidth
           required={currentFrontendLang === 'uzl'}
         />
@@ -908,12 +909,12 @@ export default function QuestionFormDialog({
           ))}
         </Tabs>
 
-        <TextField
+        <MathTextField
           label={`${t('form.proof')} (${LANGUAGE_LABELS[currentFrontendLang]})`}
           placeholder={t('form.proofPlaceholder')}
           value={proof[currentKey] || ''}
-          onChange={(e) =>
-            setProof({ ...proof, [currentKey]: e.target.value })
+          onChange={(v) =>
+            setProof({ ...proof, [currentKey]: v })
           }
           fullWidth
           multiline

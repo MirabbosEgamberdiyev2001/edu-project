@@ -52,5 +52,28 @@
   "myGroups": "Mening guruhlarim",
   "quickActions": "Tezkor amallar",
   "newTest": "Yangi test",
-  "viewAll": "Barchasi"
+  "viewAll": "Barchasi",
+  "formula": {
+    "title": "Formula kiritish",
+    "modeLabel": "Ko'rinish turi",
+    "inline": "Satr ichida",
+    "inlineDesc": "Matn ichida joylashadi",
+    "display": "Blok ko'rinish",
+    "blockDesc": "Alohida markazlashgan qatorda ko'rinadi",
+    "insert": "Formulani qo'shish",
+    "addTooltip": "Formula qo'shish",
+    "hint": "LaTeX yozing yoki yuqoridagi belgini bosing",
+    "previewLabel": "LaTeX:",
+    "previewSection": "Ko'rinish",
+    "emptyPreview": "Ko'rish uchun formula kiriting",
+    "exampleHint": "Masalan: x^2+1, \\frac{a}{b}, \\sqrt{x}",
+    "errorEmpty": "Formula bo'sh",
+    "errorInvalid": "Formula sintaksisi noto'g'ri",
+    "validFormula": "Formula to'g'ri",
+    "catBasic": "Asosiy",
+    "catFractions": "Kasrlar",
+    "catRoots": "Ildizlar",
+    "catGreek": "Yunoncha",
+    "catAdvanced": "Qo'shimcha"
+  }
 }

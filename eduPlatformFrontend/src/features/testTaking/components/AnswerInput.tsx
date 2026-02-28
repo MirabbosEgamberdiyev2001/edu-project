@@ -7,6 +7,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import type { AttemptQuestionDto } from '@/types/testTaking';
 import { resolveTranslation } from '@/utils/i18nUtils';
+import { MathText } from '@/components/math';
 
 interface AnswerInputProps {
   question: AttemptQuestionDto;
@@ -61,36 +62,52 @@ function OptionRow({
 }) {
   return (
     <Paper
+      component="div"
+      role={multi ? 'checkbox' : 'radio'}
+      aria-checked={selected}
+      tabIndex={disabled ? -1 : 0}
       variant="outlined"
       onClick={() => !disabled && onClick()}
+      onKeyDown={(e: React.KeyboardEvent) => {
+        if (!disabled && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          onClick();
+        }
+      }}
       sx={{
         display: 'flex',
         alignItems: 'center',
         gap: 1.5,
-        p: '11px 16px',
-        borderRadius: 2,
+        p: '10px 14px',
+        borderRadius: 1.5,
         borderWidth: selected ? 2 : 1,
         borderColor: selected ? 'primary.main' : 'divider',
         bgcolor: selected ? 'rgba(25, 118, 210, 0.07)' : 'background.paper',
         cursor: disabled ? 'default' : 'pointer',
         userSelect: 'none',
-        transition: 'border-color 0.15s ease, background-color 0.15s ease',
+        outline: 'none',
+        transition: 'border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease',
         '&:hover': !disabled
           ? {
               borderColor: selected ? 'primary.main' : 'primary.light',
               bgcolor: selected ? 'rgba(25, 118, 210, 0.10)' : 'rgba(25, 118, 210, 0.03)',
             }
           : {},
+        '&:focus-visible': {
+          boxShadow: '0 0 0 3px rgba(25,118,210,0.28)',
+          borderColor: 'primary.main',
+        },
       }}
     >
       {/* Letter badge — circle for single, rounded square for multi */}
       <Box
+        aria-hidden="true"
         sx={{
-          width: 30,
-          height: 30,
+          width: 28,
+          height: 28,
           borderRadius: multi ? 1 : '50%',
           border: '2px solid',
-          borderColor: selected ? 'primary.main' : 'grey.400',
+          borderColor: selected ? 'primary.main' : 'grey.300',
           flexShrink: 0,
           display: 'flex',
           alignItems: 'center',
@@ -101,7 +118,7 @@ function OptionRow({
       >
         <Typography
           sx={{
-            fontSize: '0.78rem',
+            fontSize: '0.75rem',
             fontWeight: 700,
             lineHeight: 1,
             color: selected ? 'white' : 'text.secondary',
@@ -111,9 +128,7 @@ function OptionRow({
         </Typography>
       </Box>
 
-      <Typography variant="body1" sx={{ flex: 1, wordBreak: 'break-word' }}>
-        {text}
-      </Typography>
+      <MathText text={text} variant="body1" sx={{ flex: 1, wordBreak: 'break-word' }} />
     </Paper>
   );
 }

@@ -38,6 +38,7 @@ import MultiLangInput from './MultiLangInput';
 import { TestCategory } from '@/types/test';
 import type { GenerateTestRequest, DifficultyDistribution, HeaderConfig } from '@/types/test';
 import { resolveTranslation, toLocaleKey } from '@/utils/i18nUtils';
+import { MathText } from '@/components/math';
 
 const GRADES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 
@@ -285,25 +286,30 @@ export default function TestGenerateForm() {
                     {idx + 1}.
                   </Typography>
                   <Box sx={{ flex: 1 }}>
-                    <Typography variant="body2" sx={{ fontWeight: 600, wordBreak: 'break-word' }}>
-                      {resolveTranslation(question.questionTextTranslations) || question.questionText}
-                    </Typography>
+                    <MathText
+                      text={resolveTranslation(question.questionTextTranslations) || question.questionText || ''}
+                      variant="body2"
+                      sx={{ fontWeight: 600, wordBreak: 'break-word' }}
+                    />
                     {reorderedOpts.length > 0 && (
                       <Box sx={{ mt: 0.5, pl: 1 }}>
-                        {reorderedOpts.map((opt, oi) => (
-                          <Typography
-                            key={opt.id || oi}
-                            variant="caption"
-                            sx={{
-                              display: 'block',
-                              color: opt.isCorrect ? 'success.main' : 'text.secondary',
-                              fontWeight: opt.isCorrect ? 700 : 400,
-                            }}
-                          >
-                            {String.fromCharCode(65 + oi)}) {opt.text}
-                            {opt.isCorrect && ' ✓'}
-                          </Typography>
-                        ))}
+                        {reorderedOpts.map((opt, oi) => {
+                          const optText = typeof opt.text === 'object' && opt.text !== null
+                            ? resolveTranslation(opt.text as Record<string, string>) || ''
+                            : (opt.text || '');
+                          return (
+                            <MathText
+                              key={opt.id || oi}
+                              text={`${String.fromCharCode(65 + oi)}) ${optText}${opt.isCorrect ? ' ✓' : ''}`}
+                              variant="caption"
+                              sx={{
+                                display: 'block',
+                                color: opt.isCorrect ? 'success.main' : 'text.secondary',
+                                fontWeight: opt.isCorrect ? 700 : 400,
+                              }}
+                            />
+                          );
+                        })}
                       </Box>
                     )}
                   </Box>

@@ -41,15 +41,35 @@ export default function TimerCountdown({ initialSeconds, onTimeUp }: TimerCountd
 
   const minutes = Math.floor(seconds / 60);
   const secs = seconds % 60;
-  const isLow = seconds < 300; // less than 5 minutes
+
+  // Three urgency levels:
+  //   normal   ≥ 180 s  — neutral colors
+  //   warning  < 180 s  — amber/orange (3 minutes)
+  //   critical < 60 s   — red + pulse (1 minute)
+  const isWarning = seconds > 0 && seconds < 180;
+  const isCritical = seconds > 0 && seconds < 60;
+
+  const timerColor = isCritical ? 'error.main' : isWarning ? 'warning.main' : 'text.primary';
+  const iconColor = isCritical ? 'error' : isWarning ? ('warning' as const) : ('action' as const);
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-      <TimerIcon fontSize="small" sx={{ color: isLow ? 'error.main' : 'text.secondary' }} />
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 0.5,
+        '@keyframes timerPulse': {
+          '0%, 100%': { opacity: 1 },
+          '50%': { opacity: 0.55 },
+        },
+        animation: isCritical ? 'timerPulse 1s ease-in-out infinite' : 'none',
+      }}
+    >
+      <TimerIcon fontSize="small" color={iconColor} />
       <Typography
-        variant="h6"
+        variant="subtitle1"
         fontWeight={700}
-        sx={{ color: isLow ? 'error.main' : 'text.primary', fontFamily: 'monospace' }}
+        sx={{ color: timerColor, fontFamily: 'monospace', fontSize: '1rem', lineHeight: 1 }}
       >
         {String(minutes).padStart(2, '0')}:{String(secs).padStart(2, '0')}
       </Typography>

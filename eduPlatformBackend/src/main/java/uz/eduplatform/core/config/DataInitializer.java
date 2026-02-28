@@ -26,6 +26,8 @@ import java.util.Map;
  * Idempotent data initializer for dev environment.
  * Safe to run multiple times — uses find-or-create for every entity.
  * Never creates duplicates.
+ *
+ * All textual content is provided in 4 languages: uz_latn, uz_cyrl, en, ru.
  */
 @Slf4j
 @Component
@@ -40,11 +42,35 @@ public class DataInitializer implements ApplicationRunner {
     private final QuestionRepository questionRepository;
     private final ObjectMapper objectMapper;
 
+    // ─── Proof translations ───────────────────────────────────────────────────
+
+    private static final Map<String, String> PROOF_ALGEBRA = Map.of(
+            "uz_latn", "Tenglama ikkala tomoniga bir xil amal qo'llanib yechildi va natija tekshirildi",
+            "uz_cyrl", "Тенглама иккала томонига бир хил амал қўлланиб ечилди ва натижа текширилди",
+            "en",      "The equation was solved by applying equal operations to both sides and the result was verified",
+            "ru",      "Уравнение решено путём применения одинаковых операций к обеим сторонам, результат проверен"
+    );
+
+    private static final Map<String, String> PROOF_GEOMETRY = Map.of(
+            "uz_latn", "Geometrik formulalar va teoremalar yordamida hisoblab topildi va tekshirildi",
+            "uz_cyrl", "Геометрик формулалар ва теоремалар ёрдамида ҳисоблаб топилди ва текширилди",
+            "en",      "Calculated and verified using geometric formulas and theorems",
+            "ru",      "Вычислено и проверено с использованием геометрических формул и теорем"
+    );
+
+    private static final Map<String, String> PROOF_ARITHMETIC = Map.of(
+            "uz_latn", "Arifmetik amallar orqali hisob-kitob qilib tekshirildi",
+            "uz_cyrl", "Арифметик амаллар орқали ҳисоб-китоб қилиб текширилди",
+            "en",      "Verified through step-by-step arithmetic operations",
+            "ru",      "Проверено пошаговыми арифметическими действиями"
+    );
+
+    // ─── Entry point ──────────────────────────────────────────────────────────
+
     @Override
     public void run(ApplicationArguments args) {
         String encodedPassword = passwordEncoder.encode("Password1");
 
-        // Find-or-create users
         findOrCreateUser("superadmin@eduplatform.uz", "Super", "Admin", Role.SUPER_ADMIN, encodedPassword);
         User admin = findOrCreateUser("admin@eduplatform.uz", "Admin", "User", Role.ADMIN, encodedPassword);
         findOrCreateUser("moderator@eduplatform.uz", "Moderator", "User", Role.MODERATOR, encodedPassword);
@@ -52,18 +78,16 @@ public class DataInitializer implements ApplicationRunner {
         findOrCreateUser("parent@eduplatform.uz", "Parent", "User", Role.PARENT, encodedPassword);
         findOrCreateUser("student@eduplatform.uz", "Student", "User", Role.STUDENT, encodedPassword);
 
-        // Find-or-create template subjects — returns Matematika
         Subject mathSubject = createDefaultSubjects(admin);
-
-        // Add topics and questions to existing Matematika (no new subject)
         addTeacherTopicsAndQuestions(teacher, mathSubject);
 
         log.info("Data initialization complete (idempotent — no duplicates)");
     }
 
-    // ─── Users ──────────────────────────────────────────────────────────────────
+    // ─── Users ────────────────────────────────────────────────────────────────
 
-    private User findOrCreateUser(String email, String firstName, String lastName, Role role, String encodedPassword) {
+    private User findOrCreateUser(String email, String firstName, String lastName,
+                                   Role role, String encodedPassword) {
         return userRepository.findByEmail(email).orElseGet(() -> {
             User user = User.builder()
                     .email(email)
@@ -81,36 +105,67 @@ public class DataInitializer implements ApplicationRunner {
         });
     }
 
-    // ─── Subjects (templates) ───────────────────────────────────────────────────
+    // ─── Subjects ─────────────────────────────────────────────────────────────
 
     private Subject createDefaultSubjects(User adminUser) {
-        Subject math = findOrCreateSubject(adminUser, "Matematika", "\u041C\u0430\u0442\u0435\u043C\u0430\u0442\u0438\u043A\u0430", "Mathematics", "\u041C\u0430\u0442\u0435\u043C\u0430\u0442\u0438\u043A\u0430", "\uD83D\uDCD0", 1, true);
-        findOrCreateSubject(adminUser, "Fizika", "\u0424\u0438\u0437\u0438\u043A\u0430", "Physics", "\u0424\u0438\u0437\u0438\u043A\u0430", "\u269B\uFE0F", 2, true);
-        findOrCreateSubject(adminUser, "Kimyo", "\u041A\u0438\u043C\u0451", "Chemistry", "\u0425\u0438\u043C\u0438\u044F", "\uD83E\uDDEA", 3, true);
-        findOrCreateSubject(adminUser, "Biologiya", "\u0411\u0438\u043E\u043B\u043E\u0433\u0438\u044F", "Biology", "\u0411\u0438\u043E\u043B\u043E\u0433\u0438\u044F", "\uD83E\uDDEC", 4, true);
-        findOrCreateSubject(adminUser, "Tarix", "\u0422\u0430\u0440\u0438\u0445", "History", "\u0418\u0441\u0442\u043E\u0440\u0438\u044F", "\uD83D\uDCDC", 5, true);
-        findOrCreateSubject(adminUser, "Ona tili", "\u041E\u043D\u0430 \u0442\u0438\u043B\u0438", "Uzbek Language", "\u0423\u0437\u0431\u0435\u043A\u0441\u043A\u0438\u0439 \u044F\u0437\u044B\u043A", "\uD83D\uDCDD", 6, true);
-        findOrCreateSubject(adminUser, "Ingliz tili", "\u0418\u043D\u0433\u043B\u0438\u0437 \u0442\u0438\u043B\u0438", "English", "\u0410\u043D\u0433\u043B\u0438\u0439\u0441\u043A\u0438\u0439 \u044F\u0437\u044B\u043A", "\uD83C\uDDEC\uD83C\uDDE7", 7, true);
-        findOrCreateSubject(adminUser, "Informatika", "\u0418\u043D\u0444\u043E\u0440\u043C\u0430\u0442\u0438\u043A\u0430", "Computer Science", "\u0418\u043D\u0444\u043E\u0440\u043C\u0430\u0442\u0438\u043A\u0430", "\uD83D\uDCBB", 8, true);
-        findOrCreateSubject(adminUser, "Geografiya", "\u0413\u0435\u043E\u0433\u0440\u0430\u0444\u0438\u044F", "Geography", "\u0413\u0435\u043E\u0433\u0440\u0430\u0444\u0438\u044F", "\uD83C\uDF0D", 9, true);
-        findOrCreateSubject(adminUser, "Adabiyot", "\u0410\u0434\u0430\u0431\u0438\u0451\u0442", "Literature", "\u041B\u0438\u0442\u0435\u0440\u0430\u0442\u0443\u0440\u0430", "\uD83D\uDCDA", 10, true);
-        findOrCreateSubject(adminUser, "Rus tili", "\u0420\u0443\u0441 \u0442\u0438\u043B\u0438", "Russian Language", "\u0420\u0443\u0441\u0441\u043A\u0438\u0439 \u044F\u0437\u044B\u043A", "\uD83C\uDDF7\uD83C\uDDFA", 11, true);
-        findOrCreateSubject(adminUser, "Huquq asoslari", "\u04B2\u0443\u049B\u0443\u049B \u0430\u0441\u043E\u0441\u043B\u0430\u0440\u0438", "Fundamentals of Law", "\u041E\u0441\u043D\u043E\u0432\u044B \u043F\u0440\u0430\u0432\u0430", "\u2696\uFE0F", 12, true);
-        findOrCreateSubject(adminUser, "Iqtisodiyot", "\u0418\u049B\u0442\u0438\u0441\u043E\u0434\u0438\u0451\u0442", "Economics", "\u042D\u043A\u043E\u043D\u043E\u043C\u0438\u043A\u0430", "\uD83D\uDCB0", 13, true);
-        findOrCreateSubject(adminUser, "Falsafa", "\u0424\u0430\u043B\u0441\u0430\u0444\u0430", "Philosophy", "\u0424\u0438\u043B\u043E\u0441\u043E\u0444\u0438\u044F", "\uD83E\uDD14", 14, true);
-        findOrCreateSubject(adminUser, "Psixologiya", "\u041F\u0441\u0438\u0445\u043E\u043B\u043E\u0433\u0438\u044F", "Psychology", "\u041F\u0441\u0438\u0445\u043E\u043B\u043E\u0433\u0438\u044F", "\uD83E\uDDE0", 15, true);
+        Subject math = findOrCreateSubject(adminUser,
+                "Matematika",   "Математика",   "Mathematics",      "Математика",
+                "📐", 1, true);
+        findOrCreateSubject(adminUser,
+                "Fizika",       "Физика",       "Physics",          "Физика",
+                "⚛️", 2, true);
+        findOrCreateSubject(adminUser,
+                "Kimyo",        "Кимё",         "Chemistry",        "Химия",
+                "🧪", 3, true);
+        findOrCreateSubject(adminUser,
+                "Biologiya",    "Биология",     "Biology",          "Биология",
+                "🧬", 4, true);
+        findOrCreateSubject(adminUser,
+                "Tarix",        "Тарих",        "History",          "История",
+                "📜", 5, true);
+        findOrCreateSubject(adminUser,
+                "Ona tili",     "Она тили",     "Uzbek Language",   "Узбекский язык",
+                "📝", 6, true);
+        findOrCreateSubject(adminUser,
+                "Ingliz tili",  "Инглиз тили",  "English",          "Английский язык",
+                "🇬🇧", 7, true);
+        findOrCreateSubject(adminUser,
+                "Informatika",  "Информатика",  "Computer Science", "Информатика",
+                "💻", 8, true);
+        findOrCreateSubject(adminUser,
+                "Geografiya",   "География",    "Geography",        "География",
+                "🌍", 9, true);
+        findOrCreateSubject(adminUser,
+                "Adabiyot",     "Адабиёт",      "Literature",       "Литература",
+                "📚", 10, true);
+        findOrCreateSubject(adminUser,
+                "Rus tili",     "Рус тили",     "Russian Language", "Русский язык",
+                "🇷🇺", 11, true);
+        findOrCreateSubject(adminUser,
+                "Huquq asoslari", "Ҳуқуқ асослари", "Fundamentals of Law", "Основы права",
+                "⚖️", 12, true);
+        findOrCreateSubject(adminUser,
+                "Iqtisodiyot",  "Иқтисодиёт",  "Economics",        "Экономика",
+                "💰", 13, true);
+        findOrCreateSubject(adminUser,
+                "Falsafa",      "Фалсафа",      "Philosophy",       "Философия",
+                "🤔", 14, true);
+        findOrCreateSubject(adminUser,
+                "Psixologiya",  "Психология",   "Psychology",       "Психология",
+                "🧠", 15, true);
 
-        log.info("Default template subjects ensured for admin");
+        log.info("Default template subjects ensured");
         return math;
     }
 
-    private Subject findOrCreateSubject(User owner, String uzLatn, String uzCyrl, String en, String ru,
+    private Subject findOrCreateSubject(User owner,
+                                         String uzLatn, String uzCyrl, String en, String ru,
                                          String icon, int sortOrder, boolean isTemplate) {
         return subjectRepository.findByUserIdAndDefaultName(owner.getId(), uzLatn)
                 .orElseGet(() -> {
                     Subject subject = Subject.builder()
                             .user(owner)
-                            .name(Map.of("uz_latn", uzLatn, "uz_cyrl", uzCyrl, "en", en, "ru", ru))
+                            .name(ml(uzLatn, uzCyrl, en, ru))
                             .description(Map.of())
                             .icon(icon)
                             .isTemplate(isTemplate)
@@ -124,13 +179,15 @@ public class DataInitializer implements ApplicationRunner {
                 });
     }
 
-    // ─── Teacher sample data ────────────────────────────────────────────────────
+    // ─── Topics & Questions ───────────────────────────────────────────────────
 
     private void addTeacherTopicsAndQuestions(User teacher, Subject mathSubject) {
-        // Add topics and questions to the existing Matematika template subject (no new subject created)
-        Topic algebra = findOrCreateTopic(teacher, mathSubject, "Algebra", "\u0410\u043B\u0433\u0435\u0431\u0440\u0430", "Algebra", "\u0410\u043B\u0433\u0435\u0431\u0440\u0430", 5, 1);
-        Topic geometry = findOrCreateTopic(teacher, mathSubject, "Geometriya", "\u0413\u0435\u043E\u043C\u0435\u0442\u0440\u0438\u044F", "Geometry", "\u0413\u0435\u043E\u043C\u0435\u0442\u0440\u0438\u044F", 5, 2);
-        Topic arithmetic = findOrCreateTopic(teacher, mathSubject, "Arifmetika", "\u0410\u0440\u0438\u0444\u043C\u0435\u0442\u0438\u043A\u0430", "Arithmetic", "\u0410\u0440\u0438\u0444\u043C\u0435\u0442\u0438\u043A\u0430", 5, 3);
+        Topic algebra = findOrCreateTopic(teacher, mathSubject,
+                "Algebra",      "Алгебра",      "Algebra",      "Алгебра",      5, 1);
+        Topic geometry = findOrCreateTopic(teacher, mathSubject,
+                "Geometriya",   "Геометрия",    "Geometry",     "Геометрия",    5, 2);
+        Topic arithmetic = findOrCreateTopic(teacher, mathSubject,
+                "Arifmetika",   "Арифметика",   "Arithmetic",   "Арифметика",   5, 3);
 
         createAlgebraQuestions(teacher, algebra);
         updateTopicQuestionCount(algebra);
@@ -142,11 +199,11 @@ public class DataInitializer implements ApplicationRunner {
         updateTopicQuestionCount(arithmetic);
 
         updateSubjectCounters(mathSubject);
-
-        log.info("Teacher topics & questions ensured for Matematika (3 topics, up to 30 questions)");
+        log.info("Teacher topics & questions ensured (3 topics, 30 questions, 4 languages)");
     }
 
-    private Topic findOrCreateTopic(User user, Subject subject, String uzLatn, String uzCyrl, String en, String ru,
+    private Topic findOrCreateTopic(User user, Subject subject,
+                                     String uzLatn, String uzCyrl, String en, String ru,
                                      int gradeLevel, int sortOrder) {
         return topicRepository.findBySubjectIdAndDefaultName(subject.getId(), uzLatn)
                 .orElseGet(() -> {
@@ -154,7 +211,7 @@ public class DataInitializer implements ApplicationRunner {
                             .subject(subject)
                             .user(user)
                             .gradeLevel(gradeLevel)
-                            .name(Map.of("uz_latn", uzLatn, "uz_cyrl", uzCyrl, "en", en, "ru", ru))
+                            .name(ml(uzLatn, uzCyrl, en, ru))
                             .description(Map.of())
                             .level(1)
                             .isActive(true)
@@ -166,83 +223,260 @@ public class DataInitializer implements ApplicationRunner {
                 });
     }
 
-    // ─── Questions ──────────────────────────────────────────────────────────────
+    // ─── Algebra questions (10) ───────────────────────────────────────────────
 
     private void createAlgebraQuestions(User teacher, Topic topic) {
-        findOrCreateQuestion(teacher, topic, "5 + 3 = ?", Difficulty.EASY,
+        // Pure math — same in all languages
+        q(teacher, topic, mlSame("5 + 3 = ?"), Difficulty.EASY, PROOF_ALGEBRA,
                 opt("8", true), opt("7", false), opt("9", false), opt("6", false));
-        findOrCreateQuestion(teacher, topic, "12 - 4 = ?", Difficulty.EASY,
+
+        q(teacher, topic, mlSame("12 - 4 = ?"), Difficulty.EASY, PROOF_ALGEBRA,
                 opt("8", true), opt("7", false), opt("9", false), opt("6", false));
-        findOrCreateQuestion(teacher, topic, "x + 5 = 10 tenglamada x = ?", Difficulty.EASY,
+
+        q(teacher, topic,
+                ml("x + 5 = 10 tenglamada x = ?",
+                   "x + 5 = 10 тенгламада x = ?",
+                   "Find x in equation: x + 5 = 10",
+                   "Найдите x из уравнения: x + 5 = 10"),
+                Difficulty.EASY, PROOF_ALGEBRA,
                 opt("5", true), opt("10", false), opt("15", false), opt("0", false));
-        findOrCreateQuestion(teacher, topic, "2 * 6 = ?", Difficulty.EASY,
+
+        q(teacher, topic, mlSame("2 × 6 = ?"), Difficulty.EASY, PROOF_ALGEBRA,
                 opt("12", true), opt("8", false), opt("10", false), opt("14", false));
-        findOrCreateQuestion(teacher, topic, "2x + 3 = 11 tenglamada x = ?", Difficulty.MEDIUM,
+
+        q(teacher, topic,
+                ml("2x + 3 = 11 tenglamada x = ?",
+                   "2x + 3 = 11 тенгламада x = ?",
+                   "Find x in equation: 2x + 3 = 11",
+                   "Найдите x из уравнения: 2x + 3 = 11"),
+                Difficulty.MEDIUM, PROOF_ALGEBRA,
                 opt("4", true), opt("3", false), opt("5", false), opt("7", false));
-        findOrCreateQuestion(teacher, topic, "3(x - 2) = 12 tenglamada x = ?", Difficulty.MEDIUM,
+
+        q(teacher, topic,
+                ml("3(x - 2) = 12 tenglamada x = ?",
+                   "3(x - 2) = 12 тенгламада x = ?",
+                   "Find x in equation: 3(x - 2) = 12",
+                   "Найдите x из уравнения: 3(x - 2) = 12"),
+                Difficulty.MEDIUM, PROOF_ALGEBRA,
                 opt("6", true), opt("4", false), opt("8", false), opt("2", false));
-        findOrCreateQuestion(teacher, topic, "(a + b)^2 formulasi qaysi?", Difficulty.MEDIUM,
-                opt("a\u00B2 + 2ab + b\u00B2", true), opt("a\u00B2 + b\u00B2", false), opt("a\u00B2 - 2ab + b\u00B2", false), opt("2a\u00B2 + 2b\u00B2", false));
-        findOrCreateQuestion(teacher, topic, "x\u00B2 - 5x + 6 = 0 tenglamaning ildizlari yig'indisi?", Difficulty.HARD,
-                opt("5", true), opt("6", false), opt("-5", false), opt("1", false));
-        findOrCreateQuestion(teacher, topic, "x\u00B2 + 4x + 4 = 0 tenglamaning ildizi?", Difficulty.HARD,
-                opt("-2", true), opt("2", false), opt("-4", false), opt("4", false));
-        findOrCreateQuestion(teacher, topic, "|2x - 6| = 4 tenglamaning yechimlari yig'indisi?", Difficulty.HARD,
+
+        q(teacher, topic,
+                ml("(a + b)² formulasi qaysi?",
+                   "(a + b)² формуласи қайси?",
+                   "Which is the formula for (a + b)²?",
+                   "Какова формула для (a + b)²?"),
+                Difficulty.MEDIUM, PROOF_ALGEBRA,
+                opt("a² + 2ab + b²", true),
+                opt("a² + b²", false),
+                opt("a² − 2ab + b²", false),
+                opt("2a² + 2b²", false));
+
+        q(teacher, topic,
+                ml("x² − 5x + 6 = 0 tenglamaning ildizlari yig'indisi?",
+                   "x² − 5x + 6 = 0 тенгламанинг илдизлари йиғиндиси?",
+                   "Sum of roots of equation x² − 5x + 6 = 0?",
+                   "Сумма корней уравнения x² − 5x + 6 = 0?"),
+                Difficulty.HARD, PROOF_ALGEBRA,
+                opt("5", true), opt("6", false), opt("−5", false), opt("1", false));
+
+        q(teacher, topic,
+                ml("x² + 4x + 4 = 0 tenglamaning ildizi?",
+                   "x² + 4x + 4 = 0 тенгламанинг илдизи?",
+                   "Root of equation x² + 4x + 4 = 0?",
+                   "Корень уравнения x² + 4x + 4 = 0?"),
+                Difficulty.HARD, PROOF_ALGEBRA,
+                opt("−2", true), opt("2", false), opt("−4", false), opt("4", false));
+
+        q(teacher, topic,
+                ml("|2x − 6| = 4 tenglamaning yechimlari yig'indisi?",
+                   "|2x − 6| = 4 тенгламанинг ечимлари йиғиндиси?",
+                   "Sum of solutions of |2x − 6| = 4?",
+                   "Сумма решений уравнения |2x − 6| = 4?"),
+                Difficulty.HARD, PROOF_ALGEBRA,
                 opt("6", true), opt("5", false), opt("4", false), opt("8", false));
     }
 
+    // ─── Geometry questions (10) ──────────────────────────────────────────────
+
     private void createGeometryQuestions(User teacher, Topic topic) {
-        findOrCreateQuestion(teacher, topic, "To'rtburchakning burchaklari yig'indisi necha gradus?", Difficulty.EASY,
-                opt("360\u00B0", true), opt("180\u00B0", false), opt("270\u00B0", false), opt("90\u00B0", false));
-        findOrCreateQuestion(teacher, topic, "Uchburchakning burchaklari yig'indisi?", Difficulty.EASY,
-                opt("180\u00B0", true), opt("360\u00B0", false), opt("90\u00B0", false), opt("270\u00B0", false));
-        findOrCreateQuestion(teacher, topic, "Kvadratning barcha tomonlari ...", Difficulty.EASY,
-                opt("Teng", true), opt("Teng emas", false), opt("Parallel", false), opt("Perpendicular", false));
-        findOrCreateQuestion(teacher, topic, "To'g'ri burchak necha gradus?", Difficulty.EASY,
-                opt("90\u00B0", true), opt("180\u00B0", false), opt("45\u00B0", false), opt("60\u00B0", false));
-        findOrCreateQuestion(teacher, topic, "Tomoni 5 cm bo'lgan kvadratning yuzi?", Difficulty.MEDIUM,
-                opt("25 cm\u00B2", true), opt("20 cm\u00B2", false), opt("10 cm\u00B2", false), opt("15 cm\u00B2", false));
-        findOrCreateQuestion(teacher, topic, "Radiusi 7 cm bo'lgan doiraning diametri?", Difficulty.MEDIUM,
-                opt("14 cm", true), opt("7 cm", false), opt("21 cm", false), opt("3.5 cm", false));
-        findOrCreateQuestion(teacher, topic, "Asosi 8, balandligi 5 bo'lgan uchburchak yuzi?", Difficulty.MEDIUM,
+        q(teacher, topic,
+                ml("To'rtburchakning burchaklari yig'indisi necha gradus?",
+                   "Тўртбурчакнинг бурчаклари йиғиндиси неча градус?",
+                   "How many degrees is the sum of angles in a quadrilateral?",
+                   "Чему равна сумма углов четырёхугольника в градусах?"),
+                Difficulty.EASY, PROOF_GEOMETRY,
+                opt("360°", true), opt("180°", false), opt("270°", false), opt("90°", false));
+
+        q(teacher, topic,
+                ml("Uchburchakning burchaklari yig'indisi?",
+                   "Учбурчакнинг бурчаклари йиғиндиси?",
+                   "What is the sum of angles of a triangle?",
+                   "Чему равна сумма углов треугольника?"),
+                Difficulty.EASY, PROOF_GEOMETRY,
+                opt("180°", true), opt("360°", false), opt("90°", false), opt("270°", false));
+
+        q(teacher, topic,
+                ml("Kvadratning barcha tomonlari ...",
+                   "Квадратнинг барча томонлари ...",
+                   "All sides of a square are ...",
+                   "Все стороны квадрата ..."),
+                Difficulty.EASY, PROOF_GEOMETRY,
+                opt("Teng",       "Тенг",       "Equal",        "Равны",          true),
+                opt("Teng emas",  "Тенг эмас",  "Not equal",    "Не равны",       false),
+                opt("Parallel",   "Параллел",   "Parallel",     "Параллельны",    false),
+                opt("Perpendikulyar", "Перпендикуляр", "Perpendicular", "Перпендикулярны", false));
+
+        q(teacher, topic,
+                ml("To'g'ri burchak necha gradus?",
+                   "Тўғри бурчак неча градус?",
+                   "How many degrees is a right angle?",
+                   "Сколько градусов в прямом угле?"),
+                Difficulty.EASY, PROOF_GEOMETRY,
+                opt("90°", true), opt("180°", false), opt("45°", false), opt("60°", false));
+
+        q(teacher, topic,
+                ml("Tomoni 5 cm bo'lgan kvadratning yuzi?",
+                   "Томони 5 см бўлган квадратнинг юзи?",
+                   "Area of a square with side 5 cm?",
+                   "Площадь квадрата со стороной 5 см?"),
+                Difficulty.MEDIUM, PROOF_GEOMETRY,
+                opt("25 cm²", true), opt("20 cm²", false), opt("10 cm²", false), opt("15 cm²", false));
+
+        q(teacher, topic,
+                ml("Radiusi 7 cm bo'lgan doiraning diametri?",
+                   "Радиуси 7 см бўлган доиранинг диаметри?",
+                   "Diameter of a circle with radius 7 cm?",
+                   "Диаметр окружности с радиусом 7 см?"),
+                Difficulty.MEDIUM, PROOF_GEOMETRY,
+                opt("14 cm", true), opt("7 cm", false), opt("21 cm", false), opt("3,5 cm", false));
+
+        q(teacher, topic,
+                ml("Asosi 8, balandligi 5 bo'lgan uchburchak yuzi?",
+                   "Асоси 8, баландлиги 5 бўлган учбурчак юзи?",
+                   "Area of a triangle with base 8 and height 5?",
+                   "Площадь треугольника с основанием 8 и высотой 5?"),
+                Difficulty.MEDIUM, PROOF_GEOMETRY,
                 opt("20", true), opt("40", false), opt("13", false), opt("30", false));
-        findOrCreateQuestion(teacher, topic, "Gipotenuzasi 13, bir kateti 5 bo'lgan to'g'ri burchakli uchburchakning ikkinchi kateti?", Difficulty.HARD,
+
+        q(teacher, topic,
+                ml("Gipotenuzasi 13, bir kateti 5 bo'lgan to'g'ri burchakli uchburchakning ikkinchi kateti?",
+                   "Гипотенузаси 13, бир катети 5 бўлган тўғри бурчакли учбурчакнинг иккинчи катети?",
+                   "Second leg of a right triangle with hypotenuse 13 and one leg 5?",
+                   "Второй катет прямоугольного треугольника с гипотенузой 13 и одним катетом 5?"),
+                Difficulty.HARD, PROOF_GEOMETRY,
                 opt("12", true), opt("8", false), opt("10", false), opt("11", false));
-        findOrCreateQuestion(teacher, topic, "Radiusi 10 cm bo'lgan doira yuzi? (\u03C0 \u2248 3.14)", Difficulty.HARD,
-                opt("314 cm\u00B2", true), opt("31.4 cm\u00B2", false), opt("62.8 cm\u00B2", false), opt("100 cm\u00B2", false));
-        findOrCreateQuestion(teacher, topic, "Teng yonli uchburchakning asosi 10, yon tomoni 13. Balandligi?", Difficulty.HARD,
+
+        q(teacher, topic,
+                ml("Radiusi 10 cm bo'lgan doira yuzi? (π ≈ 3,14)",
+                   "Радиуси 10 см бўлган доира юзи? (π ≈ 3,14)",
+                   "Area of a circle with radius 10 cm? (π ≈ 3.14)",
+                   "Площадь круга с радиусом 10 см? (π ≈ 3,14)"),
+                Difficulty.HARD, PROOF_GEOMETRY,
+                opt("314 cm²", true), opt("31,4 cm²", false), opt("62,8 cm²", false), opt("100 cm²", false));
+
+        q(teacher, topic,
+                ml("Teng yonli uchburchakning asosi 10, yon tomoni 13. Balandligi?",
+                   "Тенг ёнли учбурчакнинг асоси 10, ён томони 13. Баландлиги?",
+                   "Isosceles triangle: base 10, lateral side 13. What is its height?",
+                   "Равнобедренный треугольник: основание 10, боковая сторона 13. Высота?"),
+                Difficulty.HARD, PROOF_GEOMETRY,
                 opt("12", true), opt("8", false), opt("10", false), opt("15", false));
     }
 
+    // ─── Arithmetic questions (10) ────────────────────────────────────────────
+
     private void createArithmeticQuestions(User teacher, Topic topic) {
-        findOrCreateQuestion(teacher, topic, "25 + 37 = ?", Difficulty.EASY,
+        q(teacher, topic, mlSame("25 + 37 = ?"), Difficulty.EASY, PROOF_ARITHMETIC,
                 opt("62", true), opt("52", false), opt("72", false), opt("63", false));
-        findOrCreateQuestion(teacher, topic, "100 - 45 = ?", Difficulty.EASY,
+
+        q(teacher, topic, mlSame("100 − 45 = ?"), Difficulty.EASY, PROOF_ARITHMETIC,
                 opt("55", true), opt("65", false), opt("45", false), opt("50", false));
-        findOrCreateQuestion(teacher, topic, "8 * 7 = ?", Difficulty.EASY,
+
+        q(teacher, topic, mlSame("8 × 7 = ?"), Difficulty.EASY, PROOF_ARITHMETIC,
                 opt("56", true), opt("48", false), opt("63", false), opt("54", false));
-        findOrCreateQuestion(teacher, topic, "72 / 8 = ?", Difficulty.EASY,
+
+        q(teacher, topic, mlSame("72 ÷ 8 = ?"), Difficulty.EASY, PROOF_ARITHMETIC,
                 opt("9", true), opt("8", false), opt("7", false), opt("6", false));
-        findOrCreateQuestion(teacher, topic, "12, 18 va 24 sonlarining EKUB?", Difficulty.MEDIUM,
+
+        q(teacher, topic,
+                ml("12, 18 va 24 sonlarining EKUB?",
+                   "12, 18 ва 24 сонларининг ЭКУБ?",
+                   "GCD of 12, 18 and 24?",
+                   "НОД чисел 12, 18 и 24?"),
+                Difficulty.MEDIUM, PROOF_ARITHMETIC,
                 opt("6", true), opt("3", false), opt("12", false), opt("2", false));
-        findOrCreateQuestion(teacher, topic, "3/4 + 1/2 = ?", Difficulty.MEDIUM,
+
+        q(teacher, topic, mlSame("3/4 + 1/2 = ?"), Difficulty.MEDIUM, PROOF_ARITHMETIC,
                 opt("5/4", true), opt("4/6", false), opt("1/2", false), opt("3/2", false));
-        findOrCreateQuestion(teacher, topic, "0.25 * 0.4 = ?", Difficulty.MEDIUM,
-                opt("0.1", true), opt("0.01", false), opt("1.0", false), opt("0.65", false));
-        findOrCreateQuestion(teacher, topic, "2\u2075 + 3\u00B3 = ?", Difficulty.HARD,
+
+        q(teacher, topic, mlSame("0,25 × 0,4 = ?"), Difficulty.MEDIUM, PROOF_ARITHMETIC,
+                opt("0,1", true), opt("0,01", false), opt("1,0", false), opt("0,65", false));
+
+        q(teacher, topic, mlSame("2⁵ + 3³ = ?"), Difficulty.HARD, PROOF_ARITHMETIC,
                 opt("59", true), opt("41", false), opt("35", false), opt("67", false));
-        findOrCreateQuestion(teacher, topic, "\u221A144 + \u221A81 = ?", Difficulty.HARD,
+
+        q(teacher, topic, mlSame("√144 + √81 = ?"), Difficulty.HARD, PROOF_ARITHMETIC,
                 opt("21", true), opt("15", false), opt("18", false), opt("25", false));
-        findOrCreateQuestion(teacher, topic, "123 * 456 ning oxirgi raqami?", Difficulty.HARD,
+
+        q(teacher, topic,
+                ml("123 × 456 ning oxirgi raqami?",
+                   "123 × 456 нинг охирги рақами?",
+                   "What is the last digit of 123 × 456?",
+                   "Какова последняя цифра произведения 123 × 456?"),
+                Difficulty.HARD, PROOF_ARITHMETIC,
                 opt("8", true), opt("6", false), opt("2", false), opt("4", false));
     }
 
-    // ─── Helpers ────────────────────────────────────────────────────────────────
+    // ─── Helpers ──────────────────────────────────────────────────────────────
 
-    private void findOrCreateQuestion(User teacher, Topic topic, String questionText, Difficulty difficulty,
-                                       String optA, String optB, String optC, String optD) {
-        // Check if question already exists by topic + text
-        if (questionRepository.existsByTopicIdAndDefaultQuestionText(topic.getId(), questionText)) {
+    /**
+     * Creates a multilingual text map with all 4 supported locales.
+     */
+    private static Map<String, String> ml(String uzL, String uzC, String en, String ru) {
+        return Map.of("uz_latn", uzL, "uz_cyrl", uzC, "en", en, "ru", ru);
+    }
+
+    /**
+     * Same text in all 4 languages (for math notation, numbers, formulas).
+     */
+    private static Map<String, String> mlSame(String text) {
+        return ml(text, text, text, text);
+    }
+
+    /**
+     * Creates an MCQ option with all 4 language translations.
+     */
+    private String opt(String uzL, String uzC, String en, String ru, boolean isCorrect) {
+        try {
+            Map<String, Object> option = Map.of(
+                    "id",        java.util.UUID.randomUUID().toString(),
+                    "text",      ml(uzL, uzC, en, ru),
+                    "isCorrect", isCorrect
+            );
+            return objectMapper.writeValueAsString(option);
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    /**
+     * Creates an MCQ option with same text in all 4 languages
+     * (for numeric answers, math notation, universal symbols).
+     */
+    private String opt(String text, boolean isCorrect) {
+        return opt(text, text, text, text, isCorrect);
+    }
+
+    /**
+     * Convenience alias for findOrCreateQuestion (shorter name for readability).
+     */
+    private void q(User teacher, Topic topic,
+                   Map<String, String> questionText,
+                   Difficulty difficulty,
+                   Map<String, String> proof,
+                   String optA, String optB, String optC, String optD) {
+        String uzL = questionText.get("uz_latn");
+        if (questionRepository.existsByTopicIdAndDefaultQuestionText(topic.getId(), uzL)) {
             return;
         }
         try {
@@ -261,21 +495,21 @@ public class DataInitializer implements ApplicationRunner {
             Question question = Question.builder()
                     .topic(topic)
                     .user(teacher)
-                    .questionText(Map.of("uz_latn", questionText, "en", questionText))
+                    .questionText(questionText)
                     .questionType(QuestionType.MCQ_SINGLE)
                     .difficulty(difficulty)
                     .points(BigDecimal.ONE)
                     .timeLimitSeconds(60)
                     .options(options)
                     .correctAnswer("\"" + correctAnswer + "\"")
-                    .proof(Map.of("uz_latn", "Hisoblab tekshirilgan"))
+                    .proof(proof)
                     .proofRequired(true)
                     .status(QuestionStatus.DRAFT)
                     .build();
 
             questionRepository.save(question);
         } catch (Exception e) {
-            log.warn("Failed to create sample question: {}", e.getMessage());
+            log.warn("Failed to create sample question '{}': {}", uzL, e.getMessage());
         }
     }
 
@@ -291,18 +525,5 @@ public class DataInitializer implements ApplicationRunner {
         Integer questionCount = topicRepository.sumQuestionCountBySubjectId(subject.getId()).orElse(0);
         subject.setQuestionCount(questionCount);
         subjectRepository.save(subject);
-    }
-
-    private String opt(String text, boolean isCorrect) {
-        try {
-            Map<String, Object> option = Map.of(
-                    "id", java.util.UUID.randomUUID().toString(),
-                    "text", Map.of("uz_latn", text, "en", text),
-                    "isCorrect", isCorrect
-            );
-            return objectMapper.writeValueAsString(option);
-        } catch (Exception e) {
-            return "";
-        }
     }
 }

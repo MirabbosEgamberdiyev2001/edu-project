@@ -1,167 +1,213 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Box, Button, ButtonGroup, Typography, CircularProgress, LinearProgress, Alert,
-  Dialog, DialogTitle, DialogContent, DialogActions,
+  Box, Button, ButtonGroup, Typography, CircularProgress, LinearProgress,
+  Tooltip,
 } from '@mui/material';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import DescriptionIcon from '@mui/icons-material/Description';
+import HtmlIcon from '@mui/icons-material/Html';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import { testApi } from '@/api/testApi';
-import { useToast } from '@/hooks/useToast';
-import type { ExportFormat } from '@/types/test';
+import {
+  generateExportDocument,
+  downloadFile,
+  printHtml,
+  type ExportVariant,
+  type ExportMode,
+} from '@/utils/mathExport';
 
 interface TestExportButtonsProps {
   testId: string;
+  variants?: ExportVariant[];
+  testTitle?: string;
 }
 
-type ExportType = 'test' | 'answerKey' | 'combined' | 'proofs';
+type ExportFormat = 'PDF' | 'DOCX' | 'HTML';
 
-export default function TestExportButtons({ testId }: TestExportButtonsProps) {
+// Map export type key → ExportMode
+const MODE_MAP: Record<string, ExportMode> = {
+  test:      'test',
+  answerKey: 'answerKey',
+  combined:  'combined',
+  proofs:    'proofs',
+};
+
+const EXPORT_TYPES = ['test', 'answerKey', 'combined', 'proofs'] as const;
+
+function safeName(title: string) {
+  return title.replace(/[^\w\s\u0400-\u04FF\u0100-\u024F-]/g, '').trim().slice(0, 60) || 'export';
+}
+
+export default function TestExportButtons({ variants = [], testTitle = '' }: TestExportButtonsProps) {
   const { t } = useTranslation('test');
-  const toast = useToast();
   const [loading, setLoading] = useState<string | null>(null);
   const [lastSuccess, setLastSuccess] = useState<string | null>(null);
-  const [errorDialog, setErrorDialog] = useState({ open: false, message: '' });
 
-  const handleExport = async (type: ExportType, format: ExportFormat) => {
+  const isEmpty = variants.length === 0;
+
+  const handleExport = (type: string, format: ExportFormat) => {
     const key = `${type}_${format}`;
     setLoading(key);
     setLastSuccess(null);
 
     try {
-      const exportFn = {
-        test: testApi.exportTest,
-        answerKey: testApi.exportAnswerKey,
-        combined: testApi.exportCombined,
-        proofs: testApi.exportProofs,
-      }[type];
+      const mode = MODE_MAP[type] ?? 'test';
+      const title = testTitle || t(`export.${type}`);
+      const html = generateExportDocument(variants, title, mode);
+      const name = safeName(title);
 
-      const response = await exportFn(testId, format);
-      const contentType = response.headers['content-type'] || (format === 'PDF' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-      const blob = new Blob([response.data], { type: contentType });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${type}_${testId}.${format.toLowerCase()}`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-
-      // Show success
-      setLastSuccess(key);
-      toast.success(t('export.downloaded'));
-
-      // Clear success indicator after 3 seconds
-      setTimeout(() => setLastSuccess(null), 3000);
-    } catch (error: unknown) {
-      const axiosErr = error as { response?: { data?: Blob | string }; message?: string };
-      let errorMessage = t('export.error');
-
-      // Try to extract meaningful error message
-      if (axiosErr.response?.data instanceof Blob) {
-        try {
-          const text = await axiosErr.response.data.text();
-          const json = JSON.parse(text);
-          errorMessage = json.message || json.error || errorMessage;
-        } catch {
-          errorMessage = t('export.error');
-        }
-      } else if (typeof axiosErr.response?.data === 'string') {
-        errorMessage = axiosErr.response.data;
-      } else if (axiosErr.message) {
-        errorMessage = axiosErr.message;
-      }
-
-      // Show error dialog for better visibility
-      if (errorMessage.length > 50) {
-        setErrorDialog({ open: true, message: errorMessage });
+      if (format === 'PDF') {
+        printHtml(html);
+      } else if (format === 'DOCX') {
+        // .doc extension + application/msword MIME → Windows opens directly in Word
+        // Word 2013+ reads the embedded MathML as native Office Math equations
+        downloadFile(`${name}_${type}.doc`, html, 'application/msword');
       } else {
-        toast.error(errorMessage);
+        // HTML — open or save in any browser
+        downloadFile(`${name}_${type}.html`, html, 'text/html');
       }
+
+      setLastSuccess(key);
+      setTimeout(() => setLastSuccess(null), 3000);
+    } catch {
+      // KaTeX errors fall back to raw LaTeX in the output — silent
     } finally {
       setLoading(null);
     }
   };
 
-  const exportTypes: { key: ExportType; label: string }[] = [
-    { key: 'test', label: t('export.test') },
-    { key: 'answerKey', label: t('export.answerKey') },
-    { key: 'combined', label: t('export.combined') },
-    { key: 'proofs', label: t('export.proofs') },
+  const formats: { fmt: ExportFormat; icon: React.ReactNode; tooltipKey: string }[] = [
+    {
+      fmt: 'PDF',
+      icon: <PictureAsPdfIcon />,
+      tooltipKey: 'export.tooltipPdf',
+    },
+    {
+      fmt: 'DOCX',
+      icon: <DescriptionIcon />,
+      tooltipKey: 'export.tooltipDocx',
+    },
+    {
+      fmt: 'HTML',
+      icon: <HtmlIcon />,
+      tooltipKey: 'export.tooltipHtml',
+    },
   ];
 
   const hasAnyLoading = loading !== null;
 
   return (
     <Box>
-      <Typography variant="subtitle2" gutterBottom>{t('detail.export')}</Typography>
+      <Typography variant="subtitle2" gutterBottom>
+        {t('detail.export')}
+      </Typography>
 
-      {/* Global progress bar during any export */}
-      {hasAnyLoading && <LinearProgress sx={{ mb: 2 }} />}
+      {hasAnyLoading && <LinearProgress sx={{ mb: 2, borderRadius: 1 }} />}
 
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-        {exportTypes.map(({ key, label }) => (
-          <Box key={key} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="body2" sx={{ minWidth: 120 }}>{label}</Typography>
-            <ButtonGroup size="small" variant="outlined">
-              <Button
-                startIcon={
-                  loading === `${key}_PDF` ? (
-                    <CircularProgress size={16} />
-                  ) : lastSuccess === `${key}_PDF` ? (
-                    <CheckCircleIcon fontSize="small" color="success" />
-                  ) : (
-                    <PictureAsPdfIcon />
-                  )
-                }
-                onClick={() => handleExport(key, 'PDF')}
-                disabled={hasAnyLoading}
-                aria-label={`Export ${label} as PDF`}
-              >
-                PDF
-              </Button>
-              <Button
-                startIcon={
-                  loading === `${key}_DOCX` ? (
-                    <CircularProgress size={16} />
-                  ) : lastSuccess === `${key}_DOCX` ? (
-                    <CheckCircleIcon fontSize="small" color="success" />
-                  ) : (
-                    <DescriptionIcon />
-                  )
-                }
-                onClick={() => handleExport(key, 'DOCX')}
-                disabled={hasAnyLoading}
-                aria-label={`Export ${label} as DOCX`}
-              >
-                DOCX
-              </Button>
-            </ButtonGroup>
-          </Box>
-        ))}
+      {/* Column headers */}
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: '160px 1fr',
+          gap: 1,
+          mb: 0.5,
+          px: 0.5,
+        }}
+      >
+        <span />
+        <Box sx={{ display: 'flex', gap: '2px' }}>
+          {formats.map(({ fmt }) => (
+            <Typography
+              key={fmt}
+              variant="caption"
+              color="text.secondary"
+              sx={{ width: 72, textAlign: 'center', fontWeight: 600 }}
+            >
+              {fmt}
+            </Typography>
+          ))}
+        </Box>
       </Box>
 
-      {/* Error dialog for detailed messages */}
-      <Dialog
-        open={errorDialog.open}
-        onClose={() => setErrorDialog({ ...errorDialog, open: false })}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>{t('export.error')}</DialogTitle>
-        <DialogContent>
-          <Alert severity="error" sx={{ mt: 2 }}>
-            {errorDialog.message}
-          </Alert>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setErrorDialog({ ...errorDialog, open: false })}>
-            OK
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* Export rows */}
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+        {EXPORT_TYPES.map((type) => {
+          const label = t(`export.${type}`);
+          const desc = t(`export.desc${type.charAt(0).toUpperCase() + type.slice(1)}`, '');
+          return (
+            <Box
+              key={type}
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: '160px 1fr',
+                alignItems: 'center',
+                gap: 1,
+              }}
+            >
+              <Tooltip
+                title={desc}
+                placement="right"
+                arrow
+                disableHoverListener={!desc}
+              >
+                <Typography
+                  variant="body2"
+                  sx={{ fontWeight: 500, color: 'text.primary', pr: 0.5, cursor: desc ? 'help' : 'default' }}
+                >
+                  {label}
+                </Typography>
+              </Tooltip>
+
+              <Box sx={{ display: 'flex', gap: '2px' }}>
+                {formats.map(({ fmt, icon, tooltipKey }) => {
+                  const key = `${type}_${fmt}`;
+                  const isLoading = loading === key;
+                  const isDone = lastSuccess === key;
+                  return (
+                    <Tooltip key={fmt} title={t(tooltipKey)} arrow placement="top">
+                      <span>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() => handleExport(type, fmt)}
+                          disabled={hasAnyLoading || isEmpty}
+                          sx={{
+                            minWidth: 68,
+                            height: 32,
+                            fontSize: '0.75rem',
+                            px: 1,
+                            gap: 0.5,
+                            color: isDone ? 'success.main' : undefined,
+                            borderColor: isDone ? 'success.main' : undefined,
+                          }}
+                          startIcon={
+                            isLoading ? (
+                              <CircularProgress size={14} />
+                            ) : isDone ? (
+                              <CheckCircleIcon sx={{ fontSize: 15 }} />
+                            ) : (
+                              icon
+                            )
+                          }
+                          aria-label={`${label} — ${fmt}`}
+                        >
+                          {fmt}
+                        </Button>
+                      </span>
+                    </Tooltip>
+                  );
+                })}
+              </Box>
+            </Box>
+          );
+        })}
+      </Box>
+
+      {isEmpty && (
+        <Typography variant="caption" color="text.disabled" sx={{ mt: 1, display: 'block' }}>
+          {t('detail.loadingQuestions')}
+        </Typography>
+      )}
     </Box>
   );
 }

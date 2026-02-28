@@ -52,5 +52,28 @@
   "myGroups": "Менинг гуруҳларим",
   "quickActions": "Тезкор амаллар",
   "newTest": "Янги тест",
-  "viewAll": "Барчаси"
+  "viewAll": "Барчаси",
+  "formula": {
+    "title": "Формула киритиш",
+    "modeLabel": "Кўриниш тури",
+    "inline": "Сатр ичида",
+    "inlineDesc": "Матн ичида жойлашади",
+    "display": "Блок кўриниш",
+    "blockDesc": "Алоҳида марказлашган қаторда кўринади",
+    "insert": "Формулани қўшиш",
+    "addTooltip": "Формула қўшиш",
+    "hint": "LaTeX ёзинг ёки юқоридаги белгини босинг",
+    "previewLabel": "LaTeX:",
+    "previewSection": "Кўриниш",
+    "emptyPreview": "Кўриш учун формула киритинг",
+    "exampleHint": "Масалан: x^2+1, \\frac{a}{b}, \\sqrt{x}",
+    "errorEmpty": "Формула бўш",
+    "errorInvalid": "Формула синтаксиси нотўғри",
+    "validFormula": "Формула тўғри",
+    "catBasic": "Асосий",
+    "catFractions": "Касрлар",
+    "catRoots": "Илдизлар",
+    "catGreek": "Юнонча",
+    "catAdvanced": "Қўшимча"
+  }
 }

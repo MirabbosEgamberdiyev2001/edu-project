@@ -27,6 +27,7 @@ import { useQuestionsForSelection } from '../hooks/useTests';
 import { useQuestionsByIds } from '@/features/questions/hooks/useQuestions';
 import { resolveTranslation } from '@/utils/i18nUtils';
 import { Difficulty } from '@/types/question';
+import { MathText } from '@/components/math';
 
 interface QuestionSelectorProps {
   subjectId: string;
@@ -196,9 +197,11 @@ export default function QuestionSelector({ subjectId, topicIds, selectedIds, onS
                     {idx + 1}.
                   </Typography>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
-                      {resolveTranslation(question.questionTextTranslations) || question.questionText}
-                    </Typography>
+                    <MathText
+                      text={resolveTranslation(question.questionTextTranslations) || question.questionText || ''}
+                      variant="body2"
+                      sx={{ wordBreak: 'break-word' }}
+                    />
                     <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5, flexWrap: 'wrap' }}>
                       <Chip
                         size="small"
@@ -340,9 +343,11 @@ export default function QuestionSelector({ subjectId, topicIds, selectedIds, onS
                 sx={{ mt: -0.5 }}
               />
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
-                  {resolveTranslation(question.questionTextTranslations) || question.questionText}
-                </Typography>
+                <MathText
+                  text={resolveTranslation(question.questionTextTranslations) || question.questionText || ''}
+                  variant="body2"
+                  sx={{ wordBreak: 'break-word' }}
+                />
                 <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5, flexWrap: 'wrap' }}>
                   <Chip
                     size="small"

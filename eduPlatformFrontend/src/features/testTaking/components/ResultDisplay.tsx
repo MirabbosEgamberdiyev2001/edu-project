@@ -19,6 +19,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useTranslation } from 'react-i18next';
 import { resolveTranslation } from '@/utils/i18nUtils';
 import type { AttemptResultDto, DetailedAnswerDto } from '@/types/testTaking';
+import { MathText } from '@/components/math';
 
 type OptionItem = { id?: unknown; key?: unknown; text?: unknown; isCorrect?: boolean };
 type TabValue = 'all' | 'correct' | 'wrong' | 'skipped';
@@ -274,9 +275,7 @@ export default function ResultDisplay({ result }: ResultDisplayProps) {
                 color={chipColor}
                 sx={{ minWidth: 32, fontWeight: 700, flexShrink: 0 }}
               />
-              <Typography variant="body1" sx={{ flex: 1 }}>
-                {answer.questionText}
-              </Typography>
+              <MathText text={answer.questionText} variant="body1" sx={{ flex: 1 }} />
               <Typography variant="body2" fontWeight={600} whiteSpace="nowrap">
                 {answer.score}/{answer.maxScore}
               </Typography>
@@ -333,9 +332,7 @@ export default function ResultDisplay({ result }: ResultDisplayProps) {
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails sx={{ px: 2, pt: 0, pb: 1.5 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    {answer.proof}
-                  </Typography>
+                  <MathText text={answer.proof ?? ''} variant="body2" sx={{ color: 'text.secondary' }} />
                 </AccordionDetails>
               </Accordion>
             )}

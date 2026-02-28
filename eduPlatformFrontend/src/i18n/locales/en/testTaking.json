@@ -63,7 +63,6 @@
   "correctAnswers": "Correct Answers",
   "wrongAnswers": "Wrong Answers",
   "skipped": "Skipped",
-  "timeTaken": "Time Taken",
   "submittedAt": "Submitted At",
   "reviewAnswers": "Review Answers",
   "yourAnswer": "Your Answer",
@@ -232,5 +231,18 @@
     "noResults": "You have not taken any attestation tests yet",
     "viewResult": "View Result",
     "defaultSubjectHint": "Filtered by your profile subject"
+  },
+  "exam": {
+    "answeredOf": "{{answered}} / {{total}}",
+    "allAnswered": "All answered",
+    "navLabel": "Question navigation",
+    "questionBtn": "Question {{number}}",
+    "legend": {
+      "current": "Current",
+      "answered": "Answered",
+      "unanswered": "Unanswered"
+    },
+    "finishLabel": "Finish and submit exam",
+    "submitWarning": "{{count}} questions unanswered"
   }
 }
