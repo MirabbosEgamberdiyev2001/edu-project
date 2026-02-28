@@ -353,13 +353,15 @@ public class TestHistoryService {
 
     @Transactional(readOnly = true)
     public PagedResponse<TestHistoryDto> getApprovedGlobalTests(
-            TestCategory category, UUID subjectId, Integer gradeLevel,
+            TestCategory category, UUID subjectId, Integer gradeLevel, String search,
             Pageable pageable, AcceptLanguage language) {
         Page<TestHistory> page = testHistoryRepository.findGlobalTests(
                 GlobalStatus.APPROVED.name(),
                 category != null ? category.name() : null,
                 subjectId != null ? subjectId.toString() : null,
-                gradeLevel, pageable);
+                gradeLevel,
+                (search != null && !search.isBlank()) ? search.trim() : null,
+                pageable);
         return toPagedResponse(page, language);
     }
 

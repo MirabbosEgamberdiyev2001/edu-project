@@ -51,12 +51,13 @@ public class GlobalTestController {
             @RequestParam(required = false) TestCategory category,
             @RequestParam(required = false) UUID subjectId,
             @RequestParam(required = false) Integer gradeLevel,
+            @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
 
         PagedResponse<TestHistoryDto> response = testHistoryService.getApprovedGlobalTests(
-                category, subjectId, gradeLevel,
+                category, subjectId, gradeLevel, search,
                 PageRequest.of(page, size),
                 language);
         return ResponseEntity.ok(ApiResponse.success(response));

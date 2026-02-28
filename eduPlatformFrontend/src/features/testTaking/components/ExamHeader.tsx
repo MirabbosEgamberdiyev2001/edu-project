@@ -12,6 +12,7 @@ interface ExamHeaderProps {
 export default function ExamHeader({ title, answeredCount, totalQuestions, timeRemaining, onTimeUp }: ExamHeaderProps) {
   const progress = totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
   const allAnswered = answeredCount === totalQuestions && totalQuestions > 0;
+  const isTimerUrgent = timeRemaining != null && timeRemaining <= 60;
 
   return (
     <AppBar
@@ -42,7 +43,7 @@ export default function ExamHeader({ title, answeredCount, totalQuestions, timeR
           height: 3,
           bgcolor: 'grey.100',
           '& .MuiLinearProgress-bar': {
-            bgcolor: allAnswered ? 'success.main' : 'primary.main',
+            bgcolor: allAnswered ? 'success.main' : isTimerUrgent ? 'error.main' : 'primary.main',
             transition: 'transform 0.3s ease, background-color 0.3s ease',
           },
         }}

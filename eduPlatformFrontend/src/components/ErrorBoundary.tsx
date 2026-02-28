@@ -28,6 +28,8 @@ export default class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       if (this.props.fallback) return this.props.fallback;
 
+      const isDev = import.meta.env.DEV;
+
       return (
         <Box
           sx={{
@@ -47,6 +49,30 @@ export default class ErrorBoundary extends Component<Props, State> {
           <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', maxWidth: 400 }}>
             {i18next.t('common:errorBoundary.description')}
           </Typography>
+          {isDev && this.state.error && (
+            <Box
+              sx={{
+                mt: 1,
+                p: 2,
+                bgcolor: '#fff3f3',
+                border: '1px solid #ffcdd2',
+                borderRadius: 1,
+                maxWidth: 600,
+                width: '100%',
+                fontFamily: 'monospace',
+                fontSize: '0.75rem',
+                color: 'error.dark',
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-all',
+                maxHeight: 200,
+                overflow: 'auto',
+              }}
+            >
+              {this.state.error.message}
+              {'\n\n'}
+              {this.state.error.stack}
+            </Box>
+          )}
           <Button
             variant="contained"
             onClick={() => {

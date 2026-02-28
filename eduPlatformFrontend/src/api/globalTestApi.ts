@@ -10,6 +10,7 @@ export const globalTestApi = {
     category?: TestCategory | '';
     subjectId?: string;
     gradeLevel?: number | '';
+    search?: string;
     page?: number;
     size?: number;
   }, signal?: AbortSignal) => {
@@ -17,6 +18,7 @@ export const globalTestApi = {
     if (params?.category) cleanParams.category = params.category;
     if (params?.subjectId) cleanParams.subjectId = params.subjectId;
     if (params?.gradeLevel) cleanParams.gradeLevel = params.gradeLevel;
+    if (params?.search) cleanParams.search = params.search;
     if (params?.page !== undefined) cleanParams.page = params.page;
     if (params?.size !== undefined) cleanParams.size = params.size;
     return api.get<ApiResponse<PagedResponse<TestHistoryDto>>>(BASE, { params: cleanParams, signal });

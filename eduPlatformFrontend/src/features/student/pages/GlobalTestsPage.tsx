@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import {
@@ -21,11 +21,14 @@ import {
   Divider,
   Stack,
   Skeleton,
+  TextField,
+  InputAdornment,
 } from '@mui/material';
 import QuizIcon from '@mui/icons-material/Quiz';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import TimerIcon from '@mui/icons-material/Timer';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import SearchIcon from '@mui/icons-material/Search';
 import { useTranslation } from 'react-i18next';
 import { globalTestApi } from '@/api/globalTestApi';
 import { subjectApi } from '@/api/subjectApi';
@@ -49,6 +52,17 @@ export default function GlobalTestsPage() {
   const [subjectId, setSubjectId] = useState('');
   const [gradeLevel, setGradeLevel] = useState<number | ''>('');
   const [page, setPage] = useState(0);
+  const [searchInput, setSearchInput] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchInput.trim());
+      if (searchInput.trim() !== debouncedSearch) setPage(0);
+    }, 400);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput]);
 
   const { data: subjectsData } = useQuery({
     queryKey: ['subjects-all'],
@@ -56,11 +70,12 @@ export default function GlobalTestsPage() {
   });
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['global-tests', category, subjectId, gradeLevel, page],
+    queryKey: ['global-tests', category, subjectId, gradeLevel, page, debouncedSearch],
     queryFn: () => globalTestApi.getAll({
       category: category || undefined,
       subjectId: subjectId || undefined,
       gradeLevel: gradeLevel || undefined,
+      search: debouncedSearch || undefined,
       page,
       size: 12,
     }).then(r => r.data.data),
@@ -78,6 +93,8 @@ export default function GlobalTestsPage() {
     setCategory('');
     setSubjectId('');
     setGradeLevel('');
+    setSearchInput('');
+    setDebouncedSearch('');
     setPage(0);
   }, []);
 
@@ -117,12 +134,27 @@ export default function GlobalTestsPage() {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
           <FilterListIcon fontSize="small" color="action" />
           <Typography variant="subtitle2">{t('globalTests.filter')}</Typography>
-          {(category || subjectId || gradeLevel) && (
+          {(category || subjectId || gradeLevel || debouncedSearch) && (
             <Button size="small" onClick={handleReset} sx={{ ml: 'auto' }}>
               {t('globalTests.clearFilter')}
             </Button>
           )}
         </Box>
+        <TextField
+          fullWidth
+          size="small"
+          placeholder={t('globalTests.searchPlaceholder')}
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          sx={{ mb: 2 }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon fontSize="small" color="action" />
+              </InputAdornment>
+            ),
+          }}
+        />
         <Grid container spacing={2}>
           <Grid item xs={12} sm={4}>
             <FormControl fullWidth size="small">

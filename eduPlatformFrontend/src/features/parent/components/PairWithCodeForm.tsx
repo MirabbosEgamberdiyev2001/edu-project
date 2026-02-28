@@ -34,7 +34,7 @@ export default function PairWithCodeForm({ onSubmit, isPending }: PairWithCodeFo
         {t('enterCode')}
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        {t('scanQR')}
+        {t('enterCodeDesc')}
       </Typography>
       <Box
         component="form"
@@ -55,7 +55,7 @@ export default function PairWithCodeForm({ onSubmit, isPending }: PairWithCodeFo
         <Button
           type="submit"
           variant="contained"
-          disabled={isPending || code.trim().length === 0}
+          disabled={isPending || code.trim().length < 8}
           startIcon={isPending ? <CircularProgress size={18} /> : <LinkIcon />}
         >
           {t('pairWithCode')}

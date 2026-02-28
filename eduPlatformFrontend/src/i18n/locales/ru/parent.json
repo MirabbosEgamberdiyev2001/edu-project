@@ -36,5 +36,69 @@
   "unlinkConfirm": "Вы уверены, что хотите отвязать этого ребёнка?",
   "linked": "Привязан",
   "linkSuccess": "Ребёнок успешно привязан",
-  "linkError": "Неверный или просроченный код"
+  "linkError": "Неверный или просроченный код",
+  "myChildrenTitle": "Мои дети",
+  "myChildrenSubtitle": "Отслеживайте успехи своих детей",
+  "familyTitle": "Обзор семьи",
+  "familySubtitle": "Мониторинг учебного прогресса семьи",
+  "pairChild": "Добавить ребёнка",
+  "kpi": {
+    "total": "Всего детей",
+    "active": "Активные связи",
+    "pending": "Ожидает"
+  },
+  "linkedParents": "Подключённые родители",
+  "noParents": "Родители ещё не подключены",
+  "generateCodePrompt": "Создайте код и поделитесь им с родителем для подключения",
+  "pairingStatus": {
+    "ACTIVE": "Активен",
+    "PENDING": "Ожидает",
+    "REVOKED": "Отозван",
+    "EXPIRED": "Истёк"
+  },
+  "pairWithCode": "Привязать",
+  "enterCodeDesc": "Введите 8-значный код с экрана вашего ребёнка",
+  "pairing": "Привязка...",
+  "pairChildSubtitle": "Введите код привязки ребёнка для подключения аккаунтов",
+  "cancel": "Отмена",
+  "childNotFound": "Ребёнок не найден",
+  "revokeConfirm": {
+    "title": "Отвязать",
+    "message": "Вы уверены, что хотите отвязать {{name}}?",
+    "confirm": "Отвязать"
+  },
+  "pairedOn": "Дата привязки",
+  "howToPair": "Как подключить?",
+  "step1": "Создайте код",
+  "step1desc": "Нажмите кнопку и получите 8-значный код",
+  "step2": "Поделитесь",
+  "step2desc": "Отправьте код или QR-код родителю",
+  "step3": "Подключено!",
+  "step3desc": "После ввода кода родителем подключение выполнено",
+  "completedTests": "Выполнено",
+  "pendingTests": "Ожидает",
+  "totalAssignments": "Всего заданий",
+  "scoreTrend": {
+    "UP": "Растёт",
+    "DOWN": "Снижается",
+    "STABLE": "Стабильно"
+  },
+  "weeklyActivity": "Активность за неделю",
+  "testsToday": "Сегодня",
+  "testsThisWeek": "На этой неделе",
+  "testsThisMonth": "В этом месяце",
+  "avgThisWeek": "Средний балл за неделю",
+  "timeSpentToday": "Время сегодня",
+  "minutesShort": "мин",
+  "level": {
+    "EXCELLENT": "Отлично",
+    "GOOD": "Хорошо",
+    "ATTENTION": "Внимание",
+    "CRITICAL": "Критично"
+  },
+  "attempts": "попыток",
+  "testTitle": "Название теста",
+  "score": "Балл",
+  "date": "Дата",
+  "noAttempts": "Попыток пока нет"
 }

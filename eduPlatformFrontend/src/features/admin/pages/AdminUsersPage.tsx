@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { useDebounce } from '@/features/subjects/hooks/useDebounce';
 import {
   Box,
-  Typography,
   TextField,
   FormControl,
   InputLabel,
@@ -22,6 +21,8 @@ import {
   Tooltip,
   Pagination,
   CircularProgress,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -29,6 +30,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import SecurityIcon from '@mui/icons-material/Security';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import DeleteIcon from '@mui/icons-material/Delete';
+import PeopleIcon from '@mui/icons-material/People';
 import InputAdornment from '@mui/material/InputAdornment';
 import { Role, UserStatus } from '@/types/user';
 import type { AdminUserDto } from '@/types/admin';
@@ -44,7 +46,7 @@ import RoleChangeDialog from '../components/RoleChangeDialog';
 import StatusChangeDialog from '../components/StatusChangeDialog';
 import DeleteUserDialog from '../components/DeleteUserDialog';
 import UnlockUserDialog from '../components/UnlockUserDialog';
-import { PageShell } from '@/components/ui';
+import { PageShell, EmptyState } from '@/components/ui';
 
 const STATUS_COLORS: Record<string, 'success' | 'default' | 'error' | 'warning'> = {
   ACTIVE: 'success',
@@ -62,25 +64,37 @@ const ROLE_COLORS: Record<string, string> = {
   STUDENT: '#607d8b',
 };
 
+type RoleTab = 'ALL' | 'TEACHER' | 'STUDENT' | 'PARENT' | 'MODERATOR' | 'ADMIN';
+
+const ROLE_TABS: { key: RoleTab; roleFilter?: Role }[] = [
+  { key: 'ALL' },
+  { key: 'TEACHER', roleFilter: Role.TEACHER },
+  { key: 'STUDENT', roleFilter: Role.STUDENT },
+  { key: 'PARENT', roleFilter: Role.PARENT },
+  { key: 'MODERATOR', roleFilter: Role.MODERATOR },
+  { key: 'ADMIN', roleFilter: Role.ADMIN },
+];
+
 export default function AdminUsersPage() {
   const { t } = useTranslation('admin');
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
 
   const [search, setSearch] = useState('');
-  const [roleFilter, setRoleFilter] = useState<Role | ''>('');
+  const [activeRoleTab, setActiveRoleTab] = useState<RoleTab>('ALL');
   const [statusFilter, setStatusFilter] = useState<UserStatus | ''>('');
   const [page, setPage] = useState(0);
 
   const debouncedSearch = useDebounce(search, 300);
+  const currentTabDef = ROLE_TABS.find((tab) => tab.key === activeRoleTab)!;
 
   const params = useMemo(() => ({
     search: debouncedSearch || undefined,
-    role: roleFilter || undefined,
+    role: currentTabDef.roleFilter,
     status: statusFilter || undefined,
     page,
     size: 20,
-  }), [debouncedSearch, roleFilter, statusFilter, page]);
+  }), [debouncedSearch, currentTabDef.roleFilter, statusFilter, page]);
 
   const { data, isLoading } = useAdminUsers(params);
   const changeRole = useChangeRole();
@@ -88,7 +102,6 @@ export default function AdminUsersPage() {
   const unlockUser = useUnlockUser();
   const deleteUser = useDeleteUser();
 
-  // Dialog state
   const [roleDialogUser, setRoleDialogUser] = useState<AdminUserDto | null>(null);
   const [statusDialogUser, setStatusDialogUser] = useState<AdminUserDto | null>(null);
   const [deleteDialogUser, setDeleteDialogUser] = useState<AdminUserDto | null>(null);
@@ -98,38 +111,43 @@ export default function AdminUsersPage() {
 
   const handleRoleChange = (role: Role) => {
     if (!roleDialogUser) return;
-    changeRole.mutate(
-      { id: roleDialogUser.id, data: { role } },
-      { onSuccess: () => setRoleDialogUser(null) },
-    );
+    changeRole.mutate({ id: roleDialogUser.id, data: { role } }, { onSuccess: () => setRoleDialogUser(null) });
   };
 
   const handleStatusChange = (status: UserStatus, reason?: string) => {
     if (!statusDialogUser) return;
-    changeStatus.mutate(
-      { id: statusDialogUser.id, data: { status, reason } },
-      { onSuccess: () => setStatusDialogUser(null) },
-    );
+    changeStatus.mutate({ id: statusDialogUser.id, data: { status, reason } }, { onSuccess: () => setStatusDialogUser(null) });
   };
 
   const handleUnlock = () => {
     if (!unlockDialogUser) return;
-    unlockUser.mutate(unlockDialogUser.id, {
-      onSuccess: () => setUnlockDialogUser(null),
-    });
+    unlockUser.mutate(unlockDialogUser.id, { onSuccess: () => setUnlockDialogUser(null) });
   };
 
   const handleDelete = () => {
     if (!deleteDialogUser) return;
-    deleteUser.mutate(deleteDialogUser.id, {
-      onSuccess: () => setDeleteDialogUser(null),
-    });
+    deleteUser.mutate(deleteDialogUser.id, { onSuccess: () => setDeleteDialogUser(null) });
+  };
+
+  const handleTabChange = (_: React.SyntheticEvent, val: RoleTab) => {
+    setActiveRoleTab(val);
+    setPage(0);
   };
 
   return (
     <PageShell title={t('users.title')} subtitle={t('users.subtitle')}>
+      <Tabs
+        value={activeRoleTab}
+        onChange={handleTabChange}
+        sx={{ mb: 2, borderBottom: 1, borderColor: 'divider' }}
+        variant="scrollable"
+        scrollButtons="auto"
+      >
+        {ROLE_TABS.map((tab) => (
+          <Tab key={tab.key} label={tab.key === 'ALL' ? t('users.all') : tab.key} value={tab.key} />
+        ))}
+      </Tabs>
 
-      {/* Filters */}
       <Paper sx={{ p: 2, mb: 3 }}>
         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
           <TextField
@@ -139,24 +157,9 @@ export default function AdminUsersPage() {
             onChange={(e) => { setSearch(e.target.value); setPage(0); }}
             sx={{ minWidth: 250 }}
             InputProps={{
-              startAdornment: (
-                <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment>
-              ),
+              startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment>,
             }}
           />
-          <FormControl size="small" sx={{ minWidth: 160 }}>
-            <InputLabel>{t('users.filterRole')}</InputLabel>
-            <Select
-              value={roleFilter}
-              label={t('users.filterRole')}
-              onChange={(e) => { setRoleFilter(e.target.value as Role | ''); setPage(0); }}
-            >
-              <MenuItem value="">{t('users.all')}</MenuItem>
-              {Object.values(Role).map((role) => (
-                <MenuItem key={role} value={role}>{role}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
           <FormControl size="small" sx={{ minWidth: 180 }}>
             <InputLabel>{t('users.filterStatus')}</InputLabel>
             <Select
@@ -175,15 +178,10 @@ export default function AdminUsersPage() {
         </Box>
       </Paper>
 
-      {/* Table */}
       {isLoading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-          <CircularProgress />
-        </Box>
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress /></Box>
       ) : !data || data.content.length === 0 ? (
-        <Paper sx={{ p: 4, textAlign: 'center' }}>
-          <Typography color="text.secondary">{t('users.noUsers')}</Typography>
-        </Paper>
+        <EmptyState icon={<PeopleIcon />} title={t('users.noUsers')} description="" />
       ) : (
         <>
           <TableContainer component={Paper}>
@@ -201,14 +199,8 @@ export default function AdminUsersPage() {
               <TableBody>
                 {data.content.map((user) => (
                   <TableRow key={user.id} hover>
-                    <TableCell>
-                      <Typography variant="body2" fontWeight={500}>
-                        {user.firstName} {user.lastName}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2">{user.email || user.phone || '—'}</Typography>
-                    </TableCell>
+                    <TableCell sx={{ fontWeight: 500 }}>{user.firstName} {user.lastName}</TableCell>
+                    <TableCell>{user.email || user.phone || '—'}</TableCell>
                     <TableCell>
                       <Chip
                         label={user.role}
@@ -224,41 +216,29 @@ export default function AdminUsersPage() {
                         variant="outlined"
                       />
                     </TableCell>
-                    <TableCell>
-                      <Typography variant="caption" color="text.secondary">
-                        {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : '—'}
-                      </Typography>
+                    <TableCell sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
+                      {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : '—'}
                     </TableCell>
                     <TableCell align="right">
                       <Tooltip title={t('users.viewDetails')}>
-                        <IconButton size="small" onClick={() => navigate(`/admin/users/${user.id}`)}>
-                          <VisibilityIcon fontSize="small" />
-                        </IconButton>
+                        <IconButton size="small" onClick={() => navigate(`/admin/users/${user.id}`)}><VisibilityIcon fontSize="small" /></IconButton>
                       </Tooltip>
                       {user.role !== Role.SUPER_ADMIN && (
                         <>
                           <Tooltip title={t('users.changeRole')}>
-                            <IconButton size="small" onClick={() => setRoleDialogUser(user)}>
-                              <SecurityIcon fontSize="small" />
-                            </IconButton>
+                            <IconButton size="small" onClick={() => setRoleDialogUser(user)}><SecurityIcon fontSize="small" /></IconButton>
                           </Tooltip>
                           <Tooltip title={t('users.changeStatus')}>
-                            <IconButton size="small" onClick={() => setStatusDialogUser(user)}>
-                              <EditIcon fontSize="small" />
-                            </IconButton>
+                            <IconButton size="small" onClick={() => setStatusDialogUser(user)}><EditIcon fontSize="small" /></IconButton>
                           </Tooltip>
                           {user.failedLoginAttempts > 0 && (
                             <Tooltip title={t('users.unlock')}>
-                              <IconButton size="small" color="warning" onClick={() => setUnlockDialogUser(user)}>
-                                <LockOpenIcon fontSize="small" />
-                              </IconButton>
+                              <IconButton size="small" color="warning" onClick={() => setUnlockDialogUser(user)}><LockOpenIcon fontSize="small" /></IconButton>
                             </Tooltip>
                           )}
                           {isSuperAdmin && (
                             <Tooltip title={t('users.deleteUser')}>
-                              <IconButton size="small" color="error" onClick={() => setDeleteDialogUser(user)}>
-                                <DeleteIcon fontSize="small" />
-                              </IconButton>
+                              <IconButton size="small" color="error" onClick={() => setDeleteDialogUser(user)}><DeleteIcon fontSize="small" /></IconButton>
                             </Tooltip>
                           )}
                         </>
@@ -269,49 +249,18 @@ export default function AdminUsersPage() {
               </TableBody>
             </Table>
           </TableContainer>
-
           {data.totalPages > 1 && (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-              <Pagination
-                count={data.totalPages}
-                page={page + 1}
-                onChange={(_, p) => setPage(p - 1)}
-                color="primary"
-              />
+              <Pagination count={data.totalPages} page={page + 1} onChange={(_, p) => setPage(p - 1)} color="primary" />
             </Box>
           )}
         </>
       )}
 
-      {/* Dialogs */}
-      <RoleChangeDialog
-        open={!!roleDialogUser}
-        user={roleDialogUser}
-        loading={changeRole.isPending}
-        onClose={() => setRoleDialogUser(null)}
-        onConfirm={handleRoleChange}
-      />
-      <StatusChangeDialog
-        open={!!statusDialogUser}
-        user={statusDialogUser}
-        loading={changeStatus.isPending}
-        onClose={() => setStatusDialogUser(null)}
-        onConfirm={handleStatusChange}
-      />
-      <UnlockUserDialog
-        open={!!unlockDialogUser}
-        user={unlockDialogUser}
-        loading={unlockUser.isPending}
-        onClose={() => setUnlockDialogUser(null)}
-        onConfirm={handleUnlock}
-      />
-      <DeleteUserDialog
-        open={!!deleteDialogUser}
-        user={deleteDialogUser}
-        loading={deleteUser.isPending}
-        onClose={() => setDeleteDialogUser(null)}
-        onConfirm={handleDelete}
-      />
+      <RoleChangeDialog open={!!roleDialogUser} user={roleDialogUser} loading={changeRole.isPending} onClose={() => setRoleDialogUser(null)} onConfirm={handleRoleChange} />
+      <StatusChangeDialog open={!!statusDialogUser} user={statusDialogUser} loading={changeStatus.isPending} onClose={() => setStatusDialogUser(null)} onConfirm={handleStatusChange} />
+      <UnlockUserDialog open={!!unlockDialogUser} user={unlockDialogUser} loading={unlockUser.isPending} onClose={() => setUnlockDialogUser(null)} onConfirm={handleUnlock} />
+      <DeleteUserDialog open={!!deleteDialogUser} user={deleteDialogUser} loading={deleteUser.isPending} onClose={() => setDeleteDialogUser(null)} onConfirm={handleDelete} />
     </PageShell>
   );
 }

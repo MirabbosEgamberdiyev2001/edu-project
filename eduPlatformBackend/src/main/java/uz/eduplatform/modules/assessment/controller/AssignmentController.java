@@ -34,7 +34,7 @@ import java.util.UUID;
 @RequestMapping("/api/v1/assignments")
 @RequiredArgsConstructor
 @Tag(name = "Test topshiriqlari", description = "O'qituvchi test topshiriqlarini boshqarish API'lari — yaratish, faollashtirish, natijalar")
-@PreAuthorize("hasRole('TEACHER')")
+@PreAuthorize("hasAnyRole('TEACHER', 'ADMIN', 'SUPER_ADMIN')")
 public class AssignmentController {
 
     private final AssignmentService assignmentService;
@@ -44,7 +44,15 @@ public class AssignmentController {
     private final PromoCodeService promoCodeService;
     private final MessageService messageService;
 
+    /** Returns true if the principal has ADMIN or SUPER_ADMIN authority. */
+    private boolean isAdmin(UserPrincipal principal) {
+        return principal.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN")
+                        || a.getAuthority().equals("ROLE_SUPER_ADMIN"));
+    }
+
     @PostMapping
+    @PreAuthorize("hasRole('TEACHER')")
     @Operation(summary = "Yangi test topshiriq yaratish")
     public ResponseEntity<ApiResponse<AssignmentDto>> createAssignment(
             @AuthenticationPrincipal UserPrincipal principal,
@@ -65,8 +73,9 @@ public class AssignmentController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
 
+        UUID teacherId = isAdmin(principal) ? null : principal.getId();
         PagedResponse<AssignmentDto> response = assignmentService.getTeacherAssignments(
-                principal.getId(), status, search,
+                teacherId, status, search,
                 PageRequest.of(page, size, Sort.by("createdAt").descending()));
         return ResponseEntity.ok(ApiResponse.success(response));
     }
@@ -77,11 +86,13 @@ public class AssignmentController {
             @AuthenticationPrincipal UserPrincipal principal,
             @PathVariable UUID id) {
 
-        AssignmentDto dto = assignmentService.getAssignment(id, principal.getId());
+        UUID userId = isAdmin(principal) ? null : principal.getId();
+        AssignmentDto dto = assignmentService.getAssignment(id, userId);
         return ResponseEntity.ok(ApiResponse.success(dto));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('TEACHER')")
     @Operation(summary = "Topshiriq sozlamalarini yangilash")
     public ResponseEntity<ApiResponse<AssignmentDto>> updateAssignment(
             @AuthenticationPrincipal UserPrincipal principal,
@@ -94,6 +105,7 @@ public class AssignmentController {
     }
 
     @PostMapping("/{id}/activate")
+    @PreAuthorize("hasRole('TEACHER')")
     @Operation(summary = "Topshiriqni faollashtirish")
     public ResponseEntity<ApiResponse<AssignmentDto>> activateAssignment(
             @AuthenticationPrincipal UserPrincipal principal,
@@ -105,6 +117,7 @@ public class AssignmentController {
     }
 
     @PostMapping("/{id}/cancel")
+    @PreAuthorize("hasRole('TEACHER')")
     @Operation(summary = "Topshiriqni bekor qilish")
     public ResponseEntity<ApiResponse<AssignmentDto>> cancelAssignment(
             @AuthenticationPrincipal UserPrincipal principal,
@@ -116,6 +129,7 @@ public class AssignmentController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('TEACHER')")
     @Operation(summary = "Topshiriqni o'chirish")
     public ResponseEntity<ApiResponse<Void>> deleteAssignment(
             @AuthenticationPrincipal UserPrincipal principal,
@@ -132,7 +146,8 @@ public class AssignmentController {
             @AuthenticationPrincipal UserPrincipal principal,
             @PathVariable UUID id) {
 
-        LiveMonitoringDto monitoring = liveMonitoringService.getLiveMonitoring(id, principal.getId());
+        UUID teacherId = isAdmin(principal) ? null : principal.getId();
+        LiveMonitoringDto monitoring = liveMonitoringService.getLiveMonitoring(id, teacherId);
         return ResponseEntity.ok(ApiResponse.success(monitoring));
     }
 
@@ -142,7 +157,8 @@ public class AssignmentController {
             @AuthenticationPrincipal UserPrincipal principal,
             @PathVariable UUID id) {
 
-        AssignmentResultDto results = resultService.getAssignmentResults(id, principal.getId());
+        UUID teacherId = isAdmin(principal) ? null : principal.getId();
+        AssignmentResultDto results = resultService.getAssignmentResults(id, teacherId);
         return ResponseEntity.ok(ApiResponse.success(results));
     }
 
@@ -175,6 +191,7 @@ public class AssignmentController {
     // ── Promo Code Management ──
 
     @PostMapping("/{id}/promo-code")
+    @PreAuthorize("hasRole('TEACHER')")
     @Operation(summary = "Promokod yaratish", description = "Topshiriq uchun yangi promokod generatsiya qilish. Mavjud faol kod avtomatik bekor qilinadi.")
     public ResponseEntity<ApiResponse<PromoCodeDto>> generatePromoCode(
             @AuthenticationPrincipal UserPrincipal principal,
@@ -198,6 +215,7 @@ public class AssignmentController {
     }
 
     @DeleteMapping("/{id}/promo-code")
+    @PreAuthorize("hasRole('TEACHER')")
     @Operation(summary = "Promokodni bekor qilish", description = "Topshiriq uchun faol promokodni o'chirib qo'yish.")
     public ResponseEntity<ApiResponse<Void>> revokePromoCode(
             @AuthenticationPrincipal UserPrincipal principal,

@@ -2,6 +2,7 @@ export enum PairingStatus {
   PENDING = 'PENDING',
   ACTIVE = 'ACTIVE',
   REVOKED = 'REVOKED',
+  EXPIRED = 'EXPIRED',
 }
 
 export interface ParentChildDto {
@@ -26,27 +27,42 @@ export interface PairWithCodeRequest {
   code: string;
 }
 
+// Matches backend ChildDashboardDto.RecentAttemptDto
+export interface RecentAttemptDto {
+  attemptId: string;
+  assignmentTitle: string;
+  percentage: number | null;
+  status: string;
+  submittedAt: string | null;
+}
+
+// Matches backend ChildDashboardDto.SubjectScoreDto
+export interface SubjectScoreDto {
+  subjectName: string;
+  averageScore: number;
+  attemptCount: number;
+  level: 'EXCELLENT' | 'GOOD' | 'ATTENTION' | 'CRITICAL';
+}
+
+// Matches backend ChildDashboardDto.WeeklyActivityDto
+export interface WeeklyActivityDto {
+  testsCompletedToday: number;
+  testsCompletedThisWeek: number;
+  testsCompletedThisMonth: number;
+  averageScoreThisWeek: number;
+  totalTimeSpentMinutesToday: number;
+}
+
+// Matches backend ChildDashboardDto
 export interface ChildDashboardDto {
   childId: string;
   childName: string;
+  totalAssignments: number;
+  completedAssignments: number;
+  pendingAssignments: number;
   averageScore: number;
-  totalTests: number;
-  recentAttempts: ChildAttemptDto[];
-  subjectScores: SubjectScoreDto[];
-}
-
-export interface ChildAttemptDto {
-  id: string;
-  testTitle: string;
-  score: number;
-  maxScore: number;
-  percentage: number;
-  submittedAt: string;
-}
-
-export interface SubjectScoreDto {
-  subjectId: string;
-  subjectName: string;
-  averageScore: number;
-  totalAttempts: number;
+  scoreTrend: 'UP' | 'DOWN' | 'STABLE';
+  recentAttempts: RecentAttemptDto[];
+  subjectBreakdown: SubjectScoreDto[];
+  weeklyActivity: WeeklyActivityDto;
 }

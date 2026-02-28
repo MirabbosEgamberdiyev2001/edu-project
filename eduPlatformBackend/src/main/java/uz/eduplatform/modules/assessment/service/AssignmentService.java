@@ -130,7 +130,14 @@ public class AssignmentService {
     public PagedResponse<AssignmentDto> getTeacherAssignments(UUID teacherId, AssignmentStatus status,
                                                                String search, Pageable pageable) {
         Page<TestAssignment> page;
-        if (search != null && !search.isBlank() && status != null) {
+        if (teacherId == null) {
+            // Admin path: return all assignments without ownership filter
+            if (status != null) {
+                page = assignmentRepository.findByStatusOrderByCreatedAtDesc(status, pageable);
+            } else {
+                page = assignmentRepository.findAllByOrderByCreatedAtDesc(pageable);
+            }
+        } else if (search != null && !search.isBlank() && status != null) {
             page = assignmentRepository.searchByTeacherIdAndStatus(teacherId, search.trim(), status, pageable);
         } else if (search != null && !search.isBlank()) {
             page = assignmentRepository.searchByTeacherId(teacherId, search.trim(), pageable);
@@ -153,11 +160,14 @@ public class AssignmentService {
         TestAssignment assignment = assignmentRepository.findById(assignmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("TestAssignment", "id", assignmentId));
 
-        // Teacher can view their own assignments; students can view if assigned
-        if (!assignment.getTeacherId().equals(userId)) {
-            if (assignment.getAssignedStudentIds() == null
-                    || !assignment.getAssignedStudentIds().contains(userId)) {
-                throw new BusinessException("error.access.denied", null, HttpStatus.FORBIDDEN);
+        // userId == null means admin/super_admin — skip ownership check
+        if (userId != null) {
+            // Teacher can view their own assignments; students can view if assigned
+            if (!assignment.getTeacherId().equals(userId)) {
+                if (assignment.getAssignedStudentIds() == null
+                        || !assignment.getAssignedStudentIds().contains(userId)) {
+                    throw new BusinessException("error.access.denied", null, HttpStatus.FORBIDDEN);
+                }
             }
         }
 

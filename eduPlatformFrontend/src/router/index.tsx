@@ -82,6 +82,7 @@ const GroupAnalyticsPage = lazy(() => import('@/features/analytics/pages/GroupAn
 const ParentDashboardPage = lazy(() => import('@/features/parent/pages/ParentDashboardPage'));
 const ChildDashboardPage = lazy(() => import('@/features/parent/pages/ChildDashboardPage'));
 const StudentPairingPage = lazy(() => import('@/features/parent/pages/StudentPairingPage'));
+const ParentPairPage = lazy(() => import('@/features/parent/pages/ParentPairPage'));
 
 // Admin pages
 const AdminDashboardPage = lazy(() => import('@/features/admin/pages/AdminDashboardPage'));
@@ -89,6 +90,12 @@ const AdminUsersPage = lazy(() => import('@/features/admin/pages/AdminUsersPage'
 const AdminUserDetailPage = lazy(() => import('@/features/admin/pages/AdminUserDetailPage'));
 const AuditLogPage = lazy(() => import('@/features/admin/pages/AuditLogPage'));
 const ModerationPage = lazy(() => import('@/features/admin/pages/ModerationPage'));
+const AdminPlansPage = lazy(() => import('@/features/admin/pages/AdminPlansPage'));
+
+// Subscription pages
+const MySubscriptionPage = lazy(() => import('@/features/subscriptions/pages/MySubscriptionPage'));
+const PricingPage = lazy(() => import('@/features/subscriptions/pages/PricingPage'));
+const PaymentHistoryPage = lazy(() => import('@/features/subscriptions/pages/PaymentHistoryPage'));
 
 // Public test page
 const PublicTestPage = lazy(() => import('@/features/tests/pages/PublicTestPage'));
@@ -120,7 +127,6 @@ export const router = createBrowserRouter([
         element: <RoleRoute allowedRoles={[Role.STUDENT, Role.TEACHER]} />,
         children: [
           { path: '/exam/:attemptId', element: <Lazy component={ExamPage} /> },
-          { path: '/my-attempts', element: <Lazy component={MyAttemptsPage} /> },
           { path: '/attempt-result/:attemptId', element: <Lazy component={AttemptResultPage} /> },
         ],
       },
@@ -133,8 +139,16 @@ export const router = createBrowserRouter([
           { path: '/profile', element: <Lazy component={ProfilePage} /> },
           { path: '/settings/change-password', element: <Lazy component={ChangePasswordPage} /> },
 
+          // Subscription routes (all authenticated users)
+          { path: '/my-subscription', element: <Lazy component={MySubscriptionPage} /> },
+          { path: '/pricing', element: <Lazy component={PricingPage} /> },
+          { path: '/payment-history', element: <Lazy component={PaymentHistoryPage} /> },
+
           // Global tests — visible to ALL authenticated roles
           { path: '/global-tests', element: <Lazy component={GlobalTestsPage} /> },
+
+          // Parent pair — QR deep-link landing page, accessible to any authenticated user
+          { path: '/parent/pair', element: <Lazy component={ParentPairPage} /> },
 
           // Teacher/Admin content management routes
           {
@@ -186,6 +200,8 @@ export const router = createBrowserRouter([
               { path: '/analytics/student', element: <Lazy component={StudentAnalyticsPage} /> },
               // Parent pairing
               { path: '/pairing', element: <Lazy component={StudentPairingPage} /> },
+              // My Attempts — inside AppLayout so sidebar is visible
+              { path: '/my-attempts', element: <Lazy component={MyAttemptsPage} /> },
             ],
           },
 
@@ -214,6 +230,7 @@ export const router = createBrowserRouter([
               { path: '/admin/users', element: <Lazy component={AdminUsersPage} /> },
               { path: '/admin/users/:id', element: <Lazy component={AdminUserDetailPage} /> },
               { path: '/admin/audit-logs', element: <Lazy component={AuditLogPage} /> },
+              { path: '/admin/plans', element: <Lazy component={AdminPlansPage} /> },
             ],
           },
         ],

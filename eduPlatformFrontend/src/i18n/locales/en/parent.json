@@ -36,5 +36,69 @@
   "unlinkConfirm": "Are you sure you want to unlink this child?",
   "linked": "Linked",
   "linkSuccess": "Child successfully linked",
-  "linkError": "Invalid or expired pairing code"
+  "linkError": "Invalid or expired pairing code",
+  "myChildrenTitle": "My Children",
+  "myChildrenSubtitle": "Track your children's academic progress",
+  "familyTitle": "Family Overview",
+  "familySubtitle": "Monitor family members' academic progress",
+  "pairChild": "Add Child",
+  "kpi": {
+    "total": "Total Children",
+    "active": "Active Links",
+    "pending": "Pending"
+  },
+  "linkedParents": "Connected Parents",
+  "noParents": "No parents connected yet",
+  "generateCodePrompt": "Generate a code and share it with your parent to connect",
+  "pairingStatus": {
+    "ACTIVE": "Active",
+    "PENDING": "Pending",
+    "REVOKED": "Revoked",
+    "EXPIRED": "Expired"
+  },
+  "pairWithCode": "Connect",
+  "enterCodeDesc": "Enter the 8-character code shown on your child's screen",
+  "pairing": "Connecting...",
+  "pairChildSubtitle": "Enter your child's pairing code to connect your accounts",
+  "cancel": "Cancel",
+  "childNotFound": "Child not found",
+  "revokeConfirm": {
+    "title": "Disconnect",
+    "message": "Are you sure you want to disconnect {{name}}?",
+    "confirm": "Disconnect"
+  },
+  "pairedOn": "Paired on",
+  "howToPair": "How to connect?",
+  "step1": "Generate Code",
+  "step1desc": "Press the button to get your 8-character code",
+  "step2": "Share It",
+  "step2desc": "Send the code or QR code to your parent",
+  "step3": "Connected!",
+  "step3desc": "Once your parent enters the code, you're linked",
+  "completedTests": "Completed",
+  "pendingTests": "Pending",
+  "totalAssignments": "Total Assignments",
+  "scoreTrend": {
+    "UP": "Improving",
+    "DOWN": "Declining",
+    "STABLE": "Stable"
+  },
+  "weeklyActivity": "Weekly Activity",
+  "testsToday": "Today",
+  "testsThisWeek": "This Week",
+  "testsThisMonth": "This Month",
+  "avgThisWeek": "Avg score this week",
+  "timeSpentToday": "Time today",
+  "minutesShort": "min",
+  "level": {
+    "EXCELLENT": "Excellent",
+    "GOOD": "Good",
+    "ATTENTION": "Attention",
+    "CRITICAL": "Critical"
+  },
+  "attempts": "attempts",
+  "testTitle": "Test Name",
+  "score": "Score",
+  "date": "Date",
+  "noAttempts": "No attempts yet"
 }

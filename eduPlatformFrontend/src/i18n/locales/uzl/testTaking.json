@@ -1,4 +1,19 @@
 {
+  "tabs": {
+    "all": "Barchasi",
+    "inProgress": "Bajarilmoqda",
+    "graded": "Baholangan",
+    "pendingReview": "Ko'rib chiqilmoqda",
+    "passed": "O'tgan",
+    "failed": "O'tmagan"
+  },
+  "timeTaken": "Sarflangan vaqt",
+  "kpi": {
+    "total": "Jami urinishlar",
+    "avgScore": "O'rtacha ball",
+    "bestScore": "Eng yaxshi ball",
+    "passRate": "O'tish darajasi"
+  },
   "availableTests": "Mavjud testlar",
   "availableTestsSubtitle": "Sizga tayinlangan testlar",
   "noTests": "Mavjud testlar yo'q",
@@ -72,7 +87,17 @@
     "tabSwitches": "Tab almashtirishlar",
     "reviewTitle": "Javoblarni ko'rish",
     "yourAnswer": "Sizning javobingiz",
-    "correctAnswer": "To'g'ri javob"
+    "correctAnswer": "To'g'ri javob",
+    "noAnswer": "Javob berilmagan",
+    "passed": "O'tdi",
+    "failed": "O'tmadi",
+    "average": "O'rtacha",
+    "tabAll": "Barchasi",
+    "tabCorrect": "To'g'ri",
+    "tabWrong": "Noto'g'ri",
+    "tabSkipped": "O'tkazilgan",
+    "explanation": "Izoh",
+    "showExplanation": "Izohni ko'rish"
   },
   "attemptStatus": {
     "IN_PROGRESS": "Jarayonda",
@@ -102,6 +127,7 @@
     "all": "Barchasi",
     "filter": "Filtrlash",
     "clearFilter": "Tozalash",
+    "searchPlaceholder": "Testlarni qidirish...",
     "categoryLabel": "Kategoriya",
     "subject": "Fan",
     "grade": "Sinf",
@@ -190,6 +216,7 @@
     "breadcrumb": "Attestatsiya",
     "filter": "Filtrlash",
     "clearFilter": "Tozalash",
+    "searchPlaceholder": "Testlarni qidirish...",
     "subject": "Fan",
     "grade": "Sinf",
     "gradeLabel": "{{grade}}-sinf",

@@ -1,4 +1,19 @@
 {
+  "tabs": {
+    "all": "Все",
+    "inProgress": "В процессе",
+    "graded": "Оценённые",
+    "pendingReview": "На проверке",
+    "passed": "Сданные",
+    "failed": "Несданные"
+  },
+  "timeTaken": "Затраченное время",
+  "kpi": {
+    "total": "Всего попыток",
+    "avgScore": "Средний балл",
+    "bestScore": "Лучший балл",
+    "passRate": "Процент сдачи"
+  },
   "availableTests": "Доступные тесты",
   "availableTestsSubtitle": "Назначенные вам тесты",
   "noTests": "Нет доступных тестов",
@@ -72,7 +87,17 @@
     "tabSwitches": "Переключения вкладок",
     "reviewTitle": "Обзор ответов",
     "yourAnswer": "Ваш ответ",
-    "correctAnswer": "Правильный ответ"
+    "correctAnswer": "Правильный ответ",
+    "noAnswer": "Ответ не дан",
+    "passed": "Сдано",
+    "failed": "Не сдано",
+    "average": "Средний",
+    "tabAll": "Все",
+    "tabCorrect": "Правильные",
+    "tabWrong": "Неправильные",
+    "tabSkipped": "Пропущенные",
+    "explanation": "Объяснение",
+    "showExplanation": "Показать объяснение"
   },
   "attemptStatus": {
     "IN_PROGRESS": "В процессе",
@@ -102,6 +127,7 @@
     "all": "Все",
     "filter": "Фильтр",
     "clearFilter": "Очистить",
+    "searchPlaceholder": "Поиск тестов...",
     "categoryLabel": "Категория",
     "subject": "Предмет",
     "grade": "Класс",
@@ -190,6 +216,7 @@
     "breadcrumb": "Аттестация",
     "filter": "Фильтр",
     "clearFilter": "Очистить",
+    "searchPlaceholder": "Поиск тестов...",
     "subject": "Предмет",
     "grade": "Класс",
     "gradeLabel": "{{grade}}-класс",

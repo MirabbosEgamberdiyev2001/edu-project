@@ -23,16 +23,19 @@ export default function QuestionNavigation({
         return (
           <Button
             key={i}
-            variant={isCurrent ? 'contained' : isAnswered ? 'outlined' : 'text'}
             size="small"
             onClick={() => onNavigate(i)}
             sx={{
               minWidth: 36,
               height: 36,
               p: 0,
-              bgcolor: isCurrent ? 'primary.main' : isAnswered ? 'success.light' : undefined,
-              color: isCurrent ? 'white' : isAnswered ? 'success.dark' : 'text.secondary',
-              borderColor: isAnswered ? 'success.main' : undefined,
+              fontWeight: isCurrent ? 800 : 400,
+              bgcolor: isCurrent ? 'primary.main' : isAnswered ? '#e8f5e9' : 'background.paper',
+              color: isCurrent ? 'white' : isAnswered ? 'success.dark' : 'text.disabled',
+              border: '2px solid',
+              borderColor: isCurrent ? 'primary.dark' : isAnswered ? 'success.main' : 'divider',
+              boxShadow: isCurrent ? 2 : 0,
+              '&:hover': { opacity: 0.85 },
             }}
           >
             {i + 1}

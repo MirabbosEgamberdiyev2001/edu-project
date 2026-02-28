@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, Paper, Button, CircularProgress } from '@mui/material';
+import { Box, Paper, Button, CircularProgress, Typography } from '@mui/material';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import SendIcon from '@mui/icons-material/Send';
@@ -151,7 +151,7 @@ export default function ExamPage() {
   if (!attempt || !currentQuestion) return null;
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50', display: 'flex', flexDirection: 'column' }}>
       <ExamHeader
         title={attempt.testTitle ?? attempt.assignmentTitle ?? ''}
         answeredCount={answeredSet.size}
@@ -160,7 +160,7 @@ export default function ExamPage() {
         onTimeUp={handleTimeUp}
       />
 
-      <Box sx={{ pt: 11, px: 2, pb: 4, maxWidth: 900, mx: 'auto' }}>
+      <Box sx={{ pt: 11, px: 2, pb: 2, maxWidth: 900, mx: 'auto', width: '100%' }}>
         <Box sx={{ mb: 3 }}>
           <QuestionNavigation
             totalQuestions={questions.length}
@@ -171,7 +171,7 @@ export default function ExamPage() {
           />
         </Box>
 
-        <Paper sx={{ p: 3, mb: 3 }}>
+        <Paper sx={{ p: 3 }}>
           <QuestionDisplay
             question={currentQuestion}
             questionNumber={currentIndex + 1}
@@ -183,35 +183,54 @@ export default function ExamPage() {
             onChange={handleAnswerChange}
           />
         </Paper>
-
-        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Button
-            startIcon={<NavigateBeforeIcon />}
-            onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
-            disabled={currentIndex === 0}
-          >
-            {t('prev')}
-          </Button>
-          {currentIndex < questions.length - 1 ? (
-            <Button
-              endIcon={<NavigateNextIcon />}
-              variant="contained"
-              onClick={() => setCurrentIndex((i) => Math.min(questions.length - 1, i + 1))}
-            >
-              {t('next')}
-            </Button>
-          ) : (
-            <Button
-              endIcon={<SendIcon />}
-              variant="contained"
-              color="success"
-              onClick={() => setSubmitOpen(true)}
-            >
-              {t('finish')}
-            </Button>
-          )}
-        </Box>
       </Box>
+
+      {/* Sticky bottom navigation bar */}
+      <Paper
+        elevation={3}
+        sx={{
+          position: 'sticky',
+          bottom: 0,
+          zIndex: 10,
+          px: 3,
+          py: 1.5,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          borderTop: '1px solid',
+          borderColor: 'divider',
+          borderRadius: 0,
+        }}
+      >
+        <Button
+          startIcon={<NavigateBeforeIcon />}
+          onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
+          disabled={currentIndex === 0}
+        >
+          {t('prev')}
+        </Button>
+        <Typography variant="caption" color="text.secondary">
+          {currentIndex + 1} / {questions.length}
+        </Typography>
+        {currentIndex < questions.length - 1 ? (
+          <Button
+            endIcon={<NavigateNextIcon />}
+            variant="contained"
+            onClick={() => setCurrentIndex((i) => Math.min(questions.length - 1, i + 1))}
+          >
+            {t('next')}
+          </Button>
+        ) : (
+          <Button
+            endIcon={<SendIcon />}
+            variant="contained"
+            color="success"
+            onClick={() => setSubmitOpen(true)}
+          >
+            {t('finish')}
+          </Button>
+        )}
+      </Paper>
 
       <SubmitConfirmDialog
         open={submitOpen}

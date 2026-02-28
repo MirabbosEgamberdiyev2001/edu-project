@@ -58,14 +58,24 @@ export default function PairingCodeDisplay({ data, isPending, onGenerate }: Pair
     }
   }, [data?.code]);
 
-  const remainingMinutes = Math.ceil(remainingSeconds / 60);
+  // Format remaining time: show "Xh Ym" if >= 60 min, else "X min"
+  const formatRemaining = (secs: number): string => {
+    if (secs <= 0) return '';
+    const totalMin = Math.ceil(secs / 60);
+    if (totalMin >= 60) {
+      const h = Math.floor(totalMin / 60);
+      const m = totalMin % 60;
+      return m > 0 ? `${h}h ${m}m` : `${h}h`;
+    }
+    return `${totalMin} min`;
+  };
 
   if (!data) {
     return (
       <Paper sx={{ p: 3, textAlign: 'center' }}>
         <QrCodeIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
         <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
-          {t('scanQR')}
+          {t('generateCodePrompt')}
         </Typography>
         <Button
           variant="contained"
@@ -124,7 +134,7 @@ export default function PairingCodeDisplay({ data, isPending, onGenerate }: Pair
       >
         {isExpired
           ? t('codeExpired')
-          : t('codeExpiry', { minutes: remainingMinutes })}
+          : t('codeExpiry', { minutes: formatRemaining(remainingSeconds) })}
       </Typography>
 
       <Button

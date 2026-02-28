@@ -1,4 +1,19 @@
 {
+  "tabs": {
+    "all": "All",
+    "inProgress": "In Progress",
+    "graded": "Graded",
+    "pendingReview": "Pending Review",
+    "passed": "Passed",
+    "failed": "Failed"
+  },
+  "timeTaken": "Time Taken",
+  "kpi": {
+    "total": "Total Attempts",
+    "avgScore": "Average Score",
+    "bestScore": "Best Score",
+    "passRate": "Pass Rate"
+  },
   "availableTests": "Available Tests",
   "availableTestsSubtitle": "Tests assigned to you",
   "noTests": "No tests available",
@@ -72,7 +87,17 @@
     "tabSwitches": "Tab Switches",
     "reviewTitle": "Answer Review",
     "yourAnswer": "Your Answer",
-    "correctAnswer": "Correct Answer"
+    "correctAnswer": "Correct Answer",
+    "noAnswer": "No answer provided",
+    "passed": "Passed",
+    "failed": "Failed",
+    "average": "Average",
+    "tabAll": "All",
+    "tabCorrect": "Correct",
+    "tabWrong": "Incorrect",
+    "tabSkipped": "Skipped",
+    "explanation": "Explanation",
+    "showExplanation": "Show explanation"
   },
   "attemptStatus": {
     "IN_PROGRESS": "In Progress",
@@ -102,6 +127,7 @@
     "all": "All",
     "filter": "Filter",
     "clearFilter": "Clear",
+    "searchPlaceholder": "Search tests...",
     "categoryLabel": "Category",
     "subject": "Subject",
     "grade": "Grade",
@@ -190,6 +216,7 @@
     "breadcrumb": "Attestation",
     "filter": "Filter",
     "clearFilter": "Clear",
+    "searchPlaceholder": "Search tests...",
     "subject": "Subject",
     "grade": "Grade",
     "gradeLabel": "Grade {{grade}}",

@@ -7,7 +7,6 @@ import {
   Button,
   CircularProgress,
   Grid,
-  Divider,
 } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -21,10 +20,12 @@ import { AssignmentStatus } from '@/types/assignment';
 import AssignmentSettingsForm from '../components/AssignmentSettingsForm';
 import PromoCodeSection from '../components/PromoCodeSection';
 
-const STATUS_COLORS: Record<string, 'default' | 'info' | 'success' | 'error'> = {
+const STATUS_COLORS: Record<string, 'default' | 'info' | 'success' | 'error' | 'warning'> = {
   DRAFT: 'default',
+  SCHEDULED: 'warning',
   ACTIVE: 'info',
   COMPLETED: 'success',
+  ENDED: 'success',
   CANCELLED: 'error',
 };
 
@@ -150,6 +151,17 @@ export default function AssignmentDetailPage() {
             {t('activate')}
           </Button>
         )}
+        {assignment.status === AssignmentStatus.SCHEDULED && (
+          <Button
+            variant="outlined"
+            color="error"
+            startIcon={<CancelIcon />}
+            onClick={() => cancel.mutate(id!)}
+            disabled={cancel.isPending}
+          >
+            {t('cancelAssignment')}
+          </Button>
+        )}
         {assignment.status === AssignmentStatus.ACTIVE && (
           <>
             <Button
@@ -170,7 +182,7 @@ export default function AssignmentDetailPage() {
             </Button>
           </>
         )}
-        {(assignment.status === AssignmentStatus.COMPLETED || assignment.status === AssignmentStatus.CANCELLED) && (
+        {(assignment.status === AssignmentStatus.COMPLETED || assignment.status === AssignmentStatus.ENDED || assignment.status === AssignmentStatus.CANCELLED) && (
           <Button
             variant="contained"
             startIcon={<BarChartIcon />}

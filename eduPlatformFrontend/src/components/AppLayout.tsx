@@ -73,6 +73,8 @@ function getMenuItems(role: Role, t: (key: string) => string): (NavItem | 'divid
 
     case Role.STUDENT:
       items.push({ label: t('common:myTests'), icon: <ListAltIcon />, path: '/my-tests' });
+      items.push({ label: t('common:globalTests'), icon: <SchoolIcon />, path: '/global-tests' });
+      items.push({ label: t('common:myGroups'), icon: <GroupsIcon />, path: '/my-groups' });
       items.push({ label: t('common:myAttempts'), icon: <GradingIcon />, path: '/my-attempts' });
       items.push({ label: t('common:analytics'), icon: <BarChartIcon />, path: '/analytics/student' });
       items.push({ label: t('common:pairing'), icon: <LinkIcon />, path: '/pairing' });

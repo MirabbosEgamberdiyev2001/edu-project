@@ -100,7 +100,7 @@ export default function GroupsPage() {
       actions={
         isActive ? (
           <Button variant="contained" startIcon={<AddIcon />} onClick={handleCreate} sx={{ display: { xs: 'none', sm: 'flex' } }}>
-            {t('create')}
+            {t('createGroup')}
           </Button>
         ) : undefined
       }
@@ -167,7 +167,7 @@ export default function GroupsPage() {
           icon={<GroupIcon sx={{ fontSize: 'inherit' }} />}
           title={isActive ? t('empty') : t('emptyArchived')}
           description={isActive ? t('emptyDescription') : t('emptyArchivedDescription')}
-          action={isActive ? { label: t('create'), onClick: handleCreate, icon: <AddIcon /> } : undefined}
+          action={isActive ? { label: t('createGroup'), onClick: handleCreate, icon: <AddIcon /> } : undefined}
         />
       )}
 

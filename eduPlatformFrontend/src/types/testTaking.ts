@@ -111,10 +111,12 @@ export interface DetailedAnswerDto {
   questionText: string;
   questionType: string;
   options: unknown;
+  /** string | boolean | string[] | Record<string,string> (multilingual map) | null */
   correctAnswer: unknown;
   studentAnswer: unknown;
   isCorrect: boolean;
   score: number;
   maxScore: number;
+  /** Resolved locale-specific proof/explanation string from backend */
   proof: string | null;
 }

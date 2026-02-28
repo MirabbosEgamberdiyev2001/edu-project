@@ -22,6 +22,11 @@ public interface TestAssignmentRepository extends JpaRepository<TestAssignment, 
     Page<TestAssignment> findByTeacherIdAndStatusOrderByCreatedAtDesc(
             UUID teacherId, AssignmentStatus status, Pageable pageable);
 
+    // Admin queries: all assignments without ownership filter (@SQLRestriction handles deleted_at)
+    Page<TestAssignment> findAllByOrderByCreatedAtDesc(Pageable pageable);
+
+    Page<TestAssignment> findByStatusOrderByCreatedAtDesc(AssignmentStatus status, Pageable pageable);
+
     Optional<TestAssignment> findByIdAndTeacherId(UUID id, UUID teacherId);
 
     // Find assignments for a specific student (JSONB contains)

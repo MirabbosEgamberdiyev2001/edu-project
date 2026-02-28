@@ -49,6 +49,7 @@
   },
   "attestation": "Attestation",
   "globalTests": "Global Tests",
+  "myGroups": "My Groups",
   "quickActions": "Quick Actions",
   "newTest": "New Test",
   "viewAll": "View All"

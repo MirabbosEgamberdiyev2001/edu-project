@@ -36,5 +36,69 @@
   "unlinkConfirm": "Ushbu farzandni uzmoqchimisiz?",
   "linked": "Bog'langan",
   "linkSuccess": "Farzand muvaffaqiyatli bog'landi",
-  "linkError": "Noto'g'ri yoki muddati o'tgan kod"
+  "linkError": "Noto'g'ri yoki muddati o'tgan kod",
+  "myChildrenTitle": "Bolalarim",
+  "myChildrenSubtitle": "Farzandlaringiz o'qishini kuzating",
+  "familyTitle": "Oila ko'rinishi",
+  "familySubtitle": "Oila a'zolari o'qishini kuzating",
+  "pairChild": "Farzand qo'shish",
+  "kpi": {
+    "total": "Jami farzandlar",
+    "active": "Faol ulanishlar",
+    "pending": "Kutilmoqda"
+  },
+  "linkedParents": "Ulangan ota-onalar",
+  "noParents": "Hali ota-ona ulanmagan",
+  "generateCodePrompt": "Kod yarating va ota-onangiz bilan ulaning",
+  "pairingStatus": {
+    "ACTIVE": "Faol",
+    "PENDING": "Kutilmoqda",
+    "REVOKED": "Bekor qilingan",
+    "EXPIRED": "Muddati o'tgan"
+  },
+  "pairWithCode": "Ulash",
+  "enterCodeDesc": "Farzandingiz ekranida ko'rsatilgan 8 belgili kodni kiriting",
+  "pairing": "Ulanmoqda...",
+  "pairChildSubtitle": "Hisoblarni ulash uchun farzandingizning bog'lanish kodini kiriting",
+  "cancel": "Bekor qilish",
+  "childNotFound": "Farzand topilmadi",
+  "revokeConfirm": {
+    "title": "Uzish",
+    "message": "{{name}}ni uzmoqchimisiz?",
+    "confirm": "Uzish"
+  },
+  "pairedOn": "Ulangan sana",
+  "howToPair": "Qanday ulash kerak?",
+  "step1": "Kod yarating",
+  "step1desc": "Tugmani bosib 8 belgili kod oling",
+  "step2": "Ulashing",
+  "step2desc": "Kodni yoki QR-kodni ota-onangizga yuboring",
+  "step3": "Bog'landi!",
+  "step3desc": "Ota-onangiz kodni kiritgandan so'ng bog'lanish amalga oshadi",
+  "completedTests": "Bajarilgan",
+  "pendingTests": "Kutilayotgan",
+  "totalAssignments": "Jami topshiriqlar",
+  "scoreTrend": {
+    "UP": "Yaxshilanmoqda",
+    "DOWN": "Pasaymoqda",
+    "STABLE": "Barqaror"
+  },
+  "weeklyActivity": "Haftalik faollik",
+  "testsToday": "Bugun",
+  "testsThisWeek": "Bu hafta",
+  "testsThisMonth": "Bu oy",
+  "avgThisWeek": "Haftadagi o'rtacha",
+  "timeSpentToday": "Bugungi vaqt",
+  "minutesShort": "daq",
+  "level": {
+    "EXCELLENT": "A'lo",
+    "GOOD": "Yaxshi",
+    "ATTENTION": "Diqqat",
+    "CRITICAL": "Kritik"
+  },
+  "attempts": "ta urinish",
+  "testTitle": "Test nomi",
+  "score": "Ball",
+  "date": "Sana",
+  "noAttempts": "Hali urinishlar yo'q"
 }

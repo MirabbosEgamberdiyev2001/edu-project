@@ -36,5 +36,69 @@
   "unlinkConfirm": "Ушбу фарзандни узмоқчимисиз?",
   "linked": "Боғланган",
   "linkSuccess": "Фарзанд муваффақиятли боғланди",
-  "linkError": "Нотўғри ёки муддати ўтган код"
+  "linkError": "Нотўғри ёки муддати ўтган код",
+  "myChildrenTitle": "Болаларим",
+  "myChildrenSubtitle": "Фарзандларингиз ўқишини кузатинг",
+  "familyTitle": "Оила кўриниши",
+  "familySubtitle": "Оила аъзолари ўқишини кузатинг",
+  "pairChild": "Фарзанд қўшиш",
+  "kpi": {
+    "total": "Жами фарзандлар",
+    "active": "Фаол уланишлар",
+    "pending": "Кутилмоқда"
+  },
+  "linkedParents": "Уланган ота-оналар",
+  "noParents": "Ҳали ота-она уланмаган",
+  "generateCodePrompt": "Код яратинг ва ота-онангиз билан уланинг",
+  "pairingStatus": {
+    "ACTIVE": "Фаол",
+    "PENDING": "Кутилмоқда",
+    "REVOKED": "Бекор қилинган",
+    "EXPIRED": "Муддати ўтган"
+  },
+  "pairWithCode": "Улаш",
+  "enterCodeDesc": "Фарзандингиз экранида кўрсатилган 8 белгили кодни киритинг",
+  "pairing": "Уланмоқда...",
+  "pairChildSubtitle": "Ҳисобларни улаш учун фарзандингизнинг боғланиш кодини киритинг",
+  "cancel": "Бекор қилиш",
+  "childNotFound": "Фарзанд топилмади",
+  "revokeConfirm": {
+    "title": "Узиш",
+    "message": "{{name}}ни узмоқчимисиз?",
+    "confirm": "Узиш"
+  },
+  "pairedOn": "Уланган сана",
+  "howToPair": "Қандай улаш керак?",
+  "step1": "Код яратинг",
+  "step1desc": "Тугмани босиб 8 белгили код олинг",
+  "step2": "Улашинг",
+  "step2desc": "Кодни ёки QR-кодни ота-онангизга юборинг",
+  "step3": "Боғланди!",
+  "step3desc": "Ота-онангиз кодни киритгандан сўнг боғланиш амалга ошади",
+  "completedTests": "Бажарилган",
+  "pendingTests": "Кутилаётган",
+  "totalAssignments": "Жами топшириқлар",
+  "scoreTrend": {
+    "UP": "Яхшиланмоқда",
+    "DOWN": "Пасаймоқда",
+    "STABLE": "Барқарор"
+  },
+  "weeklyActivity": "Ҳафталик фаоллик",
+  "testsToday": "Бугун",
+  "testsThisWeek": "Бу ҳафта",
+  "testsThisMonth": "Бу ой",
+  "avgThisWeek": "Ҳафтадаги ўртача",
+  "timeSpentToday": "Бугунги вақт",
+  "minutesShort": "дақ",
+  "level": {
+    "EXCELLENT": "Аъло",
+    "GOOD": "Яхши",
+    "ATTENTION": "Диққат",
+    "CRITICAL": "Критик"
+  },
+  "attempts": "та уриниш",
+  "testTitle": "Тест номи",
+  "score": "Балл",
+  "date": "Сана",
+  "noAttempts": "Ҳали уринишлар йўқ"
 }

@@ -50,7 +50,8 @@ public class LiveMonitoringService {
         TestAssignment assignment = assignmentRepository.findById(assignmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("TestAssignment", "id", assignmentId));
 
-        if (!assignment.getTeacherId().equals(teacherId)) {
+        // teacherId == null means admin/super_admin — skip ownership check
+        if (teacherId != null && !assignment.getTeacherId().equals(teacherId)) {
             throw new BusinessException("error.access.denied", null, HttpStatus.FORBIDDEN);
         }
 

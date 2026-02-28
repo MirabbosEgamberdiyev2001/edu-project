@@ -19,9 +19,6 @@ export function useParentMutations() {
 
   const generatePairingCode = useMutation({
     mutationFn: () => parentApi.generatePairingCode(),
-    onSuccess: ({ data: resp }) => {
-      toast.success(resp.message);
-    },
     onError: (error: AxiosError<ApiError>) => {
       toast.error(error.response?.data?.message || t('error'));
     },
@@ -30,7 +27,7 @@ export function useParentMutations() {
   const pairWithCode = useMutation({
     mutationFn: (data: PairWithCodeRequest) => parentApi.pairWithCode(data),
     onSuccess: ({ data: resp }) => {
-      toast.success(resp.message);
+      toast.success(resp.message || t('success'));
       invalidateChildren();
     },
     onError: (error: AxiosError<ApiError>) => {
@@ -41,7 +38,7 @@ export function useParentMutations() {
   const revokePairing = useMutation({
     mutationFn: (id: string) => parentApi.revokePairing(id),
     onSuccess: ({ data: resp }) => {
-      toast.success(resp.message);
+      toast.success(resp.message || t('success'));
       invalidateChildren();
       invalidateParents();
     },

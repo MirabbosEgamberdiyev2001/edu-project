@@ -26,11 +26,14 @@ export default function MyGroupsPage() {
   const { t } = useTranslation('testTaking');
   const { data, isLoading, isError } = useQuery({
     queryKey: ['my-groups-student'],
-    queryFn: () => groupApi.getMyGroups({ size: 50 }).then(r => r.data.data?.content || []),
+    queryFn: () => groupApi.getMyGroups({ size: 50 }).then(r => {
+      const content = r.data.data?.content;
+      return Array.isArray(content) ? content : [];
+    }),
     staleTime: 60_000,
   });
 
-  const groups = data || [];
+  const groups = Array.isArray(data) ? data : [];
 
   return (
     <PageShell title={t('groups.title')} subtitle={t('groups.subtitle')}>
@@ -65,7 +68,7 @@ export default function MyGroupsPage() {
             {t('groups.countDisplay', { count: groups.length })}
           </Typography>
           <Grid container spacing={2}>
-            {groups.map((group) => (
+            {groups.filter(Boolean).map((group) => (
               <Grid item xs={12} sm={6} md={4} key={group.id}>
                 <GroupCard group={group} />
               </Grid>
@@ -79,7 +82,19 @@ export default function MyGroupsPage() {
 
 function GroupCard({ group }: { group: GroupDto }) {
   const { t } = useTranslation('testTaking');
-  const initial = group.name?.[0]?.toUpperCase() || 'G';
+
+  // Defensive: coerce any unexpected type to a safe renderable string
+  const name = group.name != null && typeof group.name === 'string' ? group.name : '';
+  const initial = name[0]?.toUpperCase() || 'G';
+  const isActive = group.status === 'ACTIVE';
+  const memberCount = typeof group.memberCount === 'number' ? group.memberCount : 0;
+  const subjectName = typeof group.subjectName === 'string' ? group.subjectName : null;
+  const teacherName = typeof group.teacherName === 'string' ? group.teacherName : null;
+  const description = typeof group.description === 'string' ? group.description : null;
+  let formattedDate = '';
+  try {
+    if (group.createdAt) formattedDate = new Date(group.createdAt).toLocaleDateString();
+  } catch { /* invalid date — skip */ }
 
   return (
     <Card
@@ -98,53 +113,55 @@ function GroupCard({ group }: { group: GroupDto }) {
           </Avatar>
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography variant="subtitle1" fontWeight={700} noWrap>
-              {group.name}
+              {name}
             </Typography>
             <Chip
-              label={group.status === 'ACTIVE' ? t('groups.activeStatus') : t('groups.archiveStatus')}
+              label={isActive ? t('groups.activeStatus') : t('groups.archiveStatus')}
               size="small"
-              color={group.status === 'ACTIVE' ? 'success' : 'default'}
+              color={isActive ? 'success' : 'default'}
             />
           </Box>
         </Box>
 
-        {group.description && (
+        {description && (
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-            {group.description}
+            {description}
           </Typography>
         )}
 
         <Divider sx={{ my: 1.5 }} />
 
         <Stack spacing={1}>
-          {group.subjectName && (
+          {subjectName && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <MenuBookIcon fontSize="small" color="action" />
               <Typography variant="body2" color="text.secondary">
-                {t('groups.subjectLabel')}: <strong>{group.subjectName}</strong>
+                {t('groups.subjectLabel')}: <strong>{subjectName}</strong>
               </Typography>
             </Box>
           )}
-          {group.teacherName && (
+          {teacherName && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <PersonIcon fontSize="small" color="action" />
               <Typography variant="body2" color="text.secondary">
-                {t('groups.teacherLabel')}: <strong>{group.teacherName}</strong>
+                {t('groups.teacherLabel')}: <strong>{teacherName}</strong>
               </Typography>
             </Box>
           )}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <GroupsIcon fontSize="small" color="action" />
             <Typography variant="body2" color="text.secondary">
-              {t('groups.membersLabel', { count: group.memberCount })}
+              {t('groups.membersLabel', { count: memberCount })}
             </Typography>
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <CalendarTodayIcon fontSize="small" color="action" />
-            <Typography variant="body2" color="text.secondary">
-              {new Date(group.createdAt).toLocaleDateString()}
-            </Typography>
-          </Box>
+          {formattedDate && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <CalendarTodayIcon fontSize="small" color="action" />
+              <Typography variant="body2" color="text.secondary">
+                {formattedDate}
+              </Typography>
+            </Box>
+          )}
         </Stack>
       </CardContent>
     </Card>

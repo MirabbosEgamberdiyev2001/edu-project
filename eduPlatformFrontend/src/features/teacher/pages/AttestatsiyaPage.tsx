@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useCallback, useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import {
   Box,
@@ -21,13 +21,15 @@ import {
   Divider,
   Stack,
   Skeleton,
+  TextField,
+  InputAdornment,
 } from '@mui/material';
 import SchoolIcon from '@mui/icons-material/School';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import TimerIcon from '@mui/icons-material/Timer';
 import QuizIcon from '@mui/icons-material/Quiz';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import InfoIcon from '@mui/icons-material/Info';
+import SearchIcon from '@mui/icons-material/Search';
 import { useTranslation } from 'react-i18next';
 import { globalTestApi } from '@/api/globalTestApi';
 import { subjectApi } from '@/api/subjectApi';
@@ -36,17 +38,51 @@ import { useAuth } from '@/hooks/useAuth';
 import { PageShell } from '@/components/ui';
 
 const ATTESTATION_COLOR = '#c62828';
-const GRADE_LEVELS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 
 export default function AttestatsiyaPage() {
   const navigate = useNavigate();
   const { t } = useTranslation('testTaking');
   const { user } = useAuth();
 
-  // Default subject from teacher's profile
-  const [subjectId, setSubjectId] = useState(user?.subjectId || '');
-  const [gradeLevel, setGradeLevel] = useState<number | ''>('');
-  const [page, setPage] = useState(0);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Derive filter values from URL params
+  const subjectId = searchParams.get('subject') ?? '';
+  const page = parseInt(searchParams.get('page') ?? '0', 10);
+
+  // Search state — local input + debounced value for API
+  const [searchInput, setSearchInput] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchInput.trim());
+      // Reset page when search changes
+      if (searchInput.trim() !== debouncedSearch) {
+        setSearchParams((prev) => {
+          const next = new URLSearchParams(prev);
+          next.delete('page');
+          return next;
+        });
+      }
+    }, 400);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput]);
+
+  // Seed teacher's profile subject on first visit
+  useEffect(() => {
+    if (!searchParams.has('subject') && user?.subjectId) {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          next.set('subject', user.subjectId!);
+          return next;
+        },
+        { replace: true }
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const { data: subjectsData } = useQuery({
     queryKey: ['subjects-all'],
@@ -55,13 +91,13 @@ export default function AttestatsiyaPage() {
   });
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['attestation-tests', subjectId, gradeLevel, page],
+    queryKey: ['attestation-tests', subjectId, page, debouncedSearch],
     queryFn: () =>
       globalTestApi
         .getAll({
           category: TestCategory.ATTESTATSIYA,
           subjectId: subjectId || undefined,
-          gradeLevel: gradeLevel || undefined,
+          search: debouncedSearch || undefined,
           page,
           size: 12,
         })
@@ -77,33 +113,46 @@ export default function AttestatsiyaPage() {
   });
 
   const handleReset = useCallback(() => {
-    setSubjectId(user?.subjectId || '');
-    setGradeLevel('');
-    setPage(0);
-  }, [user?.subjectId]);
+    setSearchInput('');
+    setDebouncedSearch('');
+    setSearchParams(user?.subjectId ? { subject: user.subjectId } : {});
+  }, [user?.subjectId, setSearchParams]);
+
+  const handleSubjectChange = useCallback(
+    (value: string) => {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        if (value) next.set('subject', value);
+        else next.delete('subject');
+        next.delete('page');
+        return next;
+      });
+    },
+    [setSearchParams]
+  );
+
+  const handlePageChange = useCallback(
+    (p: number) => {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        if (p === 0) next.delete('page');
+        else next.set('page', String(p));
+        return next;
+      });
+    },
+    [setSearchParams]
+  );
 
   const tests = data?.content || [];
   const totalPages = data?.totalPages || 0;
   const totalElements = data?.totalElements || 0;
-  const hasFilters = !!subjectId || !!gradeLevel;
-  const isDefaultSubject = subjectId && subjectId === user?.subjectId;
+  const hasFilters = searchParams.has('subject') || debouncedSearch.length > 0;
 
   return (
     <PageShell title={t('attestation.title')} subtitle={t('attestation.subtitle')}>
 
-      {/* Default subject hint */}
-      {isDefaultSubject && user?.subjectName && (
-        <Alert
-          severity="info"
-          icon={<InfoIcon fontSize="inherit" />}
-          sx={{ mb: 2, mt: 1 }}
-        >
-          {t('attestation.defaultSubjectHint')}: <strong>{user.subjectName}</strong>
-        </Alert>
-      )}
-
       {/* Filters */}
-      <Paper sx={{ p: 2, mb: 3, mt: isDefaultSubject ? 0 : 2 }}>
+      <Paper sx={{ p: 2, mb: 3, mt: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
           <FilterListIcon fontSize="small" color="action" />
           <Typography variant="subtitle2">{t('attestation.filter')}</Typography>
@@ -115,41 +164,34 @@ export default function AttestatsiyaPage() {
         </Box>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder={t('attestation.searchPlaceholder')}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" color="action" />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
             <FormControl fullWidth size="small">
               <InputLabel>{t('attestation.subject')}</InputLabel>
               <Select
                 value={subjectId}
                 label={t('attestation.subject')}
-                onChange={(e) => {
-                  setSubjectId(e.target.value);
-                  setPage(0);
-                }}
+                onChange={(e) => handleSubjectChange(e.target.value)}
               >
                 <MenuItem value="">{t('attestation.all')}</MenuItem>
                 {(subjectsData || []).map((s) => (
                   <MenuItem key={s.id} value={s.id}>
                     {s.name}
                     {s.id === user?.subjectId ? ' ★' : ''}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <FormControl fullWidth size="small">
-              <InputLabel>{t('attestation.grade')}</InputLabel>
-              <Select
-                value={gradeLevel}
-                label={t('attestation.grade')}
-                onChange={(e) => {
-                  setGradeLevel(e.target.value as number | '');
-                  setPage(0);
-                }}
-              >
-                <MenuItem value="">{t('attestation.all')}</MenuItem>
-                {GRADE_LEVELS.map((g) => (
-                  <MenuItem key={g} value={g}>
-                    {t('attestation.gradeLabel', { grade: g })}
                   </MenuItem>
                 ))}
               </Select>
@@ -211,7 +253,7 @@ export default function AttestatsiyaPage() {
           <Pagination
             count={totalPages}
             page={page + 1}
-            onChange={(_, p) => setPage(p - 1)}
+            onChange={(_, p) => handlePageChange(p - 1)}
             color="primary"
           />
         </Box>

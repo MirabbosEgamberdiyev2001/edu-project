@@ -49,7 +49,7 @@ public class QRCodeService {
 
             String base64 = Base64.getEncoder().encodeToString(outputStream.toByteArray());
             return "data:image/png;base64," + base64;
-        } catch (WriterException | IOException e) {
+        } catch (Exception e) {
             log.error("Failed to generate QR code for content: {}", content, e);
             return null;
         }

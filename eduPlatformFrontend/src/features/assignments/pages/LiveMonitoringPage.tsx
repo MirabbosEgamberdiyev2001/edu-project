@@ -14,7 +14,6 @@ import LiveMonitoringPanel from '../components/LiveMonitoringPanel';
 
 export default function LiveMonitoringPage() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const { t } = useTranslation('assignment');
   const { data: assignment } = useAssignment(id!);
   const { data: liveData, isLoading } = useLiveMonitoring(id!);

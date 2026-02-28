@@ -1,4 +1,19 @@
 {
+  "tabs": {
+    "all": "Барчаси",
+    "inProgress": "Бажарилмоқда",
+    "graded": "Баҳоланган",
+    "pendingReview": "Кўриб чиқилмоқда",
+    "passed": "Ўтган",
+    "failed": "Ўтмаган"
+  },
+  "timeTaken": "Сарфланган вақт",
+  "kpi": {
+    "total": "Жами уринишлар",
+    "avgScore": "Ўртача балл",
+    "bestScore": "Энг яхши балл",
+    "passRate": "Ўтиш даражаси"
+  },
   "availableTests": "Мавжуд тестлар",
   "availableTestsSubtitle": "Сизга тайинланган тестлар",
   "noTests": "Мавжуд тестлар йўқ",
@@ -72,7 +87,17 @@
     "tabSwitches": "Таб алмаштиришлар",
     "reviewTitle": "Жавобларни кўриш",
     "yourAnswer": "Сизнинг жавобингиз",
-    "correctAnswer": "Тўғри жавоб"
+    "correctAnswer": "Тўғри жавоб",
+    "noAnswer": "Жавоб берилмаган",
+    "passed": "Ўтди",
+    "failed": "Ўтмади",
+    "average": "Ўртача",
+    "tabAll": "Барчаси",
+    "tabCorrect": "Тўғри",
+    "tabWrong": "Нотўғри",
+    "tabSkipped": "Ўтказилган",
+    "explanation": "Изоҳ",
+    "showExplanation": "Изоҳни кўриш"
   },
   "attemptStatus": {
     "IN_PROGRESS": "Жараёнда",
@@ -102,6 +127,7 @@
     "all": "Барчаси",
     "filter": "Фильтрлаш",
     "clearFilter": "Тозалаш",
+    "searchPlaceholder": "Тестларни қидириш...",
     "categoryLabel": "Категория",
     "subject": "Фан",
     "grade": "Синф",
@@ -190,6 +216,7 @@
     "breadcrumb": "Аттестация",
     "filter": "Фильтрлаш",
     "clearFilter": "Тозалаш",
+    "searchPlaceholder": "Тестларни қидириш...",
     "subject": "Фан",
     "grade": "Синф",
     "gradeLabel": "{{grade}}-синф",
