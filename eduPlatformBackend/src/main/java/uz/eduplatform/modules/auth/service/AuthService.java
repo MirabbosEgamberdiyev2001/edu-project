@@ -90,6 +90,14 @@ public class AuthService {
      */
     @Transactional
     public UserDto completeRegistration(RegisterRequest request) {
+        // Guard against race conditions or duplicate OTP verification attempts
+        if (request.getEmail() != null && userRepository.existsByEmail(request.getEmail())) {
+            throw BusinessException.ofKey("auth.email.already.registered");
+        }
+        if (request.getPhone() != null && userRepository.existsByPhone(request.getPhone())) {
+            throw BusinessException.ofKey("auth.phone.already.registered");
+        }
+
         User user = User.builder()
                 .email(request.getEmail())
                 .phone(request.getPhone())
