@@ -13,7 +13,7 @@ export default function Logo({ size = 'medium' }: LogoProps) {
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
       <SchoolIcon color="primary" sx={{ fontSize: sizes[size] }} />
       <Typography variant={fontSizes[size]} fontWeight={700} color="primary">
-        EduPlatform
+        Test-Pro
       </Typography>
     </Box>
   );

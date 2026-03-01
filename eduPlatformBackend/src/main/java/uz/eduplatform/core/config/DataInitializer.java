@@ -22,12 +22,12 @@ import java.util.Map;
  * Never creates duplicates.
  *
  * Default credentials (change after first login in production!):
- *   superadmin@eduplatform.uz / Super@Admin1
- *   admin@eduplatform.uz      / Admin@1234
- *   moderator@eduplatform.uz  / Moder@1234
- *   teacher@eduplatform.uz    / Teach@1234
- *   parent@eduplatform.uz     / Parent@1234
- *   student@eduplatform.uz    / Stud@1234
+ *   superadmin@test-pro.uz / Super@Admin1
+ *   admin@test-pro.uz      / Admin@1234
+ *   moderator@test-pro.uz  / Moder@1234
+ *   teacher@test-pro.uz    / Teach@1234
+ *   parent@test-pro.uz     / Parent@1234
+ *   student@test-pro.uz    / Stud@1234
  */
 @Slf4j
 @Component
@@ -48,13 +48,13 @@ public class DataInitializer implements ApplicationRunner {
     // ─── Users ────────────────────────────────────────────────────────────────
 
     private User initUsers() {
-        findOrCreateUser("superadmin@eduplatform.uz", "Super",     "Admin", Role.SUPER_ADMIN, "Super@Admin1");
+        findOrCreateUser("superadmin@test-pro.uz", "Super",     "Admin", Role.SUPER_ADMIN, "Super@Admin1");
         User admin =
-        findOrCreateUser("admin@eduplatform.uz",      "Admin",     "User",  Role.ADMIN,       "Admin@1234");
-        findOrCreateUser("moderator@eduplatform.uz",  "Moderator", "User",  Role.MODERATOR,   "Moder@1234");
-        findOrCreateUser("teacher@eduplatform.uz",    "Teacher",   "User",  Role.TEACHER,     "Teach@1234");
-        findOrCreateUser("parent@eduplatform.uz",     "Parent",    "User",  Role.PARENT,      "Parent@1234");
-        findOrCreateUser("student@eduplatform.uz",    "Student",   "User",  Role.STUDENT,     "Stud@1234");
+        findOrCreateUser("admin@test-pro.uz",      "Admin",     "User",  Role.ADMIN,       "Admin@1234");
+        findOrCreateUser("moderator@test-pro.uz",  "Moderator", "User",  Role.MODERATOR,   "Moder@1234");
+        findOrCreateUser("teacher@test-pro.uz",    "Teacher",   "User",  Role.TEACHER,     "Teach@1234");
+        findOrCreateUser("parent@test-pro.uz",     "Parent",    "User",  Role.PARENT,      "Parent@1234");
+        findOrCreateUser("student@test-pro.uz",    "Student",   "User",  Role.STUDENT,     "Stud@1234");
         return admin;
     }
 

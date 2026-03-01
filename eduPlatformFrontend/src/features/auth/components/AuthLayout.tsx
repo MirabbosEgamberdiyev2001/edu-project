@@ -54,7 +54,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5, mb: 4 }}>
             <SchoolIcon sx={{ fontSize: 42 }} />
             <Typography variant="h4" fontWeight={800} letterSpacing="-0.02em">
-              EduPlatform
+              Test-Pro
             </Typography>
           </Box>
 
