@@ -23,7 +23,7 @@ public class RegisterRequest {
     private String phone;
 
     @NotBlank(message = "{auth.validation.password.required}")
-    @Size(min = 6, max = 64, message = "{auth.validation.password.size}")
+    @Size(min = 4, max = 64, message = "{auth.validation.password.size}")
     private String password;
 
     @NotBlank(message = "{auth.validation.firstname.required}")
