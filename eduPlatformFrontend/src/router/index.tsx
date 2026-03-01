@@ -27,6 +27,7 @@ const Lazy = ({ component: Component }: { component: React.LazyExoticComponent<R
 
 // Auth pages
 const LoginPage = lazy(() => import('@/features/auth/pages/LoginPage'));
+const RegisterPage = lazy(() => import('@/features/auth/pages/RegisterPage'));
 const OtpVerifyPage = lazy(() => import('@/features/auth/pages/OtpVerifyPage'));
 const ForgotPasswordPage = lazy(() => import('@/features/auth/pages/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('@/features/auth/pages/ResetPasswordPage'));
@@ -110,6 +111,7 @@ export const router = createBrowserRouter([
     element: <GuestRoute />,
     children: [
       { path: '/auth/login', element: <Lazy component={LoginPage} /> },
+      { path: '/auth/register', element: <Lazy component={RegisterPage} /> },
       { path: '/auth/otp-verify', element: <Lazy component={OtpVerifyPage} /> },
       { path: '/auth/forgot-password', element: <Lazy component={ForgotPasswordPage} /> },
       { path: '/auth/reset-password', element: <Lazy component={ResetPasswordPage} /> },

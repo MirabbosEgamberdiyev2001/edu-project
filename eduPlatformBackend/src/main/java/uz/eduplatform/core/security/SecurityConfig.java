@@ -49,8 +49,10 @@ public class SecurityConfig {
     private boolean swaggerPermitAll;
 
     private static final String[] PUBLIC_URLS = {
-            // Registration is intentionally excluded — admin panel is invite-only.
-            // New users are created by ADMIN/SUPER_ADMIN through the admin panel.
+            // Registration is open on the public site (test-pro.uz).
+            // The admin subdomain (admin.test-pro.uz) hides registration on the frontend.
+            "/api/v1/auth/register",
+            "/api/v1/auth/register/phone",
             "/api/v1/auth/login",
             "/api/v1/auth/google",
             "/api/v1/auth/telegram",
