@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import uz.eduplatform.core.common.dto.ApiResponse;
 import uz.eduplatform.core.common.dto.PagedResponse;
 import uz.eduplatform.core.common.exception.ResourceNotFoundException;
+import uz.eduplatform.core.common.utils.MessageService;
 import uz.eduplatform.core.i18n.AcceptLanguage;
 import uz.eduplatform.core.security.UserPrincipal;
 import uz.eduplatform.modules.assessment.domain.AssignmentStatus;
@@ -42,6 +43,7 @@ public class GlobalTestController {
     private final TestHistoryRepository testHistoryRepository;
     private final TestAssignmentRepository assignmentRepository;
     private final TestTakingService testTakingService;
+    private final MessageService messageService;
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
@@ -127,7 +129,7 @@ public class GlobalTestController {
                 .questionCount(attempt.getQuestions() != null ? attempt.getQuestions().size() : 0)
                 .build();
 
-        return ResponseEntity.ok(ApiResponse.success(response, "Test boshlandi"));
+        return ResponseEntity.ok(ApiResponse.success(response, messageService.get("test.started", language.toLocale())));
     }
 
     private String getClientIpAddress(HttpServletRequest request) {

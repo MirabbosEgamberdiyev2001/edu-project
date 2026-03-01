@@ -199,7 +199,23 @@
     "bulkFailed": "{{failed}} ta savol bajarilmadi",
     "viewQuestion": "Savolni ko'rish",
     "proof": "Isbotlash/Tushuntirish",
-    "approveGlobal": "Tasdiqlash — Global qilish"
+    "approveGlobal": "Tasdiqlash — Global qilish",
+    "tabQuestions": "Savollar",
+    "tabGlobalTests": "Global Testlar",
+    "noGlobalPending": "Ko'rib chiqilishi kutilayotgan global test yo'q",
+    "testName": "Test nomi",
+    "submitted": "Yuborildi",
+    "rejectTestTitle": "Testni rad etish",
+    "rejectTestDescription": "Rad etish sababini kiriting. O'qituvchi bu sababni ko'radi.",
+    "rejectTestReason": "Rad etish sababi",
+    "rejectTestPlaceholder": "Masalan: Savollar sifatsiz, to'g'ri javob yo'q...",
+    "rejectTest": "Rad etish",
+    "options": "Variantlar",
+    "diffShort": {
+      "easy": "O",
+      "medium": "O'",
+      "hard": "Q"
+    }
   },
   "nav": {
     "dashboard": "Admin paneli",

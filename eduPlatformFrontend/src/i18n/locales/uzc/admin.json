@@ -199,7 +199,23 @@
     "bulkFailed": "{{failed}} та савол бажарилмади",
     "viewQuestion": "Саволни кўриш",
     "proof": "Исботлаш/Тушунтириш",
-    "approveGlobal": "Тасдиқлаш — Глобал қилиш"
+    "approveGlobal": "Тасдиқлаш — Глобал қилиш",
+    "tabQuestions": "Саволлар",
+    "tabGlobalTests": "Глобал Тестлар",
+    "noGlobalPending": "Кўриб чиқилиши кутилаётган глобал тест йўқ",
+    "testName": "Тест номи",
+    "submitted": "Юборилди",
+    "rejectTestTitle": "Тестни рад этиш",
+    "rejectTestDescription": "Рад этиш сабабини киритинг. Ўқитувчи бу сабабни кўради.",
+    "rejectTestReason": "Рад этиш сабаби",
+    "rejectTestPlaceholder": "Масалан: Саволлар сифатсиз, тўғри жавоб йўқ...",
+    "rejectTest": "Рад этиш",
+    "options": "Вариантлар",
+    "diffShort": {
+      "easy": "О",
+      "medium": "Ўр",
+      "hard": "Қ"
+    }
   },
   "nav": {
     "dashboard": "Админ панели",

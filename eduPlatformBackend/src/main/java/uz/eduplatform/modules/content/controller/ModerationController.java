@@ -18,6 +18,7 @@ import uz.eduplatform.modules.content.dto.BulkModerationRequest;
 import uz.eduplatform.modules.content.dto.BulkModerationResponse;
 import uz.eduplatform.modules.content.dto.ModerationRequest;
 import uz.eduplatform.modules.content.dto.QuestionDto;
+import uz.eduplatform.core.common.utils.MessageService;
 import uz.eduplatform.modules.content.service.QuestionModerationService;
 import uz.eduplatform.modules.test.dto.TestHistoryDto;
 import uz.eduplatform.modules.test.service.TestHistoryService;
@@ -32,6 +33,7 @@ public class ModerationController {
 
     private final QuestionModerationService moderationService;
     private final TestHistoryService testHistoryService;
+    private final MessageService messageService;
 
     // ===== QUESTION MODERATION =====
 
@@ -125,7 +127,7 @@ public class ModerationController {
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
 
         TestHistoryDto dto = testHistoryService.approveGlobal(id, principal.getId(), language);
-        return ResponseEntity.ok(ApiResponse.success(dto, "Test global qilindi"));
+        return ResponseEntity.ok(ApiResponse.success(dto, messageService.get("moderation.test.approved", language.toLocale())));
     }
 
     @PostMapping("/tests/{id}/reject")
@@ -139,6 +141,6 @@ public class ModerationController {
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
 
         TestHistoryDto dto = testHistoryService.rejectGlobal(id, principal.getId(), request.getReason(), language);
-        return ResponseEntity.ok(ApiResponse.success(dto, "Test rad etildi"));
+        return ResponseEntity.ok(ApiResponse.success(dto, messageService.get("moderation.test.rejected", language.toLocale())));
     }
 }

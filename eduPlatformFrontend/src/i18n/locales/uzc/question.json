@@ -39,7 +39,8 @@
     "stepSettings": "Созламалар",
     "stepProof": "Исбот",
     "true": "Тўғри",
-    "false": "Нотўғри"
+    "false": "Нотўғри",
+    "correctAnswerPlaceholder": "JSON объекти ёки оддий матн"
   },
   "detail": {
     "title": "Савол тафсилотлари",

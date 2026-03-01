@@ -45,6 +45,21 @@ export interface ExportVariant {
   questions: ExportQuestion[];
 }
 
+/** Locale-aware labels for generated documents. Pass from a `useTranslation` call. */
+export interface ExportLabels {
+  proofLabel: string;      // e.g. "Proof / Explanation"
+  answerKeyTitle: string;  // e.g. "Answer Key"
+  noQuestions: string;     // e.g. "No questions found."
+  variantPrefix: string;   // e.g. "Variant"
+}
+
+const DEFAULT_LABELS: ExportLabels = {
+  proofLabel: 'Proof / Explanation',
+  answerKeyTitle: 'Answer Key',
+  noQuestions: 'No questions found.',
+  variantPrefix: 'Variant',
+};
+
 /**
  * 'test'      → questions only, no answers shown
  * 'answerKey' → compact table: rows = question #, columns = variant
@@ -349,9 +364,9 @@ function getCorrectLabel(q: ExportQuestion): string {
 // ─── Block builders ───────────────────────────────────────────────────────────
 
 /** Renders a single question block (with or without answer/proof). */
-function questionBlock(q: ExportQuestion, num: number, showAnswers: boolean, showProofs: boolean): string {
+function questionBlock(q: ExportQuestion, num: number, showAnswers: boolean, showProofs: boolean, labels: ExportLabels = DEFAULT_LABELS): string {
   const MCQ = ['MCQ_SINGLE', 'MCQ_MULTI'];
-  const pts = q.points != null ? `<span class="q-pts">(${q.points} ball)</span>` : '';
+  const pts = '';
 
   // Options
   let optsHtml = '';
@@ -374,7 +389,7 @@ function questionBlock(q: ExportQuestion, num: number, showAnswers: boolean, sho
   // Proof
   let proofHtml = '';
   if (showProofs && q.proof) {
-    proofHtml = `\n      <div class="proof"><div class="proof-label">Isbot / Izoh</div>${renderMixedToHtml(q.proof)}</div>`;
+    proofHtml = `\n      <div class="proof"><div class="proof-label">${esc(labels.proofLabel)}</div>${renderMixedToHtml(q.proof)}</div>`;
   }
 
   return `<div class="question">
@@ -386,19 +401,19 @@ function questionBlock(q: ExportQuestion, num: number, showAnswers: boolean, sho
 }
 
 /** Renders one variant section (page-break + header + questions). */
-function variantSection(variant: ExportVariant, isFirst: boolean, showAnswers: boolean, showProofs: boolean): string {
+function variantSection(variant: ExportVariant, isFirst: boolean, showAnswers: boolean, showProofs: boolean, labels: ExportLabels = DEFAULT_LABELS): string {
   const breakClass = isFirst ? ' no-break' : '';
   const qs = variant.questions
-    .map((q, i) => questionBlock(q, i + 1, showAnswers, showProofs))
+    .map((q, i) => questionBlock(q, i + 1, showAnswers, showProofs, labels))
     .join('\n  ');
   return `<section class="variant-section${breakClass}">
-  <h2 class="variant-header">Variant ${esc(variant.code)}</h2>
+  <h2 class="variant-header">${esc(labels.variantPrefix)} ${esc(variant.code)}</h2>
   ${qs}
 </section>`;
 }
 
 /** Renders the answer-key table (all variants side by side). */
-function answerKeyTable(variants: ExportVariant[], noBreak = false): string {
+function answerKeyTable(variants: ExportVariant[], noBreak = false, labels: ExportLabels = DEFAULT_LABELS): string {
   if (!variants.length) return '';
   const maxQ = Math.max(...variants.map((v) => v.questions.length));
   const breakClass = noBreak ? ' no-break' : '';
@@ -420,7 +435,7 @@ function answerKeyTable(variants: ExportVariant[], noBreak = false): string {
   }).join('\n      ');
 
   return `<section class="ak-section${breakClass}">
-  <h2 class="section-title">Javoblar Kaliti</h2>
+  <h2 class="section-title">${esc(labels.answerKeyTitle)}</h2>
   <table class="ak-table">
     <thead>
       <tr>
@@ -452,32 +467,34 @@ export function generateExportDocument(
   variants: ExportVariant[],
   title: string,
   mode: ExportMode,
+  labels?: Partial<ExportLabels>,
 ): string {
-  if (variants.length === 0) return shell(title, '<p>Savollar topilmadi.</p>');
+  const lbl: ExportLabels = { ...DEFAULT_LABELS, ...labels };
+  if (variants.length === 0) return shell(title, `<p>${esc(lbl.noQuestions)}</p>`);
 
   switch (mode) {
     case 'test': {
       const sections = variants
-        .map((v, i) => variantSection(v, i === 0, false, false))
+        .map((v, i) => variantSection(v, i === 0, false, false, lbl))
         .join('\n');
       return shell(title, sections);
     }
 
     case 'answerKey': {
-      return shell(title, answerKeyTable(variants, true));
+      return shell(title, answerKeyTable(variants, true, lbl));
     }
 
     case 'combined': {
       const sections = variants
-        .map((v, i) => variantSection(v, i === 0, false, false))
+        .map((v, i) => variantSection(v, i === 0, false, false, lbl))
         .join('\n');
-      const akTable = answerKeyTable(variants);
+      const akTable = answerKeyTable(variants, false, lbl);
       return shell(title, sections + '\n' + akTable);
     }
 
     case 'proofs': {
       const sections = variants
-        .map((v, i) => variantSection(v, i === 0, true, true))
+        .map((v, i) => variantSection(v, i === 0, true, true, lbl))
         .join('\n');
       return shell(title, sections);
     }
@@ -497,10 +514,12 @@ export function generateWordDocument(
   questions: ExportQuestion[],
   title: string,
   exportOptions: WordExportOptions = {},
+  labels?: Partial<ExportLabels>,
 ): string {
+  const lbl: ExportLabels = { ...DEFAULT_LABELS, ...labels };
   const { showCorrectAnswers = false, showProofs = false } = exportOptions;
   const qs = questions
-    .map((q, i) => questionBlock(q, i + 1, showCorrectAnswers, showProofs))
+    .map((q, i) => questionBlock(q, i + 1, showCorrectAnswers, showProofs, lbl))
     .join('\n');
   return shell(title, qs);
 }
@@ -510,12 +529,14 @@ export function generateMultiVariantDocument(
   variants: ExportVariant[],
   title: string,
   exportOptions: WordExportOptions = {},
+  labels?: Partial<ExportLabels>,
 ): string {
+  const lbl: ExportLabels = { ...DEFAULT_LABELS, ...labels };
   const { showCorrectAnswers = false, showProofs = false } = exportOptions;
-  if (variants.length === 0) return shell(title, '<p>Savollar topilmadi.</p>');
-  if (variants.length === 1) return generateWordDocument(variants[0].questions, title, exportOptions);
+  if (variants.length === 0) return shell(title, `<p>${esc(lbl.noQuestions)}</p>`);
+  if (variants.length === 1) return generateWordDocument(variants[0].questions, title, exportOptions, labels);
   const sections = variants
-    .map((v, i) => variantSection(v, i === 0, showCorrectAnswers, showProofs))
+    .map((v, i) => variantSection(v, i === 0, showCorrectAnswers, showProofs, lbl))
     .join('\n');
   return shell(title, sections);
 }
@@ -534,11 +555,118 @@ export function downloadFile(filename: string, content: string, mimeType = 'text
   URL.revokeObjectURL(url);
 }
 
-// ─── Print / open in new window ──────────────────────────────────────────────
+// ─── PDF direct download ─────────────────────────────────────────────────────
+
+/** Ensures KaTeX CSS is loaded in the document (needed for html2canvas capture). */
+async function ensureKatexCss(): Promise<void> {
+  if (document.querySelector('link[href*="katex"]') || document.querySelector('style[data-katex]')) return;
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = 'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css';
+  link.setAttribute('data-katex', '1');
+  document.head.appendChild(link);
+  await new Promise<void>((resolve) => {
+    link.onload = () => resolve();
+    link.onerror = () => resolve();
+    setTimeout(resolve, 2000);
+  });
+}
 
 /**
- * Opens the HTML in a new window and auto-triggers the print dialog.
- * 700 ms delay lets KaTeX CSS load so formulas render correctly in the PDF.
+ * Generates a PDF file from export HTML and downloads it directly — no print dialog.
+ *
+ * Pipeline: export HTML → hidden DOM element → html2canvas (captures rendered content
+ * including KaTeX math, fonts, layout) → jsPDF (A4 multi-page PDF) → file download.
+ *
+ * @param html      Full export HTML from generateExportDocument()
+ * @param filename  Download filename (e.g. "test_variant.pdf")
+ */
+export async function downloadAsPdf(html: string, filename: string): Promise<void> {
+  // Lazy-load heavy libs (code-split, not in initial bundle)
+  const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+    import('html2canvas'),
+    import('jspdf'),
+  ]);
+
+  // Parse the export HTML to separate CSS from body content
+  const parser = new DOMParser();
+  const exportDoc = parser.parseFromString(html, 'text/html');
+  const customCss = Array.from(exportDoc.querySelectorAll('style'))
+    .map((s) => s.textContent ?? '')
+    .join('\n');
+
+  // Ensure KaTeX CSS is in the document (so math renders with correct fonts)
+  await ensureKatexCss();
+
+  // Inject export-specific CSS temporarily
+  const tempStyle = document.createElement('style');
+  tempStyle.setAttribute('data-pdf-export', '1');
+  tempStyle.textContent = customCss;
+  document.head.appendChild(tempStyle);
+
+  // Create an off-screen container that mimics a 1020 px wide A4 page
+  const container = document.createElement('div');
+  container.setAttribute('data-pdf-container', '1');
+  container.style.cssText = [
+    'position:absolute',
+    'left:-9999px',
+    'top:0',
+    'width:1020px',
+    'background:#fff',
+    'color:#000',
+    'font-family:"Times New Roman",Times,serif',
+    'font-size:12pt',
+    'line-height:1.7',
+  ].join(';');
+  container.innerHTML = exportDoc.body.innerHTML;
+  document.body.appendChild(container);
+
+  try {
+    // Wait for fonts (KaTeX web-fonts, Times New Roman) to be fully loaded
+    await document.fonts.ready;
+    await new Promise<void>((r) => setTimeout(r, 500));
+
+    // Capture the full rendered content (high DPI for crisp text)
+    const canvas = await html2canvas(container, {
+      scale: 1.8,
+      useCORS: true,
+      allowTaint: false,
+      backgroundColor: '#ffffff',
+      width: 1020,
+      windowWidth: 1020,
+      logging: false,
+    });
+
+    // A4 dimensions in mm
+    const A4_W = 210;
+    const A4_H = 297;
+    const imgH = (canvas.height * A4_W) / canvas.width;
+    const imgData = canvas.toDataURL('image/jpeg', 0.92);
+
+    // Build multi-page PDF
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    let yOffset = 0;
+    let page = 0;
+    while (yOffset < imgH) {
+      if (page > 0) pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', 0, -yOffset, A4_W, imgH);
+      yOffset += A4_H;
+      page++;
+    }
+
+    pdf.save(filename);
+  } finally {
+    document.body.removeChild(container);
+    document.head.removeChild(tempStyle);
+  }
+}
+
+// ─── Print / open in new window (for toolbar Print button) ───────────────────
+
+/**
+ * Opens the HTML in a new window and auto-triggers the browser print dialog.
+ * Used ONLY by the toolbar "Print / PDF" icon — not by the export buttons.
+ * 700 ms delay lets KaTeX CSS load so formulas render correctly.
  * Falls back to download if popup is blocked.
  */
 export function printHtml(html: string): void {

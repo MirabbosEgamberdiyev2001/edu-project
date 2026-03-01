@@ -79,7 +79,11 @@
     "descTest": "Barcha savollar javob variantlari bilan, to'g'ri javob ko'rsatilmaydi",
     "descAnswerKey": "Barcha variantlar uchun ixcham javoblar jadvali",
     "descCombined": "Test savollari + javoblar kaliti birgalikda",
-    "descProofs": "To'g'ri javoblar belgilangan + to'liq isbotlar"
+    "descProofs": "To'g'ri javoblar belgilangan + to'liq isbotlar",
+    "proofLabel": "Isbot / Izoh",
+    "answerKeyTitle": "Javoblar Kaliti",
+    "noQuestions": "Savollar topilmadi.",
+    "variantPrefix": "Variant"
   },
   "status": {
     "CREATED": "Yaratilgan",

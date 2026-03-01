@@ -289,7 +289,7 @@ function AttestationTestCard({
       <CardContent sx={{ flex: 1 }}>
         <Box sx={{ display: 'flex', gap: 1, mb: 1.5, flexWrap: 'wrap' }}>
           <Chip
-            label="📋 Attestation"
+            label={`📋 ${t('attestation.title')}`}
             size="small"
             sx={{ bgcolor: ATTESTATION_COLOR, color: 'white', fontWeight: 700, fontSize: '0.7rem' }}
           />

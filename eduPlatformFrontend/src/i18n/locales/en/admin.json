@@ -199,7 +199,23 @@
     "bulkFailed": "{{failed}} questions failed to process",
     "viewQuestion": "View Question",
     "proof": "Proof/Explanation",
-    "approveGlobal": "Approve — Make Global"
+    "approveGlobal": "Approve — Make Global",
+    "tabQuestions": "Questions",
+    "tabGlobalTests": "Global Tests",
+    "noGlobalPending": "No global tests pending review",
+    "testName": "Test Name",
+    "submitted": "Submitted",
+    "rejectTestTitle": "Reject Test",
+    "rejectTestDescription": "Enter a reason for rejection. The teacher will see this.",
+    "rejectTestReason": "Rejection reason",
+    "rejectTestPlaceholder": "e.g. Poor quality questions, missing correct answers...",
+    "rejectTest": "Reject",
+    "options": "Options",
+    "diffShort": {
+      "easy": "E",
+      "medium": "M",
+      "hard": "H"
+    }
   },
   "nav": {
     "dashboard": "Admin Panel",

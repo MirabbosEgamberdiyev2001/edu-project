@@ -836,7 +836,7 @@ export default function QuestionFormDialog({
           fullWidth
           multiline
           rows={3}
-          placeholder="JSON / text"
+          placeholder={t("form.correctAnswerPlaceholder")}
         />
       </Box>
     );

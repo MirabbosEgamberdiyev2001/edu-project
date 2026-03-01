@@ -39,7 +39,8 @@
     "stepSettings": "Settings",
     "stepProof": "Proof",
     "true": "True",
-    "false": "False"
+    "false": "False",
+    "correctAnswerPlaceholder": "JSON object or plain text"
   },
   "detail": {
     "title": "Question Details",

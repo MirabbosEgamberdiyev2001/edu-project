@@ -42,7 +42,8 @@ import { LANGUAGE_LABELS } from '@/config';
 import QuestionFormDialog from '../components/QuestionFormDialog';
 import { MathText } from '@/components/math';
 import QuestionDeleteDialog from '../components/QuestionDeleteDialog';
-import { generateWordDocument, downloadFile, printHtml } from '@/utils/mathExport';
+import { generateWordDocument, downloadAsPdf } from '@/utils/mathExport';
+import { generateDocxBlob } from '@/utils/docxExport';
 
 const KNOWN_LOCALE_KEYS = ['uz_latn', 'uz_cyrl', 'en', 'ru'] as const;
 
@@ -71,7 +72,7 @@ const STATUS_COLORS: Record<string, 'default' | 'primary' | 'success' | 'error' 
 export default function QuestionDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { t } = useTranslation('question');
+  const { t } = useTranslation(['question', 'test']);
 
   const { data: question, isLoading } = useQuestion(id);
   const { data: versions, isLoading: versionsLoading } = useQuestionVersions(id);
@@ -80,6 +81,13 @@ export default function QuestionDetailPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [versionsOpen, setVersionsOpen] = useState(false);
+
+  const exportLabels = {
+    proofLabel: t('test:export.proofLabel'),
+    answerKeyTitle: t('test:export.answerKeyTitle'),
+    noQuestions: t('test:export.noQuestions'),
+    variantPrefix: t('test:export.variantPrefix'),
+  };
 
   if (isLoading) {
     return (
@@ -251,35 +259,9 @@ export default function QuestionDetailPage() {
               <HistoryIcon />
             </IconButton>
           </Tooltip>
-          <Tooltip title="Print / PDF">
+          <Tooltip title={t('test:export.tooltipPdf')}>
             <IconButton
-              onClick={() => {
-                const LABELS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
-                const rawOpts = Array.isArray(question.options)
-                  ? (question.options as Array<Record<string, unknown>>)
-                  : [];
-                const exportOpts = rawOpts.map((opt, i) => ({
-                  label: LABELS[i] ?? String(i + 1),
-                  text: opt.textTranslations
-                    ? (resolveTranslation(opt.textTranslations as Record<string, string>) || '')
-                    : typeof opt.text === 'object' && opt.text !== null
-                      ? (resolveTranslation(opt.text as Record<string, string>) || '')
-                      : String(opt.text ?? ''),
-                  isCorrect: Boolean(opt.isCorrect),
-                }));
-                printHtml(generateWordDocument(
-                  [{ questionText: displayText, points: question.points, options: exportOpts, proof: displayProof || undefined }],
-                  displayText.slice(0, 80),
-                  { showCorrectAnswers: true, showProofs: true },
-                ));
-              }}
-            >
-              <PrintIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Export to Word (.doc)">
-            <IconButton
-              onClick={() => {
+              onClick={async () => {
                 const LABELS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
                 const rawOpts = Array.isArray(question.options)
                   ? (question.options as Array<Record<string, unknown>>)
@@ -297,8 +279,42 @@ export default function QuestionDetailPage() {
                   [{ questionText: displayText, points: question.points, options: exportOpts, proof: displayProof || undefined }],
                   displayText.slice(0, 80),
                   { showCorrectAnswers: true, showProofs: true },
+                  exportLabels,
                 );
-                downloadFile('question.doc', html, 'application/msword');
+                await downloadAsPdf(html, 'question.pdf');
+              }}
+            >
+              <PrintIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title={t('test:export.tooltipDocx')}>
+            <IconButton
+              onClick={async () => {
+                const LABELS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+                const rawOpts = Array.isArray(question.options)
+                  ? (question.options as Array<Record<string, unknown>>)
+                  : [];
+                const exportOpts = rawOpts.map((opt, i) => ({
+                  label: LABELS[i] ?? String(i + 1),
+                  text: opt.textTranslations
+                    ? (resolveTranslation(opt.textTranslations as Record<string, string>) || '')
+                    : typeof opt.text === 'object' && opt.text !== null
+                      ? (resolveTranslation(opt.text as Record<string, string>) || '')
+                      : String(opt.text ?? ''),
+                  isCorrect: Boolean(opt.isCorrect),
+                }));
+                const blob = await generateDocxBlob(
+                  [{ code: 'A', questions: [{ questionText: displayText, points: question.points, options: exportOpts, proof: displayProof || undefined }] }],
+                  displayText.slice(0, 80),
+                  'proofs',
+                  exportLabels,
+                );
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'question.docx';
+                a.click();
+                URL.revokeObjectURL(url);
               }}
             >
               <DescriptionIcon />

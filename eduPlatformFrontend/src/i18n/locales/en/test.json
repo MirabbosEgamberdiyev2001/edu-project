@@ -79,7 +79,11 @@
     "descTest": "All questions with options, no answers shown",
     "descAnswerKey": "Compact answer table for all variants",
     "descCombined": "Test questions + answer key appended",
-    "descProofs": "Correct answers highlighted + full proofs"
+    "descProofs": "Correct answers highlighted + full proofs",
+    "proofLabel": "Proof / Explanation",
+    "answerKeyTitle": "Answer Key",
+    "noQuestions": "No questions found.",
+    "variantPrefix": "Variant"
   },
   "status": {
     "CREATED": "Created",

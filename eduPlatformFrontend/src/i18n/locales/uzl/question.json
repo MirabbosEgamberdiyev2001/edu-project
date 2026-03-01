@@ -39,7 +39,8 @@
     "stepSettings": "Sozlamalar",
     "stepProof": "Isbot",
     "true": "To'g'ri",
-    "false": "Noto'g'ri"
+    "false": "Noto'g'ri",
+    "correctAnswerPlaceholder": "JSON ob'ekti yoki oddiy matn"
   },
   "detail": {
     "title": "Savol tafsilotlari",

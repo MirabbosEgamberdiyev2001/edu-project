@@ -39,7 +39,8 @@
     "stepSettings": "Настройки",
     "stepProof": "Доказательство",
     "true": "Верно",
-    "false": "Неверно"
+    "false": "Неверно",
+    "correctAnswerPlaceholder": "JSON объект или обычный текст"
   },
   "detail": {
     "title": "Детали вопроса",

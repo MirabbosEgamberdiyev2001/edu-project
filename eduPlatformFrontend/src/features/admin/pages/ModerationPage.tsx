@@ -54,13 +54,6 @@ const DIFFICULTY_COLORS: Record<string, 'success' | 'warning' | 'error'> = {
   HARD: 'error',
 };
 
-const CATEGORY_LABELS: Record<string, string> = {
-  DTM: '🎓 DTM',
-  SCHOOL: '🏫 Maktab',
-  OLYMPIAD: '🏆 Olimpiada',
-  CERTIFICATE: '📜 Sertifikat',
-  ATTESTATSIYA: '📋 Attestatsiya',
-};
 
 export default function ModerationPage() {
   const { t } = useTranslation('admin');
@@ -190,12 +183,12 @@ export default function ModerationPage() {
           <Tab
             icon={<QuizIcon />}
             iconPosition="start"
-            label={`Savollar${questionData ? ` (${questionData.totalElements})` : ''}`}
+            label={`${t('moderation.tabQuestions')}${questionData ? ` (${questionData.totalElements})` : ''}`}
           />
           <Tab
             icon={<AssignmentIcon />}
             iconPosition="start"
-            label={`Global Testlar${pendingTestsData ? ` (${pendingTestsData.totalElements})` : ''}`}
+            label={`${t('moderation.tabGlobalTests')}${pendingTestsData ? ` (${pendingTestsData.totalElements})` : ''}`}
           />
         </Tabs>
       </Paper>
@@ -312,7 +305,7 @@ export default function ModerationPage() {
             <Paper sx={{ p: 4, textAlign: 'center' }}>
               <AssignmentIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
               <Typography color="text.secondary">
-                Hozircha tekshiruv kutayotgan global test yo'q
+                {t('moderation.noGlobalPending')}
               </Typography>
             </Paper>
           ) : (
@@ -321,13 +314,13 @@ export default function ModerationPage() {
                 <Table size="small">
                   <TableHead>
                     <TableRow>
-                      <TableCell>Test nomi</TableCell>
-                      <TableCell>Fan</TableCell>
-                      <TableCell>Kategoriya</TableCell>
-                      <TableCell>Savollar</TableCell>
-                      <TableCell>O'qituvchi</TableCell>
-                      <TableCell>Yuborildi</TableCell>
-                      <TableCell align="right">Amallar</TableCell>
+                      <TableCell>{t('moderation.testName')}</TableCell>
+                      <TableCell>{t('moderation.subject')}</TableCell>
+                      <TableCell>{t('auditLog.category')}</TableCell>
+                      <TableCell>{t('contentStats.questions')}</TableCell>
+                      <TableCell>{t('contentStats.teacher')}</TableCell>
+                      <TableCell>{t('moderation.submitted')}</TableCell>
+                      <TableCell align="right">{t('users.actions')}</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -359,16 +352,16 @@ export default function ModerationPage() {
 
           {/* Test Reject Dialog */}
           <Dialog open={!!rejectTestId} onClose={() => setRejectTestId(null)} maxWidth="sm" fullWidth>
-            <DialogTitle>Testni rad etish</DialogTitle>
+            <DialogTitle>{t('moderation.rejectTestTitle')}</DialogTitle>
             <DialogContent>
               <Typography variant="body2" sx={{ mb: 2 }}>
-                Rad etish sababini kiriting. O'qituvchi bu sababni ko'radi.
+                {t('moderation.rejectTestDescription')}
               </Typography>
               <TextField
                 fullWidth
                 size="small"
-                label="Rad etish sababi"
-                placeholder="Masalan: Savollar sifatsiz, to'g'ri javob yo'q..."
+                label={t('moderation.rejectTestReason')}
+                placeholder={t('moderation.rejectTestPlaceholder')}
                 value={testRejectReason}
                 onChange={(e) => setTestRejectReason(e.target.value)}
                 multiline
@@ -377,14 +370,14 @@ export default function ModerationPage() {
               />
             </DialogContent>
             <DialogActions>
-              <Button onClick={() => setRejectTestId(null)}>Bekor qilish</Button>
+              <Button onClick={() => setRejectTestId(null)}>{t('common:cancel')}</Button>
               <Button
                 variant="contained"
                 color="error"
                 onClick={() => rejectTestId && rejectTestMutation.mutate({ id: rejectTestId, reason: testRejectReason })}
                 disabled={!testRejectReason.trim() || rejectTestMutation.isPending}
               >
-                Rad etish
+                {t('moderation.rejectTest')}
               </Button>
             </DialogActions>
           </Dialog>
@@ -475,7 +468,7 @@ function GlobalTestRow({ test, onApprove, onReject, approving }: {
               <Chip
                 key={key}
                 size="small"
-                label={`${key === 'easy' ? 'O' : key === 'medium' ? "O'" : 'Q'}: ${val}%`}
+                label={`${t(`moderation.diffShort.${key}`)}: ${val}%`}
                 color={key === 'easy' ? 'success' : key === 'medium' ? 'warning' : 'error'}
                 sx={{ fontSize: '0.6rem' }}
               />
@@ -488,7 +481,7 @@ function GlobalTestRow({ test, onApprove, onReject, approving }: {
       </TableCell>
       <TableCell>
         {category && (
-          <Chip label={CATEGORY_LABELS[category] || category} size="small" variant="outlined" />
+          <Chip label={t(`test:categories.${category}`, category)} size="small" variant="outlined" />
         )}
       </TableCell>
       <TableCell>
@@ -617,7 +610,7 @@ function QuestionRow({
               )}
               {q.options != null && (
                 <>
-                  <Typography variant="subtitle2" gutterBottom>Options</Typography>
+                  <Typography variant="subtitle2" gutterBottom>{t('moderation.options')}</Typography>
                   <Paper variant="outlined" sx={{ p: 1.5, bgcolor: 'grey.50' }}>
                     <pre style={{ margin: 0, fontSize: '0.75rem', whiteSpace: 'pre-wrap' }}>
                       {JSON.stringify(q.options, null, 2)}

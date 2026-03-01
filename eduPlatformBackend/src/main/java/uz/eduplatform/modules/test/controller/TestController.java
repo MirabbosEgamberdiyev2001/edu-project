@@ -208,7 +208,7 @@ public class TestController {
             @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
 
         TestHistoryDto dto = historyService.submitForGlobal(id, principal.getId(), language);
-        return ResponseEntity.ok(ApiResponse.success(dto, "Test moderatsiyaga yuborildi"));
+        return ResponseEntity.ok(ApiResponse.success(dto, messageService.get("test.submitted.moderation", language.toLocale())));
     }
 
     @DeleteMapping("/history/{id}/publish")

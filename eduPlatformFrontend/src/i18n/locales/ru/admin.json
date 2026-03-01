@@ -199,7 +199,23 @@
     "bulkFailed": "{{failed}} вопросов не обработано",
     "viewQuestion": "Просмотр вопроса",
     "proof": "Доказательство/Объяснение",
-    "approveGlobal": "Одобрить — Сделать глобальным"
+    "approveGlobal": "Одобрить — Сделать глобальным",
+    "tabQuestions": "Вопросы",
+    "tabGlobalTests": "Глобальные тесты",
+    "noGlobalPending": "Нет глобальных тестов на рассмотрении",
+    "testName": "Название теста",
+    "submitted": "Отправлен",
+    "rejectTestTitle": "Отклонить тест",
+    "rejectTestDescription": "Введите причину отклонения. Учитель увидит её.",
+    "rejectTestReason": "Причина отклонения",
+    "rejectTestPlaceholder": "Напр.: Плохое качество вопросов, нет правильного ответа...",
+    "rejectTest": "Отклонить",
+    "options": "Варианты ответов",
+    "diffShort": {
+      "easy": "Л",
+      "medium": "С",
+      "hard": "Т"
+    }
   },
   "nav": {
     "dashboard": "Админ-панель",
