@@ -2,6 +2,7 @@ package uz.eduplatform.modules.notification.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import uz.eduplatform.core.common.utils.MessageService;
@@ -28,6 +29,9 @@ public class NotificationService {
     private final EmailClient emailClient;
     private final NotificationHistoryRepository historyRepository;
     private final MessageService messageService;
+
+    @Value("${app.email.from-name:Test-Pro}")
+    private String appName;
 
     private static final int MAX_RETRIES = 3;
 
@@ -88,7 +92,7 @@ public class NotificationService {
             Map<String, Object> vars = new HashMap<>();
             vars.put("otpCode", otp);
             vars.put("expiryMinutes", 5);
-            vars.put("appName", "EduPlatform");
+            vars.put("appName", appName);
 
             NotificationHistory history = createHistory(null, NotificationChannel.EMAIL, identifier, subject);
             SendResult result = emailClient.sendEmail(identifier, subject, "otp", vars, locale);
@@ -120,7 +124,7 @@ public class NotificationService {
             Map<String, Object> vars = new HashMap<>();
             vars.put("otpCode", otp);
             vars.put("expiryMinutes", 5);
-            vars.put("appName", "EduPlatform");
+            vars.put("appName", appName);
 
             NotificationHistory history = createHistory(null, NotificationChannel.EMAIL, identifier, subject);
             SendResult result = emailClient.sendEmail(identifier, subject, "password-reset", vars, locale);
