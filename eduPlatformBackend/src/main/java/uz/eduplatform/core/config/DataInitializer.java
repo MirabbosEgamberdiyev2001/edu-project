@@ -80,33 +80,139 @@ public class DataInitializer implements ApplicationRunner {
     // ─── Subjects ─────────────────────────────────────────────────────────────
 
     private void initSubjects(User owner) {
-        findOrCreateSubject(owner, "Matematika",     "Математика",      "Mathematics",         "Математика",      "📐", 1);
-        findOrCreateSubject(owner, "Fizika",         "Физика",          "Physics",             "Физика",          "⚛️", 2);
-        findOrCreateSubject(owner, "Kimyo",          "Кимё",            "Chemistry",           "Химия",           "🧪", 3);
-        findOrCreateSubject(owner, "Biologiya",      "Биология",        "Biology",             "Биология",        "🧬", 4);
-        findOrCreateSubject(owner, "Tarix",          "Тарих",           "History",             "История",         "📜", 5);
-        findOrCreateSubject(owner, "Ona tili",       "Она тили",        "Uzbek Language",      "Узбекский язык",  "📝", 6);
-        findOrCreateSubject(owner, "Ingliz tili",    "Инглиз тили",     "English",             "Английский язык", "🇬🇧", 7);
-        findOrCreateSubject(owner, "Informatika",    "Информатика",     "Computer Science",    "Информатика",     "💻", 8);
-        findOrCreateSubject(owner, "Geografiya",     "География",       "Geography",           "География",       "🌍", 9);
-        findOrCreateSubject(owner, "Adabiyot",       "Адабиёт",         "Literature",          "Литература",      "📚", 10);
-        findOrCreateSubject(owner, "Rus tili",       "Рус тили",        "Russian Language",    "Русский язык",    "🇷🇺", 11);
-        findOrCreateSubject(owner, "Huquq asoslari", "Ҳуқуқ асослари", "Fundamentals of Law", "Основы права",    "⚖️", 12);
-        findOrCreateSubject(owner, "Iqtisodiyot",    "Иқтисодиёт",     "Economics",           "Экономика",       "💰", 13);
-        findOrCreateSubject(owner, "Falsafa",        "Фалсафа",         "Philosophy",          "Философия",       "🤔", 14);
-        findOrCreateSubject(owner, "Psixologiya",    "Психология",      "Psychology",          "Психология",      "🧠", 15);
-        log.info("Default subjects ensured (15 subjects, owner: {})", owner.getEmail());
+        findOrCreateSubject(owner,
+                "Matematika", "Математика", "Mathematics", "Математика",
+                ml("Algebra, geometriya, arifmetika, analiz va boshqa matematik sohalarni qamrab oluvchi fan",
+                   "Алгебра, геометрия, арифметика, анализ ва бошқа математик соҳаларни қамраб олувчи фан",
+                   "A subject covering algebra, geometry, arithmetic, calculus and other mathematical fields",
+                   "Предмет, охватывающий алгебру, геометрию, арифметику, анализ и другие математические области"),
+                "📐", 1);
+
+        findOrCreateSubject(owner,
+                "Fizika", "Физика", "Physics", "Физика",
+                ml("Moddaning xossalari, harakat, energiya va koinotning fundamental qonunlarini o'rganuvchi fan",
+                   "Модданинг хоссалари, ҳаракат, энергия ва коинотнинг фундаментал қонунларини ўрганувчи фан",
+                   "The study of matter, motion, energy and the fundamental laws of the universe",
+                   "Изучение свойств материи, движения, энергии и фундаментальных законов вселенной"),
+                "⚛️", 2);
+
+        findOrCreateSubject(owner,
+                "Kimyo", "Кимё", "Chemistry", "Химия",
+                ml("Moddaning tarkibi, tuzilishi, xossalari va o'zgarishlarini o'rganuvchi tabiat fani",
+                   "Модданинг таркиби, тузилиши, хоссалари ва ўзгаришларини ўрганувчи табиат фани",
+                   "The natural science studying the composition, structure, properties and changes of matter",
+                   "Естественная наука, изучающая состав, строение, свойства и превращения веществ"),
+                "🧪", 3);
+
+        findOrCreateSubject(owner,
+                "Biologiya", "Биология", "Biology", "Биология",
+                ml("Tirik organizmlar, ularning tuzilishi, rivojlanishi va muhit bilan o'zaro ta'sirini o'rganuvchi fan",
+                   "Тирик организмлар, уларнинг тузилиши, ривожланиши ва муҳит билан ўзаро таъсирини ўрганувчи фан",
+                   "The science of living organisms, their structure, development and interaction with the environment",
+                   "Наука о живых организмах, их строении, развитии и взаимодействии с окружающей средой"),
+                "🧬", 4);
+
+        findOrCreateSubject(owner,
+                "Tarix", "Тарих", "History", "История",
+                ml("O'tmishdagi voqealar, sivilizatsiyalar, davlatlar va jamiyatlarning rivojlanishini o'rganuvchi fan",
+                   "Ўтмишдаги воқеалар, цивилизациялар, давлатлар ва жамиятларнинг ривожланишини ўрганувчи фан",
+                   "The study of past events, civilizations, states and the development of societies",
+                   "Изучение прошлых событий, цивилизаций, государств и развития обществ"),
+                "📜", 5);
+
+        findOrCreateSubject(owner,
+                "Ona tili", "Она тили", "Uzbek Language", "Узбекский язык",
+                ml("O'zbek tilining grammatikasi, adabiy me'yorlari, so'z boyligi va nutq madaniyatini o'rgatuvchi fan",
+                   "Ўзбек тилининг грамматикаси, адабий меъёрлари, сўз бойлиги ва нутқ маданиятини ўргатувчи фан",
+                   "Teaching Uzbek language grammar, literary norms, vocabulary and speech culture",
+                   "Обучение грамматике узбекского языка, литературным нормам, словарному запасу и культуре речи"),
+                "📝", 6);
+
+        findOrCreateSubject(owner,
+                "Ingliz tili", "Инглиз тили", "English", "Английский язык",
+                ml("Ingliz tilini tinglash, gapirish, o'qish va yozish ko'nikmalari orqali chuqur o'rganish",
+                   "Инглиз тилини тинглаш, гапириш, ўқиш ва ёзиш кўникмалари орқали чуқур ўрганиш",
+                   "In-depth study of English through listening, speaking, reading and writing skills",
+                   "Углублённое изучение английского языка через навыки аудирования, говорения, чтения и письма"),
+                "🇬🇧", 7);
+
+        findOrCreateSubject(owner,
+                "Informatika", "Информатика", "Computer Science", "Информатика",
+                ml("Dasturlash, algoritmlar, ma'lumotlar tuzilmasi va axborot texnologiyalarini o'rganuvchi fan",
+                   "Дастурлаш, алгоритмлар, маълумотлар тузилмаси ва ахборот технологияларини ўрганувчи фан",
+                   "The study of programming, algorithms, data structures and information technologies",
+                   "Изучение программирования, алгоритмов, структур данных и информационных технологий"),
+                "💻", 8);
+
+        findOrCreateSubject(owner,
+                "Geografiya", "География", "Geography", "География",
+                ml("Yer yuzasi, iqlim, tabiiy resurslar, aholi va davlatlarning joylashishini o'rganuvchi fan",
+                   "Ер юзаси, иқлим, табиий ресурслар, аҳоли ва давлатларнинг жойлашишини ўрганувчи фан",
+                   "The study of Earth's surface, climate, natural resources, population and state locations",
+                   "Изучение поверхности Земли, климата, природных ресурсов, населения и расположения государств"),
+                "🌍", 9);
+
+        findOrCreateSubject(owner,
+                "Adabiyot", "Адабиёт", "Literature", "Литература",
+                ml("Badiiy asarlarni tahlil qilish, adabiy janrlar, yozuvchilar va she'riyatni o'rganuvchi fan",
+                   "Бадиий асарларни таҳлил қилиш, адабий жанрлар, ёзувчилар ва шеъриятни ўрганувчи фан",
+                   "Analyzing literary works, literary genres, authors and poetry",
+                   "Анализ художественных произведений, литературных жанров, авторов и поэзии"),
+                "📚", 10);
+
+        findOrCreateSubject(owner,
+                "Rus tili", "Рус тили", "Russian Language", "Русский язык",
+                ml("Rus tilining grammatikasi, leksikasi, fonetikasi va muloqot ko'nikmalarini o'rganuvchi fan",
+                   "Рус тилининг грамматикаси, лексикаси, фонетикаси ва мулоқот кўникмаларини ўрганувчи фан",
+                   "The study of Russian language grammar, lexicon, phonetics and communication skills",
+                   "Изучение грамматики, лексики, фонетики русского языка и навыков общения"),
+                "🇷🇺", 11);
+
+        findOrCreateSubject(owner,
+                "Huquq asoslari", "Ҳуқуқ асослари", "Fundamentals of Law", "Основы права",
+                ml("Davlat va huquq, qonunchilik tizimi, fuqarolik va jinoyat huquqining asoslarini o'rganuvchi fan",
+                   "Давлат ва ҳуқуқ, қонунчилик тизими, фуқаролик ва жиноят ҳуқуқининг асосларини ўрганувчи фан",
+                   "The study of state and law, the legislative system, and the basics of civil and criminal law",
+                   "Изучение государства и права, законодательной системы, основ гражданского и уголовного права"),
+                "⚖️", 12);
+
+        findOrCreateSubject(owner,
+                "Iqtisodiyot", "Иқтисодиёт", "Economics", "Экономика",
+                ml("Ishlab chiqarish, taqsimlash, iste'mol va bozor munosabatlarini o'rganuvchi ijtimoiy fan",
+                   "Ишлаб чиқариш, тақсимлаш, истеъмол ва бозор муносабатларини ўрганувчи ижтимоий фан",
+                   "A social science studying production, distribution, consumption and market relations",
+                   "Общественная наука, изучающая производство, распределение, потребление и рыночные отношения"),
+                "💰", 13);
+
+        findOrCreateSubject(owner,
+                "Falsafa", "Фалсафа", "Philosophy", "Философия",
+                ml("Borliq, bilish, axloq, estetika va mantiq haqidagi fundamental savollarni o'rganuvchi fan",
+                   "Борлиқ, билиш, ахлоқ, эстетика ва мантиқ ҳақидаги фундаментал саволларни ўрганувчи фан",
+                   "The study of fundamental questions about existence, knowledge, ethics, aesthetics and logic",
+                   "Изучение фундаментальных вопросов о бытии, познании, этике, эстетике и логике"),
+                "🤔", 14);
+
+        findOrCreateSubject(owner,
+                "Psixologiya", "Психология", "Psychology", "Психология",
+                ml("Inson xatti-harakati, his-tuyg'ulari, idrok va aqliy jarayonlarini o'rganuvchi fan",
+                   "Инсон хатти-ҳаракати, ҳис-туйғулари, идрок ва ақлий жараёнларини ўрганувчи фан",
+                   "The science of human behavior, emotions, perception and mental processes",
+                   "Наука о поведении, эмоциях, восприятии и психических процессах человека"),
+                "🧠", 15);
+
+        log.info("Default subjects ensured (15 subjects with 4-language descriptions, owner: {})", owner.getEmail());
     }
 
     private void findOrCreateSubject(User owner,
                                       String uzLatn, String uzCyrl, String en, String ru,
+                                      Map<String, String> description,
                                       String icon, int sortOrder) {
         subjectRepository.findByUserIdAndDefaultName(owner.getId(), uzLatn)
                 .orElseGet(() -> {
                     Subject subject = Subject.builder()
                             .user(owner)
                             .name(Map.of("uz_latn", uzLatn, "uz_cyrl", uzCyrl, "en", en, "ru", ru))
-                            .description(Map.of())
+                            .description(description)
                             .icon(icon)
                             .isTemplate(true)
                             .isActive(true)
@@ -114,8 +220,12 @@ public class DataInitializer implements ApplicationRunner {
                             .sortOrder(sortOrder)
                             .build();
                     subject = subjectRepository.save(subject);
-                    log.info("Created subject: {}", uzLatn);
+                    log.info("Created subject: {} ({})", uzLatn, icon);
                     return subject;
                 });
+    }
+
+    private static Map<String, String> ml(String uzLatn, String uzCyrl, String en, String ru) {
+        return Map.of("uz_latn", uzLatn, "uz_cyrl", uzCyrl, "en", en, "ru", ru);
     }
 }
