@@ -9,14 +9,17 @@ import AuthMethodTabs from '../components/AuthMethodTabs';
 import GoogleLoginButton from '../components/GoogleLoginButton';
 import PasswordInput from '../components/PasswordInput';
 import PhoneInput from '../components/PhoneInput';
+import RoleSelect from '../components/RoleSelect';
 import { loginSchema, type LoginFormData } from '../schemas/loginSchema';
 import { useLogin } from '../hooks/useLogin';
+import { Role } from '@/types/user';
 
 const isAdminPanel = window.location.hostname.startsWith('admin.');
 
 export default function LoginPage() {
   const { t } = useTranslation('auth');
   const [method, setMethod] = useState<'email' | 'phone'>('email');
+  const [googleRole, setGoogleRole] = useState<Role>(Role.STUDENT);
   const login = useLogin();
 
   const {
@@ -128,7 +131,16 @@ export default function LoginPage() {
                 {t('common:or')}
               </Typography>
             </Divider>
-            <GoogleLoginButton />
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+              {t('login.googleRole')}
+            </Typography>
+            <Box sx={{ mb: 1.5 }}>
+              <RoleSelect
+                value={googleRole}
+                onChange={(e) => setGoogleRole(e.target.value as Role)}
+              />
+            </Box>
+            <GoogleLoginButton role={googleRole} />
             <Typography variant="body2" textAlign="center" sx={{ mt: 3 }}>
               {t('login.noAccount')}{' '}
               <MuiLink
