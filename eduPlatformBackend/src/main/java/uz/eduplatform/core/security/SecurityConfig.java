@@ -45,6 +45,9 @@ public class SecurityConfig {
     @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173}")
     private String allowedOrigins;
 
+    @Value("${app.swagger.permit-all:false}")
+    private boolean swaggerPermitAll;
+
     private static final String[] PUBLIC_URLS = {
             "/api/v1/auth/register",
             "/api/v1/auth/register/phone",
@@ -105,7 +108,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers(PUBLIC_URLS).permitAll();
 
-                    if (!isProdProfile()) {
+                    if (!isProdProfile() || swaggerPermitAll) {
                         auth.requestMatchers(SWAGGER_URLS).permitAll();
                     }
 
