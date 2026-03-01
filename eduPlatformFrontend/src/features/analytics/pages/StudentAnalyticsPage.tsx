@@ -3,6 +3,7 @@ import {
   Paper,
   CircularProgress,
   Grid,
+  Typography,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useMyAnalytics } from '../hooks/useStudentAnalytics';

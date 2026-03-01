@@ -182,7 +182,7 @@ export default function AssignmentDetailPage() {
             </Button>
           </>
         )}
-        {(assignment.status === AssignmentStatus.COMPLETED || assignment.status === AssignmentStatus.ENDED || assignment.status === AssignmentStatus.CANCELLED) && (
+        {(assignment.status === AssignmentStatus.COMPLETED || assignment.status === AssignmentStatus.CANCELLED) && (
           <Button
             variant="contained"
             startIcon={<BarChartIcon />}
