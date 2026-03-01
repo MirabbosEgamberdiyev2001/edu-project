@@ -80,6 +80,8 @@ export interface OtpVerifyResponse {
 export interface GoogleAuthRequest {
   idToken?: string;
   accessToken?: string;
+  /** STUDENT | TEACHER | PARENT — used only for brand-new users */
+  role?: string;
 }
 
 export interface TelegramAuthRequest {

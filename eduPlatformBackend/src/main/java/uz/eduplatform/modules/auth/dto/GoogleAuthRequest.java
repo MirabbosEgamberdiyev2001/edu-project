@@ -10,4 +10,6 @@ import lombok.NoArgsConstructor;
 public class GoogleAuthRequest {
     private String idToken;
     private String accessToken;
+    /** Optional: STUDENT | TEACHER | PARENT. Used only when creating a brand-new user. */
+    private String role;
 }

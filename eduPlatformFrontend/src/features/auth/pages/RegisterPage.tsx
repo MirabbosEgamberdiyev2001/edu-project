@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AuthLayout from '../components/AuthLayout';
 import AuthMethodTabs from '../components/AuthMethodTabs';
+import GoogleLoginButton from '../components/GoogleLoginButton';
 import PasswordInput from '../components/PasswordInput';
 import PasswordStrength from '../components/PasswordStrength';
 import PhoneInput from '../components/PhoneInput';
@@ -39,6 +40,7 @@ export default function RegisterPage() {
   });
 
   const password = watch('password');
+  const selectedRole = watch('role');
 
   const handleMethodChange = (newMethod: 'email' | 'phone') => {
     setMethod(newMethod);
@@ -195,7 +197,9 @@ export default function RegisterPage() {
           </Typography>
         </Divider>
 
-        <Typography variant="body2" textAlign="center">
+        <GoogleLoginButton role={selectedRole} />
+
+        <Typography variant="body2" textAlign="center" sx={{ mt: 3 }}>
           {t('register.hasAccount')}{' '}
           <MuiLink
             component={Link}

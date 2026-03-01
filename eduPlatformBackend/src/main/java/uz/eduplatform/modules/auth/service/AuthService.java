@@ -431,7 +431,7 @@ public class AuthService {
         }
 
         User user = userRepository.findByGoogleId(google.getId())
-                .orElseGet(() -> linkOrCreateGoogleUser(google));
+                .orElseGet(() -> linkOrCreateGoogleUser(google, request.getRole()));
 
         if (user.getStatus() == UserStatus.BLOCKED) {
             throw BusinessException.ofKey("auth.account.blocked");
@@ -467,8 +467,8 @@ public class AuthService {
                 .build();
     }
 
-    private User linkOrCreateGoogleUser(GoogleOAuthService.GoogleUserInfo google) {
-        // Try to link to existing user by email
+    private User linkOrCreateGoogleUser(GoogleOAuthService.GoogleUserInfo google, String roleStr) {
+        // Try to link to existing user by email (keep their existing role)
         User existing = userRepository.findByEmail(google.getEmail()).orElse(null);
         if (existing != null) {
             existing.setGoogleId(google.getId());
@@ -479,7 +479,20 @@ public class AuthService {
             return userRepository.save(existing);
         }
 
-        // Create new user
+        // Resolve role — only STUDENT/TEACHER/PARENT allowed; default to STUDENT
+        Role role = Role.STUDENT;
+        if (roleStr != null) {
+            try {
+                Role requested = Role.valueOf(roleStr.toUpperCase());
+                if (requested == Role.STUDENT || requested == Role.TEACHER || requested == Role.PARENT) {
+                    role = requested;
+                }
+            } catch (IllegalArgumentException ignored) {
+                // unknown value → keep STUDENT
+            }
+        }
+
+        // Create new user with the chosen role
         User user = User.builder()
                 .email(google.getEmail())
                 .googleId(google.getId())
@@ -487,7 +500,7 @@ public class AuthService {
                 .lastName(google.getFamilyName() != null ? google.getFamilyName() : "")
                 .avatarUrl(google.getPicture())
                 .emailVerified(true)
-                .role(Role.STUDENT)
+                .role(role)
                 .status(UserStatus.ACTIVE)
                 .build();
         user = userRepository.save(user);

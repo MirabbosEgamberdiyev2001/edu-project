@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AuthLayout from '../components/AuthLayout';
 import AuthMethodTabs from '../components/AuthMethodTabs';
+import GoogleLoginButton from '../components/GoogleLoginButton';
 import PasswordInput from '../components/PasswordInput';
 import PhoneInput from '../components/PhoneInput';
 import { loginSchema, type LoginFormData } from '../schemas/loginSchema';
@@ -127,7 +128,8 @@ export default function LoginPage() {
                 {t('common:or')}
               </Typography>
             </Divider>
-            <Typography variant="body2" textAlign="center">
+            <GoogleLoginButton />
+            <Typography variant="body2" textAlign="center" sx={{ mt: 3 }}>
               {t('login.noAccount')}{' '}
               <MuiLink
                 component={Link}
