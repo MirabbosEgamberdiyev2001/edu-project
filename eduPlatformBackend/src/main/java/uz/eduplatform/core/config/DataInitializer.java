@@ -207,9 +207,9 @@ public class DataInitializer implements ApplicationRunner {
                                       String uzLatn, String uzCyrl, String en, String ru,
                                       Map<String, String> description,
                                       String icon, int sortOrder) {
-        subjectRepository.findByUserIdAndDefaultName(owner.getId(), uzLatn)
+        Subject subject = subjectRepository.findByUserIdAndDefaultName(owner.getId(), uzLatn)
                 .orElseGet(() -> {
-                    Subject subject = Subject.builder()
+                    Subject s = Subject.builder()
                             .user(owner)
                             .name(Map.of("uz_latn", uzLatn, "uz_cyrl", uzCyrl, "en", en, "ru", ru))
                             .description(description)
@@ -219,10 +219,17 @@ public class DataInitializer implements ApplicationRunner {
                             .isArchived(false)
                             .sortOrder(sortOrder)
                             .build();
-                    subject = subjectRepository.save(subject);
+                    s = subjectRepository.save(s);
                     log.info("Created subject: {} ({})", uzLatn, icon);
-                    return subject;
+                    return s;
                 });
+
+        // Update description if it's missing (handles existing rows from previous deployments)
+        if (subject.getDescription() == null || subject.getDescription().isEmpty()) {
+            subject.setDescription(description);
+            subjectRepository.save(subject);
+            log.info("Updated description for subject: {}", uzLatn);
+        }
     }
 
     private static Map<String, String> ml(String uzLatn, String uzCyrl, String en, String ru) {
