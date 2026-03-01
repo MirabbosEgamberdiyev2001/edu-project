@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Box, Button, Typography, Link as MuiLink, TextField, CircularProgress, Divider } from '@mui/material';
+import { Box, Button, Typography, Link as MuiLink, TextField, CircularProgress } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AuthLayout from '../components/AuthLayout';
@@ -118,22 +118,6 @@ export default function LoginPage() {
           {login.isPending ? <CircularProgress size={22} color="inherit" /> : t('login.submit')}
         </Button>
 
-        <Divider sx={{ my: 3 }}>
-          <Typography variant="caption" color="text.secondary">
-            {t('common:or')}
-          </Typography>
-        </Divider>
-
-        <Typography variant="body2" textAlign="center">
-          {t('login.noAccount')}{' '}
-          <MuiLink
-            component={Link}
-            to="/auth/register"
-            sx={{ fontWeight: 600, textDecoration: 'none' }}
-          >
-            {t('login.register')}
-          </MuiLink>
-        </Typography>
       </Box>
     </AuthLayout>
   );

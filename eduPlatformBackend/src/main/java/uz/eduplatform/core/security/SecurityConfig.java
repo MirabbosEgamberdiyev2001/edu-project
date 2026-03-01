@@ -49,8 +49,8 @@ public class SecurityConfig {
     private boolean swaggerPermitAll;
 
     private static final String[] PUBLIC_URLS = {
-            "/api/v1/auth/register",
-            "/api/v1/auth/register/phone",
+            // Registration is intentionally excluded — admin panel is invite-only.
+            // New users are created by ADMIN/SUPER_ADMIN through the admin panel.
             "/api/v1/auth/login",
             "/api/v1/auth/google",
             "/api/v1/auth/telegram",
