@@ -9,7 +9,7 @@ import AuthMethodTabs from '../components/AuthMethodTabs';
 import GoogleLoginButton from '../components/GoogleLoginButton';
 import PasswordInput from '../components/PasswordInput';
 import PhoneInput from '../components/PhoneInput';
-import RoleSelect from '../components/RoleSelect';
+import RoleChips from '../components/RoleChips';
 import { loginSchema, type LoginFormData } from '../schemas/loginSchema';
 import { useLogin } from '../hooks/useLogin';
 import { Role } from '@/types/user';
@@ -136,15 +136,11 @@ export default function LoginPage() {
                 {t('common:or')}
               </Typography>
             </Divider>
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-              {t('login.googleRole')}
-            </Typography>
-            <Box sx={{ mb: 1.5 }}>
-              <RoleSelect
-                value={googleRole}
-                onChange={(e) => setGoogleRole(e.target.value as Role)}
-              />
-            </Box>
+            <RoleChips
+              value={googleRole}
+              onChange={setGoogleRole}
+              sx={{ mb: 1.5 }}
+            />
             <GoogleLoginButton role={googleRole} />
             <Typography variant="body2" textAlign="center" sx={{ mt: 3 }}>
               {t('login.noAccount')}{' '}

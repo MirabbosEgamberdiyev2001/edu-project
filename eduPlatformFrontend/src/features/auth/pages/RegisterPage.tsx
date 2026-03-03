@@ -10,7 +10,7 @@ import GoogleLoginButton from '../components/GoogleLoginButton';
 import PasswordInput from '../components/PasswordInput';
 import PasswordStrength from '../components/PasswordStrength';
 import PhoneInput from '../components/PhoneInput';
-import RoleSelect from '../components/RoleSelect';
+import RoleChips from '../components/RoleChips';
 import { registerSchema, type RegisterFormData } from '../schemas/registerSchema';
 import { useRegister } from '../hooks/useRegister';
 import { Role } from '@/types/user';
@@ -176,11 +176,10 @@ export default function RegisterPage() {
           name="role"
           control={control}
           render={({ field }) => (
-            <RoleSelect
-              value={field.value}
-              onChange={field.onChange}
-              error={!!errors.role}
-              helperText={errors.role?.message ? t(errors.role.message) : ''}
+            <RoleChips
+              value={field.value as import('@/types/user').Role}
+              onChange={(role) => field.onChange(role)}
+              sx={{ mb: 0 }}
             />
           )}
         />
