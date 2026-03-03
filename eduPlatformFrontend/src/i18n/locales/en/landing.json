@@ -120,6 +120,7 @@
     "cta": "Get Started Now"
   },
   "footer": {
+    "appName": "Test-Pro",
     "tagline": "Uzbekistan's modern education platform",
     "contact": "Contact",
     "email": "support@testpro.uz",

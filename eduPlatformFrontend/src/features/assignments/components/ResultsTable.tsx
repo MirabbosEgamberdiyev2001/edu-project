@@ -44,9 +44,15 @@ export default function ResultsTable({ students, onGradeAttempt }: ResultsTableP
           <TableCell>{t('student')}</TableCell>
           <TableCell align="center">{t('score')}</TableCell>
           <TableCell align="center">{t('percentage')}</TableCell>
-          <TableCell align="center">{t('attempts')}</TableCell>
-          <TableCell align="center">{t('tabSwitches')}</TableCell>
-          <TableCell>{t('submittedAt')}</TableCell>
+          <TableCell align="center" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
+            {t('attempts')}
+          </TableCell>
+          <TableCell align="center" sx={{ display: { xs: 'none', md: 'table-cell' } }}>
+            {t('tabSwitches')}
+          </TableCell>
+          <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
+            {t('submittedAt')}
+          </TableCell>
           <TableCell>{t('status')}</TableCell>
           {hasGradingColumn && <TableCell align="center">{t('grading')}</TableCell>}
         </TableRow>
@@ -72,13 +78,15 @@ export default function ResultsTable({ students, onGradeAttempt }: ResultsTableP
                 />
               ) : '-'}
             </TableCell>
-            <TableCell align="center">{student.attemptCount}</TableCell>
-            <TableCell align="center">
+            <TableCell align="center" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
+              {student.attemptCount}
+            </TableCell>
+            <TableCell align="center" sx={{ display: { xs: 'none', md: 'table-cell' } }}>
               {student.tabSwitches > 0 ? (
                 <Chip label={student.tabSwitches} size="small" color="warning" />
               ) : '0'}
             </TableCell>
-            <TableCell>
+            <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
               {student.submittedAt ? new Date(student.submittedAt).toLocaleString() : '-'}
             </TableCell>
             <TableCell>

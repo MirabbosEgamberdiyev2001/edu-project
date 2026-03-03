@@ -216,8 +216,15 @@
     "archiveStatus": "Архив",
     "subjectLabel": "Предмет",
     "teacherLabel": "Учитель",
-    "membersLabel": "{{count}} учеников"
+    "membersLabel": "{{count}} учеников",
+    "backToGroups": "Назад к группам"
   },
+  "myHomework": "Домашнее задание",
+  "noHomework": "Домашних заданий пока нет",
+  "submitted": "Сдано",
+  "overdue": "Просрочено",
+  "pending": "Ожидает",
+  "daysLeft": "дней осталось",
   "attestation": {
     "title": "Тесты аттестации",
     "subtitle": "Профессиональные квалификационные тесты. Подготовьтесь и подтвердите свою квалификацию.",

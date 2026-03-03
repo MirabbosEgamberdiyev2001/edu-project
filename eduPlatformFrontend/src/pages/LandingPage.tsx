@@ -426,7 +426,7 @@ export default function LandingPage() {
                 <Stack direction="row" alignItems="center" gap={1}>
                   <SchoolIcon sx={{ color: '#90caf9' }} />
                   <Typography variant="h6" fontWeight={700} sx={{ color: 'white' }}>
-                    Test-Pro
+                    {t('footer.appName')}
                   </Typography>
                 </Stack>
                 <Typography variant="body2">{t('footer.tagline')}</Typography>
@@ -462,7 +462,7 @@ export default function LandingPage() {
                 <Button
                   size="small"
                   sx={{ color: 'grey.400', justifyContent: 'flex-start', p: 0, textTransform: 'none', minWidth: 'auto' }}
-                  onClick={() => window.open('mailto:support@testpro.uz')}
+                  onClick={() => window.open(`mailto:${t('footer.email')}`)}
                 >
                   {t('footer.links.help')}
                 </Button>

@@ -20,6 +20,8 @@ import uz.eduplatform.core.i18n.AcceptLanguage;
 import uz.eduplatform.core.security.UserPrincipal;
 import uz.eduplatform.modules.assessment.domain.AssignmentStatus;
 import uz.eduplatform.modules.assessment.dto.*;
+
+import java.util.List;
 import uz.eduplatform.modules.assessment.service.AssignmentService;
 import uz.eduplatform.modules.assessment.service.LiveMonitoringService;
 import uz.eduplatform.modules.assessment.service.PromoCodeService;
@@ -162,6 +164,18 @@ public class AssignmentController {
         UUID teacherId = isAdmin(principal) ? null : principal.getId();
         AssignmentResultDto results = resultService.getAssignmentResults(id, teacherId);
         return ResponseEntity.ok(ApiResponse.success(results));
+    }
+
+    @GetMapping("/{id}/question-stats")
+    @Operation(summary = "Savollar bo'yicha statistika", description = "Har bir savol uchun to'g'ri javob darajasini qaytaradi.")
+    public ResponseEntity<ApiResponse<List<QuestionStatDto>>> getQuestionStats(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language,
+            @PathVariable UUID id) {
+
+        UUID teacherId = isAdmin(principal) ? null : principal.getId();
+        List<QuestionStatDto> stats = resultService.getQuestionStats(id, teacherId, language.toLocale());
+        return ResponseEntity.ok(ApiResponse.success(stats));
     }
 
     @GetMapping("/{id}/results/export")

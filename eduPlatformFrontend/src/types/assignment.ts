@@ -136,3 +136,12 @@ export interface GeneratePromoCodeRequest {
 export interface RedeemPromoCodeRequest {
   code: string;
 }
+
+export interface QuestionStatDto {
+  questionId: string;
+  questionNumber: number;
+  questionText: string | null;
+  totalAnswered: number;
+  correctCount: number;
+  correctRate: number; // 0–100
+}

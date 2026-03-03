@@ -216,8 +216,15 @@
     "archiveStatus": "Archive",
     "subjectLabel": "Subject",
     "teacherLabel": "Teacher",
-    "membersLabel": "{{count}} students"
+    "membersLabel": "{{count}} students",
+    "backToGroups": "Back to Groups"
   },
+  "myHomework": "Homework",
+  "noHomework": "No homework yet",
+  "submitted": "Submitted",
+  "overdue": "Overdue",
+  "pending": "Pending",
+  "daysLeft": "days left",
   "attestation": {
     "title": "Attestation Tests",
     "subtitle": "Professional qualification tests. Prepare and confirm your teaching qualifications.",

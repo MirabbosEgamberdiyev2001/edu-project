@@ -18,6 +18,7 @@
   "duration": "Davomiylik (daqiqa)",
   "durationMinutes": "Davomiylik (daqiqa)",
   "maxAttempts": "Maks. urinishlar",
+  "maxAttemptsHint": "0 = cheksiz urinishlar",
   "shuffleQuestions": "Savollarni aralashtirish",
   "shuffleOptions": "Variantlarni aralashtirish",
   "showResults": "Tugatgandan so'ng natijalarni ko'rsatish",
@@ -132,6 +133,10 @@
   "feedbackPlaceholder": "O'quvchiga izoh kiriting...",
   "gradeSubmit": "Baholarni saqlash",
   "points": "b",
+  "grading.scoreExceedsMax": "Ball maksimumdan oshib ketdi (max: {{max}})",
+  "grading.scoreInvalid": "Ball noto'g'ri kiritilgan",
+  "grading.savedSuccess": "Baholar muvaffaqiyatli saqlandi",
+  "grading.saveFailed": "Baholashda xatolik yuz berdi",
   "notStarted": "Boshlanmagan",
   "attemptStatus": {
     "IN_PROGRESS": "Jarayonda",
@@ -149,5 +154,28 @@
     "cancelled": "Topshiriq muvaffaqiyatli bekor qilindi",
     "promoCodeGenerated": "Promokod muvaffaqiyatli yaratildi",
     "promoCodeRevoked": "Promokod muvaffaqiyatli bekor qilindi"
+  },
+  "promoPage": {
+    "title": "Promokod orqali kirish",
+    "subtitle": "Test topshirig'iga qo'shilish",
+    "assignmentInfo": "Topshiriq ma'lumotlari",
+    "enterDetails": "Ma'lumotlaringizni kiriting",
+    "startTest": "Testni boshlash",
+    "invalidCode": "Promokod noto'g'ri yoki muddati o'tgan",
+    "expiredCode": "Promokod muddati tugagan",
+    "exhaustedCode": "Promokod limiti tugagan",
+    "alreadyEnrolled": "Siz bu topshiriqqa allaqachon qo'shilgansiz",
+    "phone": "Telefon raqam",
+    "firstName": "Ism",
+    "lastName": "Familiya"
+  },
+  "scoreDistribution": "Ball taqsimoti",
+  "questionStats": {
+    "title": "Savollar bo'yicha tahlil",
+    "questionNum": "Savol №{{num}}",
+    "correct": "To'g'ri",
+    "answered": "Javob berildi",
+    "correctRate": "To'g'rilik darajasi",
+    "noData": "Hali javob ma'lumotlari yo'q"
   }
 }

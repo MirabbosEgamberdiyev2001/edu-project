@@ -30,8 +30,9 @@ public class UpdateAssignmentRequest {
     @Max(value = 480, message = "{assessment.validation.duration.max}")
     private Integer durationMinutes;
 
-    @Min(value = 1, message = "{assessment.validation.max_attempts.min}")
-    @Max(value = 10, message = "{assessment.validation.max_attempts.max}")
+    // 0 = unlimited; positive integer = per-student attempt limit
+    @Min(value = 0, message = "{assessment.validation.max_attempts.min}")
+    @Max(value = 9999, message = "{assessment.validation.max_attempts.max}")
     private Integer maxAttempts;
 
     private Boolean showResults;

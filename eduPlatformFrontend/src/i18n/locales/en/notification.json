@@ -1,0 +1,18 @@
+{
+  "title": "Notifications",
+  "empty": "No notifications",
+  "markRead": "Mark as read",
+  "markAllRead": "Mark all as read",
+  "viewAll": "View all",
+  "unread": "Unread",
+  "loading": "Loading...",
+  "types": {
+    "ASSIGNMENT_CREATED": "New assignment",
+    "ASSIGNMENT_ACTIVATED": "Assignment activated",
+    "ASSIGNMENT_COMPLETED": "Assignment completed",
+    "PROMO_CODE_REDEEMED": "Promo code redeemed",
+    "ATTEMPT_GRADED": "Graded",
+    "HOMEWORK_SUBMITTED": "Homework submitted",
+    "SYSTEM": "System notification"
+  }
+}

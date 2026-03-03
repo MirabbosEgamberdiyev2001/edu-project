@@ -67,6 +67,7 @@ const AttemptResultPage = lazy(() => import('@/features/testTaking/pages/Attempt
 const StudentDashboardPage = lazy(() => import('@/features/student/pages/StudentDashboardPage'));
 const GlobalTestsPage = lazy(() => import('@/features/student/pages/GlobalTestsPage'));
 const MyGroupsPage = lazy(() => import('@/features/student/pages/MyGroupsPage'));
+const StudentGroupDetailPage = lazy(() => import('@/features/student/pages/StudentGroupDetailPage'));
 const StudentStatisticsPage = lazy(() => import('@/features/student/pages/StudentStatisticsPage'));
 
 // Teacher Section
@@ -106,6 +107,7 @@ const LandingPage = lazy(() => import('@/pages/LandingPage'));
 // Static public pages
 const PrivacyPage = lazy(() => import('@/pages/PrivacyPage'));
 const TermsPage = lazy(() => import('@/pages/TermsPage'));
+const PromoCodePage = lazy(() => import('@/pages/PromoCodePage'));
 
 // Homework pages
 const TeacherHomeworkPage = lazy(() => import('@/features/homework/pages/TeacherHomeworkPage'));
@@ -210,6 +212,7 @@ export const router = createBrowserRouter([
               { path: '/my-tests', element: <Lazy component={AvailableAssignmentsPage} /> },
               // Student groups view
               { path: '/my-groups', element: <Lazy component={MyGroupsPage} /> },
+              { path: '/my-groups/:id', element: <Lazy component={StudentGroupDetailPage} /> },
               // Student statistics
               { path: '/student-statistics', element: <Lazy component={StudentStatisticsPage} /> },
               // Student analytics (old)
@@ -259,6 +262,7 @@ export const router = createBrowserRouter([
   { path: '/test/:slug', element: <Lazy component={PublicTestPage} /> },
   { path: '/privacy', element: <Lazy component={PrivacyPage} /> },
   { path: '/terms', element: <Lazy component={TermsPage} /> },
+  { path: '/promo/:code', element: <Lazy component={PromoCodePage} /> },
   { path: '/unauthorized', element: <Lazy component={UnauthorizedPage} /> },
   { path: '*', element: <Lazy component={NotFoundPage} /> },
 ]);

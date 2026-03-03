@@ -120,6 +120,7 @@
     "cta": "Начать прямо сейчас"
   },
   "footer": {
+    "appName": "Test-Pro",
     "tagline": "Современная образовательная платформа Узбекистана",
     "contact": "Контакты",
     "email": "support@testpro.uz",

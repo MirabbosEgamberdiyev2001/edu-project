@@ -216,8 +216,15 @@
     "archiveStatus": "Arxiv",
     "subjectLabel": "Fan",
     "teacherLabel": "O'qituvchi",
-    "membersLabel": "{{count}} ta o'quvchi"
+    "membersLabel": "{{count}} ta o'quvchi",
+    "backToGroups": "Guruhlarga qaytish"
   },
+  "myHomework": "Uy ishi",
+  "noHomework": "Hali uy ishi yo'q",
+  "submitted": "Topshirildi",
+  "overdue": "Muddati o'tgan",
+  "pending": "Kutilmoqda",
+  "daysLeft": "kun qoldi",
   "attestation": {
     "title": "Attestatsiya Testlari",
     "subtitle": "Kasbiy malaka testlari. O'qituvchi malakangizni tasdiqlovchi testlarni toping.",

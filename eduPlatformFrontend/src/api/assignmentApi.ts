@@ -9,6 +9,7 @@ import type {
   AssignmentStatus,
   PromoCodeDto,
   GeneratePromoCodeRequest,
+  QuestionStatDto,
 } from '@/types/assignment';
 
 const ASSIGNMENTS = '/assignments';
@@ -64,4 +65,7 @@ export const assignmentApi = {
 
   revokePromoCode: (assignmentId: string) =>
     api.delete<ApiResponse<void>>(`${ASSIGNMENTS}/${assignmentId}/promo-code`),
+
+  getQuestionStats: (id: string, signal?: AbortSignal) =>
+    api.get<ApiResponse<QuestionStatDto[]>>(`${ASSIGNMENTS}/${id}/question-stats`, { signal }),
 };

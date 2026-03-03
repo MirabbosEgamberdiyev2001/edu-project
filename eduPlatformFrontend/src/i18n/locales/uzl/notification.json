@@ -1,0 +1,18 @@
+{
+  "title": "Bildirishnomalar",
+  "empty": "Bildirishnomalar yo'q",
+  "markRead": "O'qilgan deb belgilash",
+  "markAllRead": "Barchasini o'qilgan deb belgilash",
+  "viewAll": "Barchasini ko'rish",
+  "unread": "O'qilmagan",
+  "loading": "Yuklanmoqda...",
+  "types": {
+    "ASSIGNMENT_CREATED": "Yangi topshiriq",
+    "ASSIGNMENT_ACTIVATED": "Topshiriq faollashtirildi",
+    "ASSIGNMENT_COMPLETED": "Topshiriq yakunlandi",
+    "PROMO_CODE_REDEEMED": "Promokod ishlatildi",
+    "ATTEMPT_GRADED": "Baholandi",
+    "HOMEWORK_SUBMITTED": "Uy ishi topshirildi",
+    "SYSTEM": "Tizim xabari"
+  }
+}

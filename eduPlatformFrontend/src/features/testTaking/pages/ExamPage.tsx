@@ -1,9 +1,21 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, Paper, Button, CircularProgress, Typography } from '@mui/material';
+import {
+  Box,
+  Paper,
+  Button,
+  CircularProgress,
+  Typography,
+  Drawer,
+  IconButton,
+  Divider,
+  Chip,
+} from '@mui/material';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import SendIcon from '@mui/icons-material/Send';
+import GridViewIcon from '@mui/icons-material/GridView';
+import CloseIcon from '@mui/icons-material/Close';
 import { useTranslation } from 'react-i18next';
 import { useAttempt } from '../hooks/useAttempt';
 import { useAttemptMutations } from '../hooks/useAttemptMutations';
@@ -14,6 +26,8 @@ import AnswerInput from '../components/AnswerInput';
 import QuestionNavigation from '../components/QuestionNavigation';
 import SubmitConfirmDialog from '../components/SubmitConfirmDialog';
 import ErrorState from '@/components/ErrorState';
+
+const SIDEBAR_WIDTH = 272;
 
 function getPositionKey(attemptId: string) {
   return `exam_position_${attemptId}`;
@@ -28,7 +42,6 @@ export default function ExamPage() {
   const { addAnswer, flush, saveStatus } = useAutoSave(attemptId!, !!attempt);
 
   const [currentIndex, setCurrentIndex] = useState(() => {
-    // Restore last question position from localStorage on initial mount
     if (!attemptId) return 0;
     try {
       const saved = localStorage.getItem(getPositionKey(attemptId));
@@ -39,46 +52,41 @@ export default function ExamPage() {
   });
   const [localAnswers, setLocalAnswers] = useState<Record<string, unknown>>({});
   const [submitOpen, setSubmitOpen] = useState(false);
+  const [navDrawerOpen, setNavDrawerOpen] = useState(false);
 
-  // Initialize local answers from attempt data (restore previously saved answers)
+  // Initialize local answers from attempt data
   useEffect(() => {
     if (attempt?.answers) {
       const existing: Record<string, unknown> = {};
       Object.entries(attempt.answers).forEach(([qId, ans]) => {
-        // `response` is the alias for selectedAnswer populated by the backend
         existing[qId] = ans.response ?? ans.selectedAnswer;
       });
       setLocalAnswers((prev) => ({ ...existing, ...prev }));
     }
   }, [attempt]);
 
-  // Clamp restored index to valid range when questions are loaded
+  // Clamp restored index to valid range
   useEffect(() => {
     if (attempt?.questions?.length) {
       setCurrentIndex((i) => Math.min(i, attempt.questions.length - 1));
     }
   }, [attempt?.questions?.length]);
 
-  // Persist current question index to localStorage on every navigation
+  // Persist position to localStorage
   useEffect(() => {
     if (!attemptId) return;
     try {
       localStorage.setItem(getPositionKey(attemptId), String(currentIndex));
-    } catch {
-      // Silently ignore quota/private-mode errors
-    }
+    } catch { /* ignore */ }
   }, [currentIndex, attemptId]);
 
-  // Anti-cheat: report tab switch + re-sync server timer on tab restore
+  // Anti-cheat: tab switch reporting
   useEffect(() => {
     if (!attempt || !attemptId) return;
-
     const handleVisibility = () => {
       if (document.hidden) {
         reportTabSwitch.mutate(attemptId);
       } else {
-        // Refetch gives TimerCountdown a fresh remainingSeconds from the server,
-        // correcting drift caused by system sleep or a long tab switch.
         refetch();
       }
     };
@@ -99,7 +107,7 @@ export default function ExamPage() {
     };
   }, []);
 
-  // Guard: warn before browser close/refresh during an active exam
+  // Warn before browser close
   useEffect(() => {
     if (!attempt) return;
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -126,9 +134,7 @@ export default function ExamPage() {
   const handleAnswerChange = useCallback((value: unknown) => {
     if (!currentQuestion) return;
     setLocalAnswers((prev) => ({ ...prev, [currentQuestion.id]: value }));
-    // Single save path: debounced batch save via auto-save queue (flushes after 2s)
     addAnswer({ questionId: currentQuestion.id, questionIndex: currentIndex, response: value });
-    // Auto-advance to next question for single-choice types
     const singleChoiceTypes = ['MCQ_SINGLE', 'TRUE_FALSE'];
     if (singleChoiceTypes.includes(currentQuestion.questionType) && currentIndex < questions.length - 1) {
       const idx = currentIndex;
@@ -167,11 +173,7 @@ export default function ExamPage() {
   if (isError || (!isLoading && !attempt)) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-        <ErrorState
-          title={t('notFound')}
-          onRetry={() => refetch()}
-          retryLabel={t('examRetry')}
-        />
+        <ErrorState title={t('notFound')} onRetry={() => refetch()} retryLabel={t('examRetry')} />
       </Box>
     );
   }
@@ -186,8 +188,67 @@ export default function ExamPage() {
 
   if (!attempt || !currentQuestion) return null;
 
+  const unansweredCount = questions.length - answeredSet.size;
+  const HEADER_SM = 56;
+  const HEADER_XS = 52;
+
+  const questionNavContent = (
+    <QuestionNavigation
+      totalQuestions={questions.length}
+      currentIndex={currentIndex}
+      answeredSet={answeredSet}
+      questionIds={questions.map((q) => q.id)}
+      onNavigate={(i) => {
+        setCurrentIndex(i);
+        setNavDrawerOpen(false);
+      }}
+    />
+  );
+
+  const submitButton = (
+    <Button
+      variant="contained"
+      color={unansweredCount > 0 ? 'warning' : 'success'}
+      startIcon={<SendIcon />}
+      fullWidth
+      onClick={() => { setNavDrawerOpen(false); setSubmitOpen(true); }}
+      sx={{ fontWeight: 700 }}
+    >
+      {t('finish')}
+    </Button>
+  );
+
+  const questionHeader = (
+    <Box
+      sx={{
+        px: { xs: 2, sm: 3 },
+        py: 1.5,
+        bgcolor: 'primary.main',
+        color: 'primary.contrastText',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+      }}
+    >
+      <Typography variant="subtitle2" fontWeight={700}>
+        {t('questionOf', { current: currentIndex + 1, total: questions.length })}
+      </Typography>
+      <Chip
+        label={currentQuestion.questionType?.replace(/_/g, ' ')}
+        size="small"
+        sx={{
+          bgcolor: 'rgba(255,255,255,0.18)',
+          color: 'white',
+          fontSize: '0.6875rem',
+          height: 20,
+          fontWeight: 500,
+        }}
+      />
+    </Box>
+  );
+
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
       <ExamHeader
         title={attempt.testTitle ?? attempt.assignmentTitle ?? ''}
         answeredCount={answeredSet.size}
@@ -197,80 +258,268 @@ export default function ExamPage() {
         saveStatus={saveStatus}
       />
 
-      <Box sx={{ pt: { xs: 9, sm: 10 }, px: { xs: 1.5, sm: 2 }, pb: 2, maxWidth: 860, mx: 'auto', width: '100%' }}>
-        <Box sx={{ mb: 3 }}>
-          <QuestionNavigation
-            totalQuestions={questions.length}
-            currentIndex={currentIndex}
-            answeredSet={answeredSet}
-            questionIds={questions.map((q) => q.id)}
-            onNavigate={setCurrentIndex}
-          />
+      {/* ─── Desktop two-panel layout (md+) ─── */}
+      <Box sx={{ display: { xs: 'none', md: 'flex' }, pt: `${HEADER_SM}px`, minHeight: '100vh' }}>
+        {/* Left sidebar */}
+        <Box
+          sx={{
+            width: SIDEBAR_WIDTH,
+            flexShrink: 0,
+            position: 'fixed',
+            top: HEADER_SM,
+            bottom: 0,
+            overflowY: 'auto',
+            borderRight: '1px solid',
+            borderColor: 'divider',
+            bgcolor: 'background.paper',
+            p: 2,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+          }}
+        >
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            fontWeight={700}
+            sx={{ textTransform: 'uppercase', letterSpacing: '0.08em' }}
+          >
+            {t('exam.navLabel')}
+          </Typography>
+
+          <Box sx={{ flex: 1, overflowY: 'auto' }}>
+            {questionNavContent}
+          </Box>
+
+          <Divider />
+
+          {unansweredCount > 0 && (
+            <Typography variant="caption" color="warning.dark" sx={{ textAlign: 'center', fontWeight: 500 }}>
+              {t('exam.submitWarning', { count: unansweredCount })}
+            </Typography>
+          )}
+
+          {submitButton}
         </Box>
 
-        <Paper sx={{ p: 3 }}>
-          <QuestionDisplay
-            question={currentQuestion}
-            questionNumber={currentIndex + 1}
-            totalQuestions={questions.length}
-          />
-          <AnswerInput
-            question={currentQuestion}
-            value={localAnswers[currentQuestion.id]}
-            onChange={handleAnswerChange}
-          />
+        {/* Right content panel */}
+        <Box
+          sx={{
+            flex: 1,
+            ml: `${SIDEBAR_WIDTH}px`,
+            p: 3,
+            display: 'flex',
+            flexDirection: 'column',
+            maxWidth: `calc(860px + ${SIDEBAR_WIDTH}px)`,
+          }}
+        >
+          <Paper
+            elevation={0}
+            sx={{
+              border: '1px solid',
+              borderColor: 'divider',
+              borderRadius: 2,
+              overflow: 'hidden',
+              flex: 1,
+            }}
+          >
+            {questionHeader}
+            <Box sx={{ p: 3 }}>
+              <QuestionDisplay
+                question={currentQuestion}
+                questionNumber={currentIndex + 1}
+                totalQuestions={questions.length}
+              />
+              <AnswerInput
+                question={currentQuestion}
+                value={localAnswers[currentQuestion.id]}
+                onChange={handleAnswerChange}
+              />
+            </Box>
+          </Paper>
+
+          {/* Desktop Prev/Next */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+            <Button
+              variant="outlined"
+              startIcon={<NavigateBeforeIcon />}
+              onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
+              disabled={currentIndex === 0}
+            >
+              {t('prev')}
+            </Button>
+            {currentIndex < questions.length - 1 && (
+              <Button
+                variant="contained"
+                endIcon={<NavigateNextIcon />}
+                onClick={() => setCurrentIndex((i) => Math.min(questions.length - 1, i + 1))}
+              >
+                {t('next')}
+              </Button>
+            )}
+          </Box>
+        </Box>
+      </Box>
+
+      {/* ─── Mobile layout (xs-sm) ─── */}
+      <Box
+        sx={{
+          display: { xs: 'flex', md: 'none' },
+          flexDirection: 'column',
+          pt: `${HEADER_XS}px`,
+          minHeight: '100vh',
+        }}
+      >
+        {/* Mobile sticky sub-header: progress + nav button */}
+        <Paper
+          elevation={0}
+          sx={{
+            position: 'sticky',
+            top: HEADER_XS,
+            zIndex: 9,
+            px: 2,
+            py: 0.75,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+            bgcolor: 'background.paper',
+          }}
+        >
+          <Typography variant="body2" color="text.secondary">
+            {t('questionOf', { current: currentIndex + 1, total: questions.length })}
+          </Typography>
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<GridViewIcon fontSize="small" />}
+            onClick={() => setNavDrawerOpen(true)}
+          >
+            {answeredSet.size}/{questions.length}
+          </Button>
+        </Paper>
+
+        {/* Question content */}
+        <Box sx={{ flex: 1, px: 1.5, py: 2 }}>
+          <Paper
+            elevation={0}
+            sx={{
+              border: '1px solid',
+              borderColor: 'divider',
+              borderRadius: 2,
+              overflow: 'hidden',
+            }}
+          >
+            {questionHeader}
+            <Box sx={{ p: 2 }}>
+              <QuestionDisplay
+                question={currentQuestion}
+                questionNumber={currentIndex + 1}
+                totalQuestions={questions.length}
+              />
+              <AnswerInput
+                question={currentQuestion}
+                value={localAnswers[currentQuestion.id]}
+                onChange={handleAnswerChange}
+              />
+            </Box>
+          </Paper>
+        </Box>
+
+        {/* Sticky bottom navigation */}
+        <Paper
+          elevation={0}
+          sx={{
+            position: 'sticky',
+            bottom: 0,
+            zIndex: 9,
+            px: 2,
+            py: 1.25,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            borderTop: '1px solid',
+            borderColor: 'divider',
+            borderRadius: 0,
+            bgcolor: 'background.paper',
+          }}
+        >
+          <Button
+            startIcon={<NavigateBeforeIcon />}
+            onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
+            disabled={currentIndex === 0}
+          >
+            {t('prev')}
+          </Button>
+
+          {currentIndex < questions.length - 1 ? (
+            <Button
+              endIcon={<NavigateNextIcon />}
+              variant="contained"
+              onClick={() => setCurrentIndex((i) => Math.min(questions.length - 1, i + 1))}
+            >
+              {t('next')}
+            </Button>
+          ) : (
+            <Button
+              endIcon={<SendIcon />}
+              variant="contained"
+              color={unansweredCount > 0 ? 'warning' : 'success'}
+              onClick={() => setSubmitOpen(true)}
+              sx={{ fontWeight: 700 }}
+            >
+              {t('finish')}
+            </Button>
+          )}
         </Paper>
       </Box>
 
-      {/* Sticky bottom navigation bar — lightweight, border only */}
-      <Paper
-        elevation={0}
-        sx={{
-          position: 'sticky',
-          bottom: 0,
-          zIndex: 10,
-          px: { xs: 2, sm: 3 },
-          py: 1.25,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          borderTop: '1px solid',
-          borderColor: 'divider',
-          borderRadius: 0,
-          bgcolor: 'background.paper',
+      {/* Mobile nav drawer (bottom sheet) */}
+      <Drawer
+        anchor="bottom"
+        open={navDrawerOpen}
+        onClose={() => setNavDrawerOpen(false)}
+        PaperProps={{
+          sx: {
+            borderTopLeftRadius: 16,
+            borderTopRightRadius: 16,
+            maxHeight: '72vh',
+            px: 2,
+            pt: 1.5,
+            pb: 3,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1.5,
+          },
         }}
       >
-        <Button
-          startIcon={<NavigateBeforeIcon />}
-          onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
-          disabled={currentIndex === 0}
-          size="medium"
-        >
-          {t('prev')}
-        </Button>
+        {/* Drag handle */}
+        <Box sx={{ width: 40, height: 4, bgcolor: 'grey.300', borderRadius: 2, mx: 'auto', mb: 0.5 }} />
 
-        {currentIndex < questions.length - 1 ? (
-          <Button
-            endIcon={<NavigateNextIcon />}
-            variant="contained"
-            onClick={() => setCurrentIndex((i) => Math.min(questions.length - 1, i + 1))}
-            size="medium"
-          >
-            {t('next')}
-          </Button>
-        ) : (
-          <Button
-            endIcon={<SendIcon />}
-            variant="contained"
-            color="primary"
-            onClick={() => setSubmitOpen(true)}
-            aria-label={t('exam.finishLabel')}
-            size="medium"
-          >
-            {t('finish')}
-          </Button>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="subtitle1" fontWeight={700}>
+            {t('exam.navLabel')}
+          </Typography>
+          <IconButton onClick={() => setNavDrawerOpen(false)} size="small">
+            <CloseIcon />
+          </IconButton>
+        </Box>
+
+        <Box sx={{ overflowY: 'auto', flex: 1 }}>
+          {questionNavContent}
+        </Box>
+
+        <Divider />
+
+        {unansweredCount > 0 && (
+          <Typography variant="caption" color="warning.dark" fontWeight={500} sx={{ textAlign: 'center' }}>
+            {t('exam.submitWarning', { count: unansweredCount })}
+          </Typography>
         )}
-      </Paper>
+
+        {submitButton}
+      </Drawer>
 
       <SubmitConfirmDialog
         open={submitOpen}

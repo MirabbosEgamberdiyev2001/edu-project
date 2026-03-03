@@ -7,14 +7,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.eduplatform.core.common.exception.BusinessException;
 import uz.eduplatform.core.common.exception.ResourceNotFoundException;
+import uz.eduplatform.core.i18n.LocaleKeys;
 import uz.eduplatform.modules.assessment.domain.TestAssignment;
 import uz.eduplatform.modules.assessment.domain.TestAttempt;
 import uz.eduplatform.modules.assessment.dto.AssignmentResultDto;
+import uz.eduplatform.modules.assessment.dto.QuestionStatDto;
 import uz.eduplatform.modules.assessment.dto.StudentResultDto;
+import uz.eduplatform.modules.assessment.repository.AnswerRepository;
 import uz.eduplatform.modules.assessment.repository.TestAssignmentRepository;
 import uz.eduplatform.modules.assessment.repository.TestAttemptRepository;
 import uz.eduplatform.modules.auth.domain.User;
 import uz.eduplatform.modules.auth.repository.UserRepository;
+import uz.eduplatform.modules.content.domain.Question;
+import uz.eduplatform.modules.content.repository.QuestionRepository;
 import uz.eduplatform.modules.group.domain.StudentGroup;
 import uz.eduplatform.modules.group.repository.StudentGroupRepository;
 
@@ -30,6 +35,8 @@ public class ResultService {
 
     private final TestAssignmentRepository assignmentRepository;
     private final TestAttemptRepository attemptRepository;
+    private final AnswerRepository answerRepository;
+    private final QuestionRepository questionRepository;
     private final UserRepository userRepository;
     private final StudentGroupRepository studentGroupRepository;
 
@@ -127,5 +134,62 @@ public class ResultService {
                         ? BigDecimal.valueOf(minPct).setScale(2, RoundingMode.HALF_UP) : null)
                 .students(studentResults)
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public List<QuestionStatDto> getQuestionStats(UUID assignmentId, UUID teacherId, Locale locale) {
+        TestAssignment assignment = assignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("TestAssignment", "id", assignmentId));
+
+        if (teacherId != null && !assignment.getTeacherId().equals(teacherId)) {
+            throw new BusinessException("error.access.denied", null, HttpStatus.FORBIDDEN);
+        }
+
+        List<Object[]> rawStats = answerRepository.findQuestionStatsByAssignmentId(assignmentId);
+        if (rawStats.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // Collect question IDs to batch-fetch texts
+        List<UUID> questionIds = rawStats.stream()
+                .map(row -> UUID.fromString(row[0].toString()))
+                .collect(Collectors.toList());
+
+        Map<UUID, Question> questionMap = questionRepository.findAllById(questionIds)
+                .stream()
+                .collect(Collectors.toMap(Question::getId, q -> q));
+
+        String localeKey = LocaleKeys.fromLocale(locale);
+
+        return rawStats.stream()
+                .map(row -> {
+                    UUID questionId = UUID.fromString(row[0].toString());
+                    int questionIndex = ((Number) row[1]).intValue();
+                    long totalAnswered = ((Number) row[2]).longValue();
+                    long correctCount = ((Number) row[3]).longValue();
+
+                    Question question = questionMap.get(questionId);
+                    String questionText = null;
+                    if (question != null && question.getQuestionText() != null) {
+                        Map<String, String> texts = question.getQuestionText();
+                        questionText = texts.getOrDefault(localeKey,
+                                texts.getOrDefault(LocaleKeys.DEFAULT_KEY, ""));
+                    }
+
+                    BigDecimal correctRate = totalAnswered > 0
+                            ? BigDecimal.valueOf(correctCount * 100.0 / totalAnswered)
+                                    .setScale(1, RoundingMode.HALF_UP)
+                            : BigDecimal.ZERO;
+
+                    return QuestionStatDto.builder()
+                            .questionId(questionId)
+                            .questionNumber(questionIndex + 1)
+                            .questionText(questionText)
+                            .totalAnswered((int) totalAnswered)
+                            .correctCount((int) correctCount)
+                            .correctRate(correctRate)
+                            .build();
+                })
+                .collect(Collectors.toList());
     }
 }

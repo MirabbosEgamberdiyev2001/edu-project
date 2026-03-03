@@ -14,6 +14,17 @@ export function useAssignmentResults(assignmentId: string) {
   });
 }
 
+export function useQuestionStats(assignmentId: string) {
+  return useQuery({
+    queryKey: ['assignments', assignmentId, 'question-stats'],
+    queryFn: async ({ signal }) => {
+      const { data } = await assignmentApi.getQuestionStats(assignmentId, signal);
+      return data.data;
+    },
+    enabled: !!assignmentId,
+  });
+}
+
 export function useExportResults() {
   const toast = useToast();
   const { t } = useTranslation('common');

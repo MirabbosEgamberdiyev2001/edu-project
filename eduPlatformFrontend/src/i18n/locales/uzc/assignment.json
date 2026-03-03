@@ -18,6 +18,7 @@
   "duration": "Давомийлик (дақиқа)",
   "durationMinutes": "Давомийлик (дақиқа)",
   "maxAttempts": "Макс. уринишлар",
+  "maxAttemptsHint": "0 = чексиз уринишлар",
   "shuffleQuestions": "Саволларни аралаштириш",
   "shuffleOptions": "Вариантларни аралаштириш",
   "showResults": "Тугатгандан сўнг натижаларни кўрсатиш",
@@ -132,6 +133,10 @@
   "feedbackPlaceholder": "Ўқувчига изоҳ киритинг...",
   "gradeSubmit": "Баҳоларни сақлаш",
   "points": "б",
+  "grading.scoreExceedsMax": "Балл максимумдан ошиб кетди (макс: {{max}})",
+  "grading.scoreInvalid": "Балл нотўғри киритилган",
+  "grading.savedSuccess": "Баҳолар муваффақиятли сақланди",
+  "grading.saveFailed": "Баҳолашда хатолик юз берди",
   "notStarted": "Бошланмаган",
   "attemptStatus": {
     "IN_PROGRESS": "Жараёнда",
@@ -149,5 +154,28 @@
     "cancelled": "Топшириқ муваффақиятли бекор қилинди",
     "promoCodeGenerated": "Промокод муваффақиятли яратилди",
     "promoCodeRevoked": "Промокод муваффақиятли бекор қилинди"
+  },
+  "promoPage": {
+    "title": "Промокод орқали кириш",
+    "subtitle": "Тест топшириғига қўшилиш",
+    "assignmentInfo": "Топшириқ маълумотлари",
+    "enterDetails": "Маълумотларингизни киритинг",
+    "startTest": "Тестни бошлаш",
+    "invalidCode": "Промокод нотўғри ёки муддати ўтган",
+    "expiredCode": "Промокод муддати тугаган",
+    "exhaustedCode": "Промокод лимити тугаган",
+    "alreadyEnrolled": "Сиз бу топшириққа аллақачон қўшилгансиз",
+    "phone": "Телефон рақам",
+    "firstName": "Исм",
+    "lastName": "Фамилия"
+  },
+  "scoreDistribution": "Балл тақсимоти",
+  "questionStats": {
+    "title": "Саволлар бўйича таҳлил",
+    "questionNum": "Савол №{{num}}",
+    "correct": "Тўғри",
+    "answered": "Жавоб берилди",
+    "correctRate": "Тўғрилик даражаси",
+    "noData": "Ҳали жавоб маълумотлари йўқ"
   }
 }

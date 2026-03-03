@@ -216,8 +216,15 @@
     "archiveStatus": "Архив",
     "subjectLabel": "Фан",
     "teacherLabel": "Ўқитувчи",
-    "membersLabel": "{{count}} та ўқувчи"
+    "membersLabel": "{{count}} та ўқувчи",
+    "backToGroups": "Гуруҳларга қайтиш"
   },
+  "myHomework": "Уй вазифаси",
+  "noHomework": "Ҳали уй вазифаси йўқ",
+  "submitted": "Топширилди",
+  "overdue": "Муддати ўтган",
+  "pending": "Кутилмоқда",
+  "daysLeft": "кун қолди",
   "attestation": {
     "title": "Аттестация Тестлари",
     "subtitle": "Касбий малака тестлари. Ўқитувчи малакангизни тасдиқловчи тестларни топинг.",

@@ -95,9 +95,10 @@ public class TestTakingService {
             return mapToDto(existingInProgress.get(), assignment);
         }
 
-        // Check max attempts
+        // Check max attempts (0 = unlimited)
         long attemptCount = attemptRepository.countByAssignmentIdAndStudentId(assignmentId, studentId);
-        if (attemptCount >= assignment.getMaxAttempts()) {
+        Integer maxAttempts = assignment.getMaxAttempts();
+        if (maxAttempts != null && maxAttempts > 0 && attemptCount >= maxAttempts) {
             throw BusinessException.ofKey("test.taking.max.attempts.reached");
         }
 

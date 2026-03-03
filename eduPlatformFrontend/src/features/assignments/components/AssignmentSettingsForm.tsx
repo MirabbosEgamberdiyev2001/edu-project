@@ -25,11 +25,12 @@ export default function AssignmentSettingsForm({ settings, onChange, disabled }:
       <TextField
         label={t('maxAttempts')}
         type="number"
-        value={settings.maxAttempts || 1}
+        value={settings.maxAttempts ?? 1}
         onChange={(e) => onChange({ ...settings, maxAttempts: Number(e.target.value) })}
         fullWidth
         disabled={disabled}
-        inputProps={{ min: 1, max: 10 }}
+        inputProps={{ min: 0, max: 9999 }}
+        helperText={t('maxAttemptsHint')}
       />
       <Typography variant="subtitle2" sx={{ mt: 1 }}>{t('antiCheat')}</Typography>
       <FormControlLabel

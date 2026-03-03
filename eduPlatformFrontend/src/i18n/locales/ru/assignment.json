@@ -18,6 +18,7 @@
   "duration": "Длительность (минуты)",
   "durationMinutes": "Длительность (минуты)",
   "maxAttempts": "Макс. попыток",
+  "maxAttemptsHint": "0 = неограниченное количество попыток",
   "shuffleQuestions": "Перемешать вопросы",
   "shuffleOptions": "Перемешать варианты",
   "showResults": "Показать результаты после завершения",
@@ -132,6 +133,10 @@
   "feedbackPlaceholder": "Введите комментарий для студента...",
   "gradeSubmit": "Сохранить оценки",
   "points": "б",
+  "grading.scoreExceedsMax": "Балл превышает максимум (макс: {{max}})",
+  "grading.scoreInvalid": "Введён некорректный балл",
+  "grading.savedSuccess": "Оценки успешно сохранены",
+  "grading.saveFailed": "Ошибка при сохранении оценок",
   "notStarted": "Не начато",
   "attemptStatus": {
     "IN_PROGRESS": "В процессе",
@@ -149,5 +154,28 @@
     "cancelled": "Задание успешно отменено",
     "promoCodeGenerated": "Промокод успешно создан",
     "promoCodeRevoked": "Промокод успешно отозван"
+  },
+  "promoPage": {
+    "title": "Вход по промокоду",
+    "subtitle": "Присоединиться к заданию",
+    "assignmentInfo": "Информация о задании",
+    "enterDetails": "Введите ваши данные",
+    "startTest": "Начать тест",
+    "invalidCode": "Промокод недействителен или истёк",
+    "expiredCode": "Срок действия промокода истёк",
+    "exhaustedCode": "Лимит промокода исчерпан",
+    "alreadyEnrolled": "Вы уже зачислены в это задание",
+    "phone": "Номер телефона",
+    "firstName": "Имя",
+    "lastName": "Фамилия"
+  },
+  "scoreDistribution": "Распределение баллов",
+  "questionStats": {
+    "title": "Анализ по вопросам",
+    "questionNum": "Вопрос №{{num}}",
+    "correct": "Правильно",
+    "answered": "Ответили",
+    "correctRate": "Процент правильных",
+    "noData": "Данных ответов пока нет"
   }
 }

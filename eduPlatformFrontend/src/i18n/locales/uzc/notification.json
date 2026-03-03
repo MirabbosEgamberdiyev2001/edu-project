@@ -1,0 +1,18 @@
+{
+  "title": "Билдиришномалар",
+  "empty": "Билдиришномалар йўқ",
+  "markRead": "Ўқилган деб белгилаш",
+  "markAllRead": "Барчасини ўқилган деб белгилаш",
+  "viewAll": "Барчасини кўриш",
+  "unread": "Ўқилмаган",
+  "loading": "Юкланмоқда...",
+  "types": {
+    "ASSIGNMENT_CREATED": "Янги топшириқ",
+    "ASSIGNMENT_ACTIVATED": "Топшириқ фаоллаштирилди",
+    "ASSIGNMENT_COMPLETED": "Топшириқ якунланди",
+    "PROMO_CODE_REDEEMED": "Промокод ишлатилди",
+    "ATTEMPT_GRADED": "Баҳоланди",
+    "HOMEWORK_SUBMITTED": "Уй иши топширилди",
+    "SYSTEM": "Тизим хабари"
+  }
+}

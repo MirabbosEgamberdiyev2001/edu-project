@@ -41,9 +41,10 @@ public class CreateAssignmentRequest {
     private Integer durationMinutes = 45;
 
     // --- Attempt settings ---
+    // 0 = unlimited; positive integer = per-student attempt limit
     @Builder.Default
-    @Min(value = 1, message = "{assessment.validation.max_attempts.min}")
-    @Max(value = 10, message = "{assessment.validation.max_attempts.max}")
+    @Min(value = 0, message = "{assessment.validation.max_attempts.min}")
+    @Max(value = 9999, message = "{assessment.validation.max_attempts.max}")
     private Integer maxAttempts = 1;
 
     // --- Result visibility ---

@@ -12,12 +12,14 @@ import {
   Alert,
   Skeleton,
   Stack,
+  CardActionArea,
 } from '@mui/material';
 import GroupsIcon from '@mui/icons-material/Groups';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import PersonIcon from '@mui/icons-material/Person';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { groupApi } from '@/api/groupApi';
 import type { GroupDto } from '@/types/group';
 import { PageShell } from '@/components/ui';
@@ -82,6 +84,7 @@ export default function MyGroupsPage() {
 
 function GroupCard({ group }: { group: GroupDto }) {
   const { t } = useTranslation('testTaking');
+  const navigate = useNavigate();
 
   // Defensive: coerce any unexpected type to a safe renderable string
   const name = group.name != null && typeof group.name === 'string' ? group.name : '';
@@ -106,6 +109,7 @@ function GroupCard({ group }: { group: GroupDto }) {
         '&:hover': { boxShadow: 3 },
       }}
     >
+      <CardActionArea onClick={() => navigate(`/my-groups/${group.id}`)} sx={{ height: '100%', alignItems: 'flex-start' }}>
       <CardContent>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
           <Avatar sx={{ bgcolor: 'primary.main', width: 48, height: 48, fontSize: '1.2rem' }}>
@@ -164,6 +168,7 @@ function GroupCard({ group }: { group: GroupDto }) {
           )}
         </Stack>
       </CardContent>
+      </CardActionArea>
     </Card>
   );
 }

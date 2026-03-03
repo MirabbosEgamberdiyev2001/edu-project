@@ -1,6 +1,8 @@
 package uz.eduplatform.modules.assessment.service.export;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import uz.eduplatform.core.common.utils.MessageService;
 import uz.eduplatform.modules.assessment.dto.AssignmentResultDto;
 import uz.eduplatform.modules.assessment.dto.StudentResultDto;
 
@@ -9,18 +11,31 @@ import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
 @Service
+@RequiredArgsConstructor
 public class CsvResultExportService implements ResultExportService {
 
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final String BOM = "\uFEFF";
+
+    private final MessageService messageService;
 
     @Override
     public byte[] exportResults(AssignmentResultDto results, Locale locale) {
         StringBuilder sb = new StringBuilder();
         sb.append(BOM);
 
-        // Header
-        sb.append("Student Name,Score,Max Score,%,Attempts,Tab Switches,Status,Submitted At\n");
+        // Localized header
+        String[] cols = {
+                messageService.get("result.export.col.name", locale),
+                messageService.get("result.export.col.score", locale),
+                messageService.get("result.export.col.maxScore", locale),
+                messageService.get("result.export.col.percent", locale),
+                messageService.get("result.export.col.attempts", locale),
+                messageService.get("result.export.col.tabSwitches", locale),
+                messageService.get("result.export.col.status", locale),
+                messageService.get("result.export.col.submittedAt", locale),
+        };
+        sb.append(String.join(",", cols)).append('\n');
 
         // Data rows
         if (results.getStudents() != null) {

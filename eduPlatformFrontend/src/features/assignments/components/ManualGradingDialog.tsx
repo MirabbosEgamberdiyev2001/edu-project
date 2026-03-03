@@ -12,12 +12,14 @@ import {
   CircularProgress,
   Chip,
   Stack,
+  Alert,
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { testTakingApi } from '@/api/testTakingApi';
 import { MathText } from '@/components/math';
 import { useManualGrading } from '../hooks/useManualGrading';
+import { useToast } from '@/hooks/useToast';
 import type { AttemptQuestionDto, AttemptAnswerDto } from '@/types/testTaking';
 
 interface ManualGradingDialogProps {
@@ -41,7 +43,9 @@ export default function ManualGradingDialog({
   studentName,
 }: ManualGradingDialogProps) {
   const { t } = useTranslation('assignment');
+  const toast = useToast();
   const [grades, setGrades] = useState<Record<string, GradingState>>({});
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const { data: attempt, isLoading } = useQuery({
     queryKey: ['attempts', attemptId],
@@ -54,23 +58,53 @@ export default function ManualGradingDialog({
   const answersMap = (attempt?.answers ?? {}) as Record<string, AttemptAnswerDto>;
   const questions = (attempt?.questions ?? []) as AttemptQuestionDto[];
 
-  // Only show questions needing manual grading
+  // Show all questions that need manual grading, including already-graded ones for re-review
   const manualQuestions = questions.filter((q) => {
     const ans = answersMap[q.id];
-    return ans?.needsManualGrading === true && ans?.isCorrect == null;
+    return ans?.needsManualGrading === true || (ans?.isCorrect == null && q.questionType !== 'MCQ_SINGLE' && q.questionType !== 'MCQ_MULTI' && q.questionType !== 'TRUE_FALSE');
   });
 
   const handleSubmitAll = async () => {
+    setValidationError(null);
+
+    // Client-side validation: check all entered scores are within range
     for (const q of manualQuestions) {
-      const ans = answersMap[q.id];
       const grade = grades[q.id];
-      if (!ans?.id || !grade?.score) continue;
-      await gradeAnswer(ans.id, Number(grade.score), grade.feedback);
+      // Skip questions where teacher didn't enter a score (leave as-is)
+      if (grade?.score == null || grade.score === '') continue;
+      const scoreNum = Number(grade.score);
+      if (isNaN(scoreNum) || scoreNum < 0) {
+        setValidationError(t('grading.scoreInvalid', { num: q.questionIndex ?? '' }));
+        return;
+      }
+      if (scoreNum > q.points) {
+        setValidationError(t('grading.scoreExceedsMax', { max: q.points }));
+        return;
+      }
     }
-    onClose();
+
+    let savedCount = 0;
+    try {
+      for (const q of manualQuestions) {
+        const ans = answersMap[q.id];
+        const grade = grades[q.id];
+        // Skip if no answer ID or teacher didn't enter a score
+        if (!ans?.id || grade?.score == null || grade.score === '') continue;
+        await gradeAnswer(ans.id, Number(grade.score), grade.feedback || undefined);
+        savedCount++;
+      }
+      if (savedCount > 0) {
+        toast.success(t('grading.savedSuccess'));
+      }
+      onClose();
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      toast.error(msg || t('grading.saveFailed'));
+    }
   };
 
   const updateGrade = (questionId: string, field: keyof GradingState, val: string) => {
+    setValidationError(null);
     setGrades((prev) => ({
       ...prev,
       [questionId]: { ...(prev[questionId] ?? { score: '', feedback: '' }), [field]: val },
@@ -99,17 +133,30 @@ export default function ManualGradingDialog({
           </Typography>
         ) : (
           <Stack spacing={3}>
+            {validationError && (
+              <Alert severity="error" onClose={() => setValidationError(null)}>
+                {validationError}
+              </Alert>
+            )}
             {manualQuestions.map((q, idx) => {
               const ans = answersMap[q.id];
               const grade = grades[q.id] ?? { score: '', feedback: '' };
+              const maxPts = q.points ?? 1;
+              const currentScore = Number(grade.score);
+              const scoreInvalid = grade.score !== '' && (isNaN(currentScore) || currentScore < 0 || currentScore > maxPts);
+
               return (
                 <Box key={q.id}>
                   <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 1.5 }}>
                     <Chip label={idx + 1} size="small" color="primary" sx={{ fontWeight: 700, flexShrink: 0 }} />
                     <MathText text={q.questionText} variant="body1" sx={{ flex: 1 }} />
-                    <Typography variant="caption" color="text.secondary" whiteSpace="nowrap">
-                      max {q.points} {t('points')}
-                    </Typography>
+                    <Chip
+                      label={`max ${maxPts} ${t('points')}`}
+                      size="small"
+                      variant="outlined"
+                      color="default"
+                      sx={{ flexShrink: 0 }}
+                    />
                   </Box>
 
                   {/* Student answer */}
@@ -125,13 +172,15 @@ export default function ManualGradingDialog({
                   {/* Score + feedback inputs */}
                   <Stack direction="row" spacing={2} alignItems="flex-start">
                     <TextField
-                      label={t('score')}
+                      label={`${t('score')} (0 — ${maxPts})`}
                       type="number"
                       size="small"
                       value={grade.score}
                       onChange={(e) => updateGrade(q.id, 'score', e.target.value)}
-                      inputProps={{ min: 0, max: q.points, step: 0.5 }}
-                      sx={{ width: 120, flexShrink: 0 }}
+                      error={scoreInvalid}
+                      helperText={scoreInvalid ? t('grading.scoreExceedsMax', { max: maxPts }) : undefined}
+                      inputProps={{ min: 0, max: maxPts, step: 0.5 }}
+                      sx={{ width: 160, flexShrink: 0 }}
                     />
                     <TextField
                       label={t('feedback')}

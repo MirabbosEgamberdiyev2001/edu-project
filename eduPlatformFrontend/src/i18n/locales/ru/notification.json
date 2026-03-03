@@ -1,0 +1,18 @@
+{
+  "title": "Уведомления",
+  "empty": "Уведомлений нет",
+  "markRead": "Отметить как прочитанное",
+  "markAllRead": "Отметить все как прочитанные",
+  "viewAll": "Посмотреть все",
+  "unread": "Непрочитанные",
+  "loading": "Загрузка...",
+  "types": {
+    "ASSIGNMENT_CREATED": "Новое задание",
+    "ASSIGNMENT_ACTIVATED": "Задание активировано",
+    "ASSIGNMENT_COMPLETED": "Задание завершено",
+    "PROMO_CODE_REDEEMED": "Промокод использован",
+    "ATTEMPT_GRADED": "Оценено",
+    "HOMEWORK_SUBMITTED": "Домашнее задание сдано",
+    "SYSTEM": "Системное уведомление"
+  }
+}

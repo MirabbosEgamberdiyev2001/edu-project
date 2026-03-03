@@ -10,6 +10,7 @@ import {
   Grid,
   Divider,
   TableContainer,
+  LinearProgress,
 } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -19,7 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { PageShell } from '@/components/ui';
 import { useAssignment } from '../hooks/useAssignments';
 import { useAssignmentMutations } from '../hooks/useAssignmentMutations';
-import { useAssignmentResults, useExportResults } from '../hooks/useAssignmentResults';
+import { useAssignmentResults, useExportResults, useQuestionStats } from '../hooks/useAssignmentResults';
 import { AssignmentStatus } from '@/types/assignment';
 import AssignmentSettingsForm from '../components/AssignmentSettingsForm';
 import PromoCodeSection from '../components/PromoCodeSection';
@@ -42,6 +43,7 @@ export default function AssignmentDetailPage() {
   const { data: assignment, isLoading } = useAssignment(id!);
   const { activate, cancel } = useAssignmentMutations();
   const { data: results } = useAssignmentResults(id!);
+  const { data: questionStats } = useQuestionStats(id!);
   const { exportResults } = useExportResults();
 
   const [gradingAttemptId, setGradingAttemptId] = useState<string | null>(null);
@@ -253,11 +255,93 @@ export default function AssignmentDetailPage() {
             </Grid>
           </Grid>
 
+          {/* Score Distribution Histogram */}
+          {(() => {
+            const buckets = [
+              { label: '0–20%', min: 0, max: 20, color: '#ef5350' },
+              { label: '21–40%', min: 21, max: 40, color: '#ff9800' },
+              { label: '41–60%', min: 41, max: 60, color: '#ffca28' },
+              { label: '61–80%', min: 61, max: 80, color: '#66bb6a' },
+              { label: '81–100%', min: 81, max: 100, color: '#26a69a' },
+            ];
+            const scoredStudents = results.students.filter((s) => s.percentage != null);
+            if (scoredStudents.length === 0) return null;
+            const counts = buckets.map(({ min, max }) =>
+              scoredStudents.filter((s) => s.percentage! >= min && s.percentage! <= max).length,
+            );
+            const maxCount = Math.max(...counts, 1);
+            return (
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+                  {t('scoreDistribution')}
+                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+                  {buckets.map(({ label, color }, i) => (
+                    <Box key={label} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography variant="caption" sx={{ width: 60, flexShrink: 0 }}>{label}</Typography>
+                      <Box sx={{ flex: 1, bgcolor: 'action.hover', borderRadius: 1, height: 18, position: 'relative' }}>
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            left: 0,
+                            top: 0,
+                            height: '100%',
+                            width: `${(counts[i] / maxCount) * 100}%`,
+                            bgcolor: color,
+                            borderRadius: 1,
+                            transition: 'width 0.4s ease',
+                          }}
+                        />
+                      </Box>
+                      <Typography variant="caption" sx={{ width: 24, textAlign: 'right', flexShrink: 0 }}>
+                        {counts[i]}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            );
+          })()}
+
           <Divider sx={{ mb: 2 }} />
 
           <TableContainer>
             <ResultsTable students={results.students} onGradeAttempt={handleGradeAttempt} />
           </TableContainer>
+        </Paper>
+      )}
+
+      {questionStats && questionStats.length > 0 && (
+        <Paper sx={{ p: 3, mt: 3 }}>
+          <Typography variant="h6" sx={{ mb: 2 }}>{t('questionStats.title')}</Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            {questionStats.map((q) => {
+              const rate = Number(q.correctRate);
+              const barColor = rate >= 70 ? 'success' : rate >= 40 ? 'warning' : 'error';
+              return (
+                <Box key={q.questionId}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 500, maxWidth: '70%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {t('questionStats.questionNum', { num: q.questionNumber })}
+                      {q.questionText ? ` — ${q.questionText}` : ''}
+                    </Typography>
+                    <Typography variant="body2" color={`${barColor}.main`} sx={{ fontWeight: 600 }}>
+                      {rate.toFixed(1)}%
+                      <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                        ({q.correctCount}/{q.totalAnswered})
+                      </Typography>
+                    </Typography>
+                  </Box>
+                  <LinearProgress
+                    variant="determinate"
+                    value={rate}
+                    color={barColor}
+                    sx={{ height: 6, borderRadius: 3 }}
+                  />
+                </Box>
+              );
+            })}
+          </Box>
         </Paper>
       )}
     </PageShell>

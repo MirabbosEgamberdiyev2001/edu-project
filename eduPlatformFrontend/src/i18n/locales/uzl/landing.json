@@ -120,6 +120,7 @@
     "cta": "Hoziroq boshlash"
   },
   "footer": {
+    "appName": "Test-Pro",
     "tagline": "O'zbekistonning zamonaviy ta'lim platformasi",
     "contact": "Aloqa",
     "email": "support@testpro.uz",
