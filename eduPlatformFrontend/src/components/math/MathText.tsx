@@ -97,7 +97,7 @@ export default function MathText({ text, variant = 'body1', sx }: MathTextProps)
   if (!hasMath) {
     // Fast path: no math delimiters — render as plain text
     return (
-      <Box sx={[VARIANT_STYLES[variant] ?? {}, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}>
+      <Box sx={[VARIANT_STYLES[variant] ?? {}, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])] as SxProps<Theme>}>
         {text}
       </Box>
     );
@@ -106,7 +106,7 @@ export default function MathText({ text, variant = 'body1', sx }: MathTextProps)
   const segments = parseSegments(text);
 
   return (
-    <Box sx={[VARIANT_STYLES[variant] ?? {}, { wordBreak: 'break-word' as const }, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}>
+    <Box sx={[VARIANT_STYLES[variant] ?? {}, { wordBreak: 'break-word' as const }, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])] as SxProps<Theme>}>
       {segments.map((seg, i) => {
         if (seg.kind === 'text') {
           return <span key={i}>{seg.content}</span>;
