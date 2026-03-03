@@ -65,8 +65,8 @@ export default function PromoCodePage() {
       const userRes = await userApi.getCurrentUser();
       setAuth(userRes.data.data);
 
-      // Navigate to available assignments or start attempt
-      navigate(`/my-assignments`);
+      // Navigate to available assignments list so student can start the exam
+      navigate('/my-tests');
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string } } };
       const msg = axiosErr?.response?.data?.message || t('promoPage.invalidCode');

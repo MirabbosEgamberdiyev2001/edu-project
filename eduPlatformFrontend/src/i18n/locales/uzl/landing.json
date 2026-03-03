@@ -8,12 +8,83 @@
     "title": "Test-Pro bilan ta'limni yangi bosqichga oling",
     "subtitle": "O'qituvchilar test yaratadi, o'quvchilar onlayn ishlaydi, ota-onalar natijalarni kuzatadi — hammasi bir platformada, to'liq bepul.",
     "cta": "Boshlash — bepul",
+    "promoCta": "Promokod bilan kirish",
     "trustSignals": {
       "jwt": "JWT xavfsizlik",
       "otp": "OTP tasdiqlash",
       "multilang": "4 til qo'llab-quvvatlash",
       "free": "Bepul boshlash"
     }
+  },
+  "platformStats": {
+    "title": "Platforma haqida raqamlarda",
+    "users": "Foydalanuvchilar",
+    "attempts": "Ishlangan testlar",
+    "subjects": "Fanlar",
+    "free": "100%",
+    "freeLabel": "Bepul"
+  },
+  "testCategories": {
+    "title": "Qanday testlar bor?",
+    "subtitle": "DTMdan attestatsiyagacha — har bir ehtiyoj uchun test turi",
+    "levelLabel": "Daraja",
+    "forLabel": "Kimlar uchun",
+    "startBtn": "Testlarni ko'rish",
+    "dtm": {
+      "emoji": "🎓",
+      "label": "DTM",
+      "desc": "Oliy ta'limga kirish imtihoniga to'liq tayyorgarlik. Real imtihon formatida savollar.",
+      "for": "Abituriyentlar",
+      "level": "Yuqori",
+      "hint": "Real imtihon formatida"
+    },
+    "school": {
+      "emoji": "🏫",
+      "label": "Maktab",
+      "desc": "1–11-sinf o'quvchilari uchun barcha fanlar bo'yicha bilimni tekshirish.",
+      "for": "Barcha sinflar",
+      "level": "Asosiy",
+      "hint": "Dars mavzulari asosida"
+    },
+    "olympiad": {
+      "emoji": "🏆",
+      "label": "Olimpiada",
+      "desc": "Murakkab va kreativ darajadagi savollar. Tanlov va olimpiadalarga tayyorgarlik.",
+      "for": "Iqtidorli o'quvchilar",
+      "level": "Ilg'or",
+      "hint": "Tanlov saviyasida"
+    },
+    "certificate": {
+      "emoji": "📜",
+      "label": "Sertifikat",
+      "desc": "Professional sertifikat imtihonlariga tayyorlanish. Xalqaro standartlar.",
+      "for": "Kasb egalamoqchilar",
+      "level": "O'rta–Yuqori",
+      "hint": "Xalqaro standartlar"
+    },
+    "attestation": {
+      "emoji": "📋",
+      "label": "Attestatsiya",
+      "desc": "O'qituvchilar malakasini oshirish va tasdiqlash uchun maxsus testlar.",
+      "for": "O'qituvchilar",
+      "level": "Professional",
+      "hint": "Davlat talablari asosida"
+    }
+  },
+  "subjects": {
+    "title": "Qaysi fanlar bo'yicha testlar bor?",
+    "subtitle": "Matematika, fizika, tarix va boshqa fanlar bo'yicha yuzlab testlar",
+    "viewAll": "Barcha testlarni ko'rish",
+    "loading": "Fanlar yuklanmoqda..."
+  },
+  "promoWidget": {
+    "title": "Promokodingiz bormi?",
+    "subtitle": "O'qituvchingiz bergan 8 ta belgili kodni kiriting — darhol testga o'ting",
+    "placeholder": "Masalan: ABC12345",
+    "submit": "Testni boshlash",
+    "hint": "Ro'yxatdan o'tmasdan ham ishlash mumkin",
+    "invalid": "Kod topilmadi yoki muddati o'tgan. Tekshirib ko'ring.",
+    "navigating": "Yo'naltirilmoqda..."
   },
   "howItWorks": {
     "title": "Qanday ishlaydi?",

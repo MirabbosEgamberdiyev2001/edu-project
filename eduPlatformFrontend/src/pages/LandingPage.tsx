@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
 import {
   Box,
   Button,
@@ -10,19 +11,18 @@ import {
   Container,
   Divider,
   Grid,
+  Skeleton,
   Stack,
   Tab,
   Tabs,
+  TextField,
   Typography,
   Avatar,
 } from '@mui/material';
 import SchoolIcon from '@mui/icons-material/School';
-import MenuBookIcon from '@mui/icons-material/MenuBook';
-import FamilyRestroomIcon from '@mui/icons-material/FamilyRestroom';
 import SecurityIcon from '@mui/icons-material/Security';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import LanguageIcon from '@mui/icons-material/Language';
-import PhoneAndroidIcon from '@mui/icons-material/PhoneAndroid';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import GroupsIcon from '@mui/icons-material/Groups';
 import BarChartIcon from '@mui/icons-material/BarChart';
@@ -32,9 +32,11 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import PeopleIcon from '@mui/icons-material/People';
 import FormatQuoteIcon from '@mui/icons-material/FormatQuote';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import Logo from '@/components/Logo';
 import RoleSelectModal from '@/components/RoleSelectModal';
 import LanguageSwitcher from '@/features/auth/components/LanguageSwitcher';
+import { publicApi } from '@/api/publicApi';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Feature tab panel helper
@@ -100,6 +102,11 @@ function FeatureTabPanel({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Constants
+// ─────────────────────────────────────────────────────────────────────────────
+const TEST_CATEGORY_KEYS = ['dtm', 'school', 'olympiad', 'certificate', 'attestation'] as const;
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Main component
 // ─────────────────────────────────────────────────────────────────────────────
 export default function LandingPage() {
@@ -107,10 +114,42 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const [roleModalOpen, setRoleModalOpen] = useState(false);
   const [featuresTab, setFeaturesTab] = useState(0);
+  const [promoCode, setPromoCode] = useState('');
+  const [promoError, setPromoError] = useState(false);
+  const [promoNavigating, setPromoNavigating] = useState(false);
+
+  // Public API queries (no auth required)
+  const { data: statsData } = useQuery({
+    queryKey: ['public', 'stats'],
+    queryFn: () => publicApi.getStats().then((r) => r.data.data),
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const { data: subjects, isLoading: subjectsLoading } = useQuery({
+    queryKey: ['public', 'subjects'],
+    queryFn: () => publicApi.getSubjects().then((r) => r.data.data),
+    staleTime: 10 * 60 * 1000,
+  });
 
   const openModal = () => setRoleModalOpen(true);
   const closeModal = () => setRoleModalOpen(false);
 
+  const scrollToPromo = () => {
+    document.getElementById('promo-widget')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handlePromoSubmit = () => {
+    const code = promoCode.trim().toUpperCase();
+    if (!code) {
+      setPromoError(true);
+      return;
+    }
+    setPromoError(false);
+    setPromoNavigating(true);
+    navigate(`/promo/${code}`);
+  };
+
+  // ── Feature cards ────────────────────────────────────────────────────────
   const teacherFeatures: FeatureCard[] = [
     { icon: <AssignmentIcon />, titleKey: 'features.teacher.tests.title', descKey: 'features.teacher.tests.description' },
     { icon: <GroupsIcon />, titleKey: 'features.teacher.groups.title', descKey: 'features.teacher.groups.description' },
@@ -155,6 +194,26 @@ export default function LandingPage() {
   ];
 
   const testimonials = [0, 1, 2];
+
+  // Platform stats — use real API data with sensible fallbacks
+  const platformStatItems = [
+    {
+      value: statsData?.totalUsers != null ? `${statsData.totalUsers.toLocaleString()}+` : '5 000+',
+      labelKey: 'platformStats.users',
+    },
+    {
+      value: statsData?.totalAttempts != null ? `${statsData.totalAttempts.toLocaleString()}+` : '50 000+',
+      labelKey: 'platformStats.attempts',
+    },
+    {
+      value: statsData?.totalSubjects != null ? `${statsData.totalSubjects}+` : '30+',
+      labelKey: 'platformStats.subjects',
+    },
+    {
+      value: t('platformStats.free'),
+      labelKey: 'platformStats.freeLabel',
+    },
+  ];
 
   return (
     <Box>
@@ -219,31 +278,55 @@ export default function LandingPage() {
           >
             {t('hero.subtitle')}
           </Typography>
-          <Button
-            variant="contained"
-            size="large"
-            onClick={openModal}
-            sx={{
-              bgcolor: 'white',
-              color: 'primary.main',
-              fontWeight: 700,
-              px: 5,
-              py: 1.5,
-              borderRadius: 3,
-              fontSize: '1.05rem',
-              boxShadow: '0 8px 24px rgba(0,0,0,.2)',
-              '&:hover': { bgcolor: 'grey.100' },
-            }}
-          >
-            {t('hero.cta')}
-          </Button>
+
+          {/* Primary + secondary CTA buttons */}
           <Stack
-            direction="row"
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={2}
             justifyContent="center"
-            flexWrap="wrap"
-            gap={1.5}
-            sx={{ mt: 5 }}
+            alignItems="center"
+            sx={{ mb: 5 }}
           >
+            <Button
+              variant="contained"
+              size="large"
+              onClick={openModal}
+              sx={{
+                bgcolor: 'white',
+                color: 'primary.main',
+                fontWeight: 700,
+                px: 5,
+                py: 1.5,
+                borderRadius: 3,
+                fontSize: '1.05rem',
+                boxShadow: '0 8px 24px rgba(0,0,0,.2)',
+                '&:hover': { bgcolor: 'grey.100' },
+              }}
+            >
+              {t('hero.cta')}
+            </Button>
+            <Button
+              variant="outlined"
+              size="large"
+              onClick={scrollToPromo}
+              startIcon={<LocalOfferIcon />}
+              sx={{
+                color: 'white',
+                borderColor: 'rgba(255,255,255,.6)',
+                fontWeight: 600,
+                px: 4,
+                py: 1.5,
+                borderRadius: 3,
+                fontSize: '1rem',
+                '&:hover': { borderColor: 'white', bgcolor: 'rgba(255,255,255,.1)' },
+              }}
+            >
+              {t('hero.promoCta')}
+            </Button>
+          </Stack>
+
+          {/* Trust signal chips */}
+          <Stack direction="row" justifyContent="center" flexWrap="wrap" gap={1.5}>
             {trustSignals.map((s) => (
               <Chip
                 key={s.key}
@@ -256,8 +339,111 @@ export default function LandingPage() {
         </Container>
       </Box>
 
-      {/* ── HOW IT WORKS ───────────────────────────────────────────────────── */}
+      {/* ── PLATFORM STATS ─────────────────────────────────────────────────── */}
+      <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: 'background.paper' }}>
+        <Container maxWidth="lg">
+          <Typography variant="h4" fontWeight={700} textAlign="center" gutterBottom>
+            {t('platformStats.title')}
+          </Typography>
+          <Grid container spacing={3} sx={{ mt: 3 }} justifyContent="center">
+            {platformStatItems.map((item, i) => (
+              <Grid item xs={6} md={3} key={i}>
+                <Stack alignItems="center" textAlign="center" spacing={1}>
+                  <Typography
+                    variant="h3"
+                    fontWeight={800}
+                    sx={{ color: 'primary.main', fontSize: { xs: '2rem', md: '2.8rem' } }}
+                  >
+                    {item.value}
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary" fontWeight={500}>
+                    {t(item.labelKey)}
+                  </Typography>
+                </Stack>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
+      </Box>
+
+      <Divider />
+
+      {/* ── TEST CATEGORIES ────────────────────────────────────────────────── */}
       <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: 'background.default' }}>
+        <Container maxWidth="lg">
+          <Typography variant="h4" fontWeight={700} textAlign="center" gutterBottom>
+            {t('testCategories.title')}
+          </Typography>
+          <Typography variant="body1" color="text.secondary" textAlign="center" sx={{ mb: 8, maxWidth: 540, mx: 'auto' }}>
+            {t('testCategories.subtitle')}
+          </Typography>
+          <Grid container spacing={3}>
+            {TEST_CATEGORY_KEYS.map((catKey) => (
+              <Grid item xs={12} sm={6} md={4} key={catKey}>
+                <Card
+                  elevation={0}
+                  sx={{
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    borderRadius: 3,
+                    height: '100%',
+                    transition: 'all .2s',
+                    '&:hover': {
+                      boxShadow: 4,
+                      borderColor: 'primary.main',
+                      transform: 'translateY(-2px)',
+                    },
+                  }}
+                >
+                  <CardContent sx={{ p: 3 }}>
+                    <Typography variant="h2" sx={{ mb: 1.5, fontSize: '2.5rem', lineHeight: 1 }}>
+                      {t(`testCategories.${catKey}.emoji`)}
+                    </Typography>
+                    <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1.5 }}>
+                      <Typography variant="h6" fontWeight={700}>
+                        {t(`testCategories.${catKey}.label`)}
+                      </Typography>
+                      <Chip
+                        label={t(`testCategories.${catKey}.hint`)}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                        sx={{ fontSize: '0.7rem' }}
+                      />
+                    </Stack>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5, lineHeight: 1.7 }}>
+                      {t(`testCategories.${catKey}.desc`)}
+                    </Typography>
+                    <Divider sx={{ mb: 2 }} />
+                    <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
+                      <Chip
+                        label={`${t('testCategories.forLabel')}: ${t(`testCategories.${catKey}.for`)}`}
+                        size="small"
+                        sx={{ bgcolor: 'action.hover', fontSize: '0.72rem' }}
+                      />
+                      <Chip
+                        label={`${t('testCategories.levelLabel')}: ${t(`testCategories.${catKey}.level`)}`}
+                        size="small"
+                        color="success"
+                        variant="outlined"
+                        sx={{ fontSize: '0.72rem' }}
+                      />
+                    </Stack>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+          <Box sx={{ textAlign: 'center', mt: 5 }}>
+            <Button variant="outlined" size="large" onClick={openModal} sx={{ borderRadius: 2, px: 5 }}>
+              {t('testCategories.startBtn')}
+            </Button>
+          </Box>
+        </Container>
+      </Box>
+
+      {/* ── HOW IT WORKS ───────────────────────────────────────────────────── */}
+      <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: 'background.paper' }}>
         <Container maxWidth="lg">
           <Typography variant="h4" fontWeight={700} textAlign="center" gutterBottom>
             {t('howItWorks.title')}
@@ -289,6 +475,50 @@ export default function LandingPage() {
 
       <Divider />
 
+      {/* ── SUBJECTS GALLERY ───────────────────────────────────────────────── */}
+      <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: 'background.default' }}>
+        <Container maxWidth="lg">
+          <Typography variant="h4" fontWeight={700} textAlign="center" gutterBottom>
+            {t('subjects.title')}
+          </Typography>
+          <Typography variant="body1" color="text.secondary" textAlign="center" sx={{ mb: 6, maxWidth: 500, mx: 'auto' }}>
+            {t('subjects.subtitle')}
+          </Typography>
+
+          {subjectsLoading ? (
+            <Stack direction="row" flexWrap="wrap" gap={1.5} justifyContent="center">
+              {Array.from({ length: 14 }).map((_, i) => (
+                <Skeleton key={i} variant="rounded" width={90 + (i % 4) * 25} height={32} />
+              ))}
+            </Stack>
+          ) : (
+            <Stack direction="row" flexWrap="wrap" gap={1.5} justifyContent="center">
+              {(subjects ?? []).map((subject) => (
+                <Chip
+                  key={subject}
+                  label={subject}
+                  variant="outlined"
+                  onClick={openModal}
+                  sx={{
+                    fontSize: '0.875rem',
+                    py: 0.5,
+                    cursor: 'pointer',
+                    transition: 'all .15s',
+                    '&:hover': { bgcolor: 'primary.main', color: 'white', borderColor: 'primary.main' },
+                  }}
+                />
+              ))}
+            </Stack>
+          )}
+
+          <Box sx={{ textAlign: 'center', mt: 5 }}>
+            <Button variant="contained" onClick={openModal} sx={{ borderRadius: 2, px: 4 }}>
+              {t('subjects.viewAll')}
+            </Button>
+          </Box>
+        </Container>
+      </Box>
+
       {/* ── UNIFIED FEATURES (TABS) ─────────────────────────────────────────── */}
       <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: 'background.paper' }}>
         <Container maxWidth="lg">
@@ -313,8 +543,77 @@ export default function LandingPage() {
         </Container>
       </Box>
 
+      {/* ── PROMO CODE WIDGET ──────────────────────────────────────────────── */}
+      <Box
+        id="promo-widget"
+        sx={{
+          py: { xs: 8, md: 12 },
+          bgcolor: 'background.default',
+          borderTop: '1px solid',
+          borderColor: 'divider',
+        }}
+      >
+        <Container maxWidth="sm">
+          <Card
+            elevation={0}
+            sx={{
+              border: '2px solid',
+              borderColor: 'primary.main',
+              borderRadius: 4,
+            }}
+          >
+            <CardContent sx={{ p: { xs: 3, md: 5 }, textAlign: 'center' }}>
+              <Avatar
+                sx={{ width: 56, height: 56, bgcolor: 'primary.main', mx: 'auto', mb: 2 }}
+              >
+                <LocalOfferIcon sx={{ fontSize: 28 }} />
+              </Avatar>
+              <Typography variant="h5" fontWeight={700} gutterBottom>
+                {t('promoWidget.title')}
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+                {t('promoWidget.subtitle')}
+              </Typography>
+              <Stack spacing={2}>
+                <TextField
+                  fullWidth
+                  value={promoCode}
+                  onChange={(e) => {
+                    setPromoCode(e.target.value.toUpperCase());
+                    setPromoError(false);
+                  }}
+                  onKeyDown={(e) => e.key === 'Enter' && handlePromoSubmit()}
+                  placeholder={t('promoWidget.placeholder')}
+                  error={promoError}
+                  helperText={promoError ? t('promoWidget.invalid') : t('promoWidget.hint')}
+                  inputProps={{
+                    maxLength: 12,
+                    style: {
+                      textAlign: 'center',
+                      fontSize: '1.1rem',
+                      letterSpacing: '0.15em',
+                      fontWeight: 700,
+                    },
+                  }}
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                />
+                <Button
+                  variant="contained"
+                  size="large"
+                  onClick={handlePromoSubmit}
+                  disabled={promoNavigating}
+                  sx={{ borderRadius: 2, py: 1.5, fontWeight: 700, fontSize: '1rem' }}
+                >
+                  {promoNavigating ? t('promoWidget.navigating') : t('promoWidget.submit')}
+                </Button>
+              </Stack>
+            </CardContent>
+          </Card>
+        </Container>
+      </Box>
+
       {/* ── TESTIMONIALS ───────────────────────────────────────────────────── */}
-      <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: 'background.default' }}>
+      <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: 'background.paper' }}>
         <Container maxWidth="lg">
           <Typography variant="h4" fontWeight={700} textAlign="center" gutterBottom>
             {t('testimonials.title')}
@@ -354,7 +653,7 @@ export default function LandingPage() {
       </Box>
 
       {/* ── SECURITY ───────────────────────────────────────────────────────── */}
-      <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: 'background.paper' }}>
+      <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: 'background.default' }}>
         <Container maxWidth="lg">
           <Typography variant="h4" fontWeight={700} textAlign="center" gutterBottom>
             {t('security.title')}

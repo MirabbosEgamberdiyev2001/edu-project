@@ -8,12 +8,83 @@
     "title": "Take education to the next level with Test-Pro",
     "subtitle": "Teachers create tests, students take them online, parents track results — all in one platform, completely free.",
     "cta": "Get Started — Free",
+    "promoCta": "Enter with Promo Code",
     "trustSignals": {
       "jwt": "JWT Security",
       "otp": "OTP Verification",
       "multilang": "4 Languages Supported",
       "free": "Free to Start"
     }
+  },
+  "platformStats": {
+    "title": "Platform by the numbers",
+    "users": "Users",
+    "attempts": "Tests taken",
+    "subjects": "Subjects",
+    "free": "100%",
+    "freeLabel": "Free"
+  },
+  "testCategories": {
+    "title": "What types of tests are available?",
+    "subtitle": "From national exams to attestation — a test type for every need",
+    "levelLabel": "Level",
+    "forLabel": "Who it's for",
+    "startBtn": "Browse Tests",
+    "dtm": {
+      "emoji": "🎓",
+      "label": "DTM",
+      "desc": "Full preparation for university entrance exams. Questions in the real exam format.",
+      "for": "Applicants",
+      "level": "High",
+      "hint": "Real exam format"
+    },
+    "school": {
+      "emoji": "🏫",
+      "label": "School",
+      "desc": "Knowledge check across all subjects for students in grades 1–11.",
+      "for": "All grades",
+      "level": "Basic",
+      "hint": "Based on lesson topics"
+    },
+    "olympiad": {
+      "emoji": "🏆",
+      "label": "Olympiad",
+      "desc": "Complex and creative problems. Preparation for competitions and olympiads.",
+      "for": "Gifted students",
+      "level": "Advanced",
+      "hint": "Competition level"
+    },
+    "certificate": {
+      "emoji": "📜",
+      "label": "Certificate",
+      "desc": "Preparation for professional certification exams. International standards.",
+      "for": "Professionals",
+      "level": "Mid–High",
+      "hint": "International standards"
+    },
+    "attestation": {
+      "emoji": "📋",
+      "label": "Attestation",
+      "desc": "Specialized tests for upgrading and confirming teacher qualifications.",
+      "for": "Teachers",
+      "level": "Professional",
+      "hint": "State requirements"
+    }
+  },
+  "subjects": {
+    "title": "Which subjects have tests?",
+    "subtitle": "Mathematics, physics, history and more — hundreds of tests available",
+    "viewAll": "Browse all tests",
+    "loading": "Loading subjects..."
+  },
+  "promoWidget": {
+    "title": "Have a promo code?",
+    "subtitle": "Enter the 8-character code from your teacher — jump straight to the test",
+    "placeholder": "E.g.: ABC12345",
+    "submit": "Start Test",
+    "hint": "No registration required",
+    "invalid": "Code not found or expired. Please check and try again.",
+    "navigating": "Redirecting..."
   },
   "howItWorks": {
     "title": "How does it work?",
