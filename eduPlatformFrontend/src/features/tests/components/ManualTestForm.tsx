@@ -413,7 +413,7 @@ export default function ManualTestForm() {
                 <Paper variant="outlined" sx={{ p: 2, maxHeight: 300, overflow: 'auto' }}>
                   <TopicCheckboxTree
                     subjectId={form.subjectId}
-                    gradeLevel={form.gradeLevel}
+                    gradeLevels={form.gradeLevel != null ? [form.gradeLevel] : []}
                     selected={form.topicIds}
                     onChange={(ids) => setForm((prev) => ({ ...prev, topicIds: ids, selectedQuestionIds: [] }))}
                   />

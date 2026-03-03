@@ -67,7 +67,7 @@ export default function AttemptResultPage() {
         proof: q.proof ?? null,
         imageUrl: imageUrl ?? null,
         needsManualGrading: ans?.needsManualGrading ?? false,
-        manualFeedback: (ans as Record<string, unknown>)?.manualFeedback as string | null ?? null,
+        manualFeedback: ans?.manualFeedback ?? null,
       };
     }),
   };

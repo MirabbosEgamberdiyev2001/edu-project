@@ -8,7 +8,6 @@ interface MathTextProps {
   /** MUI Typography variant — applied to the wrapper Box via sx */
   variant?: 'h6' | 'h5' | 'body1' | 'body2' | 'subtitle1' | 'subtitle2' | 'caption';
   sx?: SxProps<Theme>;
-  component?: React.ElementType;
 }
 
 type Segment =
@@ -90,7 +89,7 @@ const VARIANT_STYLES: Record<string, SxProps<Theme>> = {
  *   <MathText text="$$\frac{a}{b} = c$$" variant="h6" />
  *   <MathText text="Plain text — no math" variant="body2" />
  */
-export default function MathText({ text, variant = 'body1', sx, component = 'div' }: MathTextProps) {
+export default function MathText({ text, variant = 'body1', sx }: MathTextProps) {
   if (!text) return null;
 
   const hasMath = text.includes('$');
@@ -98,7 +97,7 @@ export default function MathText({ text, variant = 'body1', sx, component = 'div
   if (!hasMath) {
     // Fast path: no math delimiters — render as plain text
     return (
-      <Box component={component} sx={[VARIANT_STYLES[variant] ?? {}, ...(Array.isArray(sx) ? sx : [sx])]}>
+      <Box sx={[VARIANT_STYLES[variant] ?? {}, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}>
         {text}
       </Box>
     );
@@ -107,7 +106,7 @@ export default function MathText({ text, variant = 'body1', sx, component = 'div
   const segments = parseSegments(text);
 
   return (
-    <Box component={component} sx={[VARIANT_STYLES[variant] ?? {}, { wordBreak: 'break-word' as const }, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box sx={[VARIANT_STYLES[variant] ?? {}, { wordBreak: 'break-word' as const }, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}>
       {segments.map((seg, i) => {
         if (seg.kind === 'text') {
           return <span key={i}>{seg.content}</span>;

@@ -62,6 +62,10 @@ export interface AttemptAnswerDto {
   maxPoints: number | null;
   bookmarked: boolean | null;
   timeSpentSeconds: number | null;
+  /** True when this answer requires teacher manual grading */
+  needsManualGrading?: boolean;
+  /** Teacher feedback after manual grading */
+  manualFeedback?: string | null;
 }
 
 export interface SubmitAnswerRequest {
