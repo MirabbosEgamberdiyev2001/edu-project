@@ -17,6 +17,7 @@ export interface AssignmentListParams {
   status?: AssignmentStatus;
   search?: string;
   testHistoryId?: string;
+  groupId?: string;
   page?: number;
   size?: number;
 }

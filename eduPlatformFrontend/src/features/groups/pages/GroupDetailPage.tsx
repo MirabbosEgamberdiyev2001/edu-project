@@ -22,12 +22,14 @@ import { useGroupMembers, useRemoveMember, useRemoveMembersBatch } from '../hook
 import { useGroupMutations } from '../hooks/useGroupMutations';
 import { useTests } from '@/features/tests/hooks/useTests';
 import { useAssignmentMutations } from '@/features/assignments/hooks/useAssignmentMutations';
+import { useAssignments } from '@/features/assignments/hooks/useAssignments';
 import MemberListTable from '../components/MemberListTable';
 import GroupFormDialog from '../components/GroupFormDialog';
 import AddMembersDialog from '../components/AddMembersDialog';
 import AssignmentFormDialog from '@/features/assignments/components/AssignmentFormDialog';
 import { GroupStatus, type CreateGroupRequest, type UpdateGroupRequest } from '@/types/group';
-import type { CreateAssignmentRequest } from '@/types/assignment';
+import type { AssignmentDto, CreateAssignmentRequest } from '@/types/assignment';
+import { AssignmentStatus } from '@/types/assignment';
 import { resolveTranslation } from '@/utils/i18nUtils';
 import { PageShell } from '@/components/ui';
 
@@ -39,6 +41,7 @@ export default function GroupDetailPage() {
 
   const { data: group, isLoading } = useGroup(id);
   const { data: members, isLoading: membersLoading, refetch: refetchMembers } = useGroupMembers(id);
+  const { data: groupAssignments } = useAssignments(id ? { groupId: id, size: 50 } : undefined);
   const removeMember = useRemoveMember(id!);
   const removeMembersBatch = useRemoveMembersBatch(id!);
   const { update, archive } = useGroupMutations();
@@ -170,6 +173,53 @@ export default function GroupDetailPage() {
           >
             {tA('createAssignment')}
           </Button>
+        </Box>
+      )}
+
+      {/* Assignment list for this group */}
+      {groupAssignments && groupAssignments.content && groupAssignments.content.length > 0 && (
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h6" fontWeight={600} sx={{ mb: 1.5 }}>
+            {tA('title')}
+          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            {groupAssignments.content.map((a: AssignmentDto) => {
+              const statusColor = a.status === AssignmentStatus.ACTIVE ? 'success'
+                : a.status === AssignmentStatus.COMPLETED ? 'default'
+                : a.status === AssignmentStatus.SCHEDULED ? 'info'
+                : a.status === AssignmentStatus.CANCELLED ? 'error'
+                : 'warning';
+              return (
+                <Paper
+                  key={a.id}
+                  variant="outlined"
+                  sx={{ px: 2, py: 1.5, display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}
+                >
+                  <AssignmentIcon color="action" fontSize="small" />
+                  <Typography variant="body2" fontWeight={500} sx={{ flex: 1, minWidth: 120 }}>
+                    {a.title || a.testTitle}
+                  </Typography>
+                  <Chip
+                    label={tA(`status.${a.status}`)}
+                    color={statusColor as 'success' | 'default' | 'info' | 'error' | 'warning'}
+                    size="small"
+                  />
+                  {a.startDate && (
+                    <Typography variant="caption" color="text.secondary">
+                      {new Date(a.startDate).toLocaleDateString()}
+                    </Typography>
+                  )}
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    onClick={() => navigate(`/assignments/${a.id}`)}
+                  >
+                    {tA('viewResults')}
+                  </Button>
+                </Paper>
+              );
+            })}
+          </Box>
         </Box>
       )}
 

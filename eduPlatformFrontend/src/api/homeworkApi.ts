@@ -34,7 +34,6 @@ export const homeworkApi = {
     if (textAnswer) form.append('textAnswer', textAnswer);
     if (file) form.append('file', file);
     return api.post<ApiResponse<HomeworkSubmissionDto>>(
-      `${BASE}/${homeworkId}/submit`, form,
-      { headers: { 'Content-Type': 'multipart/form-data' } });
+      `${BASE}/${homeworkId}/submit`, form);
   },
 };

@@ -70,6 +70,10 @@ public interface TestAssignmentRepository extends JpaRepository<TestAssignment, 
             @Param("status") AssignmentStatus status,
             Pageable pageable);
 
+    // Query assignments by group (for group detail page)
+    Page<TestAssignment> findByTeacherIdAndGroupIdOrderByCreatedAtDesc(
+            UUID teacherId, UUID groupId, Pageable pageable);
+
     // Query assignments by test (for test-level statistics in TestDetailPage)
     Page<TestAssignment> findByTeacherIdAndTestHistoryIdOrderByCreatedAtDesc(
             UUID teacherId, UUID testHistoryId, Pageable pageable);

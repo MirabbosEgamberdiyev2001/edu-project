@@ -507,8 +507,88 @@ public class PdfExportService implements TestExportService {
                     + "     B) " + messageService.get("export.false.option", locale), fontRegular));
             cs.endText();
             y -= LINE_HEIGHT;
+        } else if (q.getQuestionType() == QuestionType.MATCHING) {
+            Object matchObj = parseJson(q.getOptions());
+            if (matchObj instanceof Map<?, ?> matchMap) {
+                Object premisesObj = matchMap.get("premises");
+                Object matchOptsObj = matchMap.get("options");
+                String[] letters = {"A", "B", "C", "D", "E", "F", "G", "H"};
+                if (premisesObj instanceof List<?> premises) {
+                    for (int k = 0; k < premises.size(); k++) {
+                        Object p = premises.get(k);
+                        String premiseText = (p instanceof Map<?, ?> pm)
+                                ? resolveExportOptionText(pm.get("text")) : "";
+                        cs.beginText();
+                        cs.setFont(fontRegular, 10);
+                        cs.newLineAtOffset(MARGIN + 20, y);
+                        cs.showText(sanitizeForPdf((k + 1) + ". [___]  "
+                                + exportHelper.truncateText(premiseText, 65), fontRegular));
+                        cs.endText();
+                        y -= LINE_HEIGHT;
+                    }
+                }
+                if (matchOptsObj instanceof List<?> matchOpts && !matchOpts.isEmpty()) {
+                    y -= 3;
+                    cs.beginText();
+                    cs.setFont(fontBold, 9);
+                    cs.newLineAtOffset(MARGIN + 20, y);
+                    cs.showText(sanitizeForPdf(
+                            messageService.get("export.matching.options.label", locale), fontBold));
+                    cs.endText();
+                    y -= LINE_HEIGHT - 2;
+                    for (int k = 0; k < matchOpts.size(); k++) {
+                        Object o = matchOpts.get(k);
+                        String optText = (o instanceof Map<?, ?> om)
+                                ? resolveExportOptionText(om.get("text")) : "";
+                        String lbl = k < letters.length ? letters[k] : String.valueOf(k + 1);
+                        cs.beginText();
+                        cs.setFont(fontRegular, 10);
+                        cs.newLineAtOffset(MARGIN + 30, y);
+                        cs.showText(sanitizeForPdf(lbl + ") " + exportHelper.truncateText(optText, 65), fontRegular));
+                        cs.endText();
+                        y -= LINE_HEIGHT;
+                    }
+                }
+            }
+        } else if (q.getQuestionType() == QuestionType.ORDERING) {
+            Object orderObj = parseJson(q.getOptions());
+            if (orderObj instanceof List<?> orderItems) {
+                cs.beginText();
+                cs.setFont(fontBold, 9);
+                cs.newLineAtOffset(MARGIN + 20, y);
+                cs.showText(sanitizeForPdf(
+                        messageService.get("export.ordering.instruction", locale), fontBold));
+                cs.endText();
+                y -= LINE_HEIGHT - 2;
+                for (Object item : orderItems) {
+                    String itemText = (item instanceof Map<?, ?> im)
+                            ? resolveExportOptionText(im.get("text")) : "";
+                    cs.beginText();
+                    cs.setFont(fontRegular, 10);
+                    cs.newLineAtOffset(MARGIN + 20, y);
+                    cs.showText(sanitizeForPdf("[___]  " + exportHelper.truncateText(itemText, 70), fontRegular));
+                    cs.endText();
+                    y -= LINE_HEIGHT;
+                }
+            }
+        } else if (q.getQuestionType() == QuestionType.SHORT_ANSWER
+                || q.getQuestionType() == QuestionType.FILL_BLANK) {
+            cs.beginText();
+            cs.setFont(fontRegular, 10);
+            cs.newLineAtOffset(MARGIN + 20, y);
+            cs.showText(sanitizeForPdf(messageService.get("export.answer.blank", locale), fontRegular));
+            cs.endText();
+            y -= LINE_HEIGHT;
+        } else if (q.getQuestionType() == QuestionType.ESSAY) {
+            for (int k = 0; k < 5; k++) {
+                cs.beginText();
+                cs.setFont(fontRegular, 10);
+                cs.newLineAtOffset(MARGIN + 20, y);
+                cs.showText("_______________________________________________________________________");
+                cs.endText();
+                y -= LINE_HEIGHT + 2;
+            }
         }
-        // No placeholder for missing options - question text is still shown
 
         return y;
     }
@@ -576,7 +656,21 @@ public class PdfExportService implements TestExportService {
 
                 Map<String, Object> entry = answerKey.get(idx);
                 String numStr = String.valueOf(entry.get("questionNumber"));
-                String answer = String.valueOf(entry.get("answer"));
+                String rawAnswer = String.valueOf(entry.get("answer"));
+                String type = entry.containsKey("type") ? String.valueOf(entry.get("type")) : "";
+                String displayAnswer;
+                if ("ESSAY".equals(type)) {
+                    displayAnswer = sanitizeForPdf(
+                            messageService.get("export.manual.grading", locale), fontBold);
+                } else if ("MATCHING".equals(type) || "ORDERING".equals(type)) {
+                    displayAnswer = sanitizeForPdf(
+                            exportHelper.truncateText(rawAnswer, 12), fontBold);
+                } else if ("SHORT_ANSWER".equals(type) || "FILL_BLANK".equals(type)) {
+                    displayAnswer = sanitizeForPdf(
+                            exportHelper.truncateText(rawAnswer, 12), fontBold);
+                } else {
+                    displayAnswer = sanitizeForPdf(rawAnswer, fontBold);
+                }
 
                 float xNum = MARGIN + c * (numColWidth + ansColWidth);
                 float xAns = xNum + numColWidth;
@@ -590,7 +684,7 @@ public class PdfExportService implements TestExportService {
                 cs.beginText();
                 cs.setFont(fontBold, 10);
                 cs.newLineAtOffset(xAns + 4, rowTop - 12);
-                cs.showText(sanitizeForPdf(answer, fontBold));
+                cs.showText(displayAnswer);
                 cs.endText();
             }
 
@@ -660,8 +754,18 @@ public class PdfExportService implements TestExportService {
     private float estimateQuestionHeight(Question q) {
         float height = LINE_HEIGHT * 2;
         Object optionsObj = parseJson(q.getOptions());
-        if (optionsObj instanceof List<?> opts) {
+        if (q.getQuestionType() == QuestionType.MATCHING && optionsObj instanceof Map<?, ?> m) {
+            Object premises = m.get("premises");
+            Object options = m.get("options");
+            int pCount = premises instanceof List<?> pl ? pl.size() : 0;
+            int oCount = options instanceof List<?> ol ? ol.size() : 0;
+            height += (pCount + oCount + 2) * LINE_HEIGHT;
+        } else if (optionsObj instanceof List<?> opts) {
             height += opts.size() * LINE_HEIGHT;
+        } else if (q.getQuestionType() == QuestionType.ESSAY) {
+            height += 5 * (LINE_HEIGHT + 2);
+        } else {
+            height += LINE_HEIGHT;
         }
         height += QUESTION_SPACING;
         return height;

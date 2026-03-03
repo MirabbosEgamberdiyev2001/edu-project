@@ -128,7 +128,8 @@ public class AssignmentService {
 
     @Transactional(readOnly = true)
     public PagedResponse<AssignmentDto> getTeacherAssignments(UUID teacherId, AssignmentStatus status,
-                                                               String search, UUID testHistoryId, Pageable pageable) {
+                                                               String search, UUID testHistoryId,
+                                                               UUID groupId, Pageable pageable) {
         Page<TestAssignment> page;
         if (teacherId == null) {
             // Admin path: return all assignments without ownership filter
@@ -141,6 +142,8 @@ public class AssignmentService {
             }
         } else if (testHistoryId != null) {
             page = assignmentRepository.findByTeacherIdAndTestHistoryIdOrderByCreatedAtDesc(teacherId, testHistoryId, pageable);
+        } else if (groupId != null) {
+            page = assignmentRepository.findByTeacherIdAndGroupIdOrderByCreatedAtDesc(teacherId, groupId, pageable);
         } else if (search != null && !search.isBlank() && status != null) {
             page = assignmentRepository.searchByTeacherIdAndStatus(teacherId, search.trim(), status, pageable);
         } else if (search != null && !search.isBlank()) {

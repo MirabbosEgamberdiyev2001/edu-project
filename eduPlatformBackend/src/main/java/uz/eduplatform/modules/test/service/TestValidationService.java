@@ -107,17 +107,17 @@ public class TestValidationService {
                     .build();
         }
 
-        // Filter only valid MCQ questions with options for test generation
-        List<Question> validMcq = questions.stream()
-                .filter(this::isValidMcqForTest)
+        // Filter only valid questions (all 8 types supported)
+        List<Question> validQuestions = questions.stream()
+                .filter(this::isValidQuestion)
                 .toList();
 
-        if (validMcq.size() < questions.size()) {
-            log.debug("Available questions: {} total, {} valid MCQ with options",
-                    questions.size(), validMcq.size());
+        if (validQuestions.size() < questions.size()) {
+            log.debug("Available questions: {} total, {} valid for test generation",
+                    questions.size(), validQuestions.size());
         }
 
-        Map<Difficulty, Long> counts = validMcq.stream()
+        Map<Difficulty, Long> counts = validQuestions.stream()
                 .collect(Collectors.groupingBy(Question::getDifficulty, Collectors.counting()));
 
         int easy = counts.getOrDefault(Difficulty.EASY, 0L).intValue();
@@ -125,11 +125,11 @@ public class TestValidationService {
         int hard = counts.getOrDefault(Difficulty.HARD, 0L).intValue();
 
         return AvailableQuestionsResponse.builder()
-                .totalAvailable(validMcq.size())
+                .totalAvailable(validQuestions.size())
                 .easyCount(easy)
                 .mediumCount(medium)
                 .hardCount(hard)
-                .maxPossibleQuestions(validMcq.size())
+                .maxPossibleQuestions(validQuestions.size())
                 .build();
     }
 
@@ -189,35 +189,37 @@ public class TestValidationService {
     }
 
     /**
-     * Checks if a question is a valid MCQ with options for test generation.
-     * Requires: MCQ_SINGLE or MCQ_MULTI type, at least 2 options, at least 1 correct answer.
+     * Checks if a question is valid for test generation — supports all 8 question types.
      */
     @SuppressWarnings("unchecked")
-    private boolean isValidMcqForTest(Question q) {
-        if (q.getQuestionType() != QuestionType.MCQ_SINGLE
-                && q.getQuestionType() != QuestionType.MCQ_MULTI) {
-            return false;
-        }
-
-        Object parsed = parseJson(q.getOptions());
-        if (!(parsed instanceof List<?> optionsList) || optionsList.size() < 2) {
-            return false;
-        }
-
-        boolean hasCorrect = false;
-        for (Object opt : optionsList) {
-            if (!(opt instanceof Map<?, ?> optMap)) {
-                return false;
+    private boolean isValidQuestion(Question q) {
+        return switch (q.getQuestionType()) {
+            case MCQ_SINGLE, MCQ_MULTI -> {
+                Object parsed = parseJson(q.getOptions());
+                if (!(parsed instanceof List<?> optionsList) || optionsList.size() < 2) yield false;
+                boolean hasCorrect = false;
+                for (Object opt : optionsList) {
+                    if (!(opt instanceof Map<?, ?> optMap)) yield false;
+                    if (optMap.get("text") == null) yield false;
+                    if (Boolean.TRUE.equals(optMap.get("isCorrect"))) hasCorrect = true;
+                }
+                yield hasCorrect;
             }
-            if (optMap.get("text") == null) {
-                return false;
+            case TRUE_FALSE -> true;
+            case MATCHING -> {
+                Object parsed = parseJson(q.getOptions());
+                yield parsed instanceof Map<?, ?> m
+                        && m.get("premises") instanceof List<?> pr && pr.size() >= 2
+                        && m.get("options") instanceof List<?> op && op.size() >= 2;
             }
-            if (Boolean.TRUE.equals(optMap.get("isCorrect"))) {
-                hasCorrect = true;
+            case ORDERING -> {
+                Object parsed = parseJson(q.getOptions());
+                yield parsed instanceof List<?> l && l.size() >= 2;
             }
-        }
-
-        return hasCorrect;
+            case SHORT_ANSWER, FILL_BLANK ->
+                    q.getCorrectAnswer() != null && !q.getCorrectAnswer().isBlank();
+            case ESSAY -> true;
+        };
     }
 
     private Object parseJson(String json) {

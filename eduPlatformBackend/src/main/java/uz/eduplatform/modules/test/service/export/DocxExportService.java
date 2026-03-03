@@ -347,6 +347,78 @@ public class DocxExportService implements TestExportService {
             tfRun.setFontSize(10);
             tfRun.setText("A) " + messageService.get("export.true.option", locale)
                     + "     B) " + messageService.get("export.false.option", locale));
+        } else if (q.getQuestionType() == QuestionType.MATCHING) {
+            Object matchObj = parseJson(q.getOptions());
+            if (matchObj instanceof Map<?, ?> matchMap) {
+                Object premisesObj = matchMap.get("premises");
+                Object matchOptsObj = matchMap.get("options");
+                String[] letters = {"A", "B", "C", "D", "E", "F", "G", "H"};
+                if (premisesObj instanceof List<?> premises) {
+                    for (int k = 0; k < premises.size(); k++) {
+                        Object p = premises.get(k);
+                        String premiseText = (p instanceof Map<?, ?> pm)
+                                ? resolveExportOptionText(pm.get("text")) : "";
+                        XWPFParagraph pPara = document.createParagraph();
+                        pPara.setIndentationLeft(600);
+                        XWPFRun pRun = pPara.createRun();
+                        pRun.setFontSize(10);
+                        pRun.setText((k + 1) + ". [___]  " + premiseText);
+                    }
+                }
+                if (matchOptsObj instanceof List<?> matchOpts && !matchOpts.isEmpty()) {
+                    XWPFParagraph labelPara = document.createParagraph();
+                    labelPara.setIndentationLeft(600);
+                    XWPFRun labelRun = labelPara.createRun();
+                    labelRun.setBold(true);
+                    labelRun.setFontSize(9);
+                    labelRun.setText(messageService.get("export.matching.options.label", locale));
+                    for (int k = 0; k < matchOpts.size(); k++) {
+                        Object o = matchOpts.get(k);
+                        String optText = (o instanceof Map<?, ?> om)
+                                ? resolveExportOptionText(om.get("text")) : "";
+                        String lbl = k < letters.length ? letters[k] : String.valueOf(k + 1);
+                        XWPFParagraph oPara = document.createParagraph();
+                        oPara.setIndentationLeft(800);
+                        XWPFRun oRun = oPara.createRun();
+                        oRun.setFontSize(10);
+                        oRun.setText(lbl + ") " + optText);
+                    }
+                }
+            }
+        } else if (q.getQuestionType() == QuestionType.ORDERING) {
+            Object orderObj = parseJson(q.getOptions());
+            if (orderObj instanceof List<?> orderItems) {
+                XWPFParagraph instrPara = document.createParagraph();
+                instrPara.setIndentationLeft(600);
+                XWPFRun instrRun = instrPara.createRun();
+                instrRun.setBold(true);
+                instrRun.setFontSize(9);
+                instrRun.setText(messageService.get("export.ordering.instruction", locale));
+                for (Object item : orderItems) {
+                    String itemText = (item instanceof Map<?, ?> im)
+                            ? resolveExportOptionText(im.get("text")) : "";
+                    XWPFParagraph iPara = document.createParagraph();
+                    iPara.setIndentationLeft(600);
+                    XWPFRun iRun = iPara.createRun();
+                    iRun.setFontSize(10);
+                    iRun.setText("[___]  " + itemText);
+                }
+            }
+        } else if (q.getQuestionType() == QuestionType.SHORT_ANSWER
+                || q.getQuestionType() == QuestionType.FILL_BLANK) {
+            XWPFParagraph blankPara = document.createParagraph();
+            blankPara.setIndentationLeft(600);
+            XWPFRun blankRun = blankPara.createRun();
+            blankRun.setFontSize(10);
+            blankRun.setText(messageService.get("export.answer.blank", locale));
+        } else if (q.getQuestionType() == QuestionType.ESSAY) {
+            for (int k = 0; k < 5; k++) {
+                XWPFParagraph linePara = document.createParagraph();
+                linePara.setIndentationLeft(600);
+                XWPFRun lineRun = linePara.createRun();
+                lineRun.setFontSize(10);
+                lineRun.setText("_______________________________________________________________________");
+            }
         }
         addEmptyLine(document);
     }
@@ -416,9 +488,20 @@ public class DocxExportService implements TestExportService {
                 if (idx < totalQuestions) {
                     Map<String, Object> entry = answerKey.get(idx);
                     String numStr = String.valueOf(entry.get("questionNumber"));
-                    String answer = String.valueOf(entry.get("answer"));
+                    String rawAnswer = String.valueOf(entry.get("answer"));
+                    String type = entry.containsKey("type") ? String.valueOf(entry.get("type")) : "";
+                    String displayAnswer;
+                    if ("ESSAY".equals(type)) {
+                        displayAnswer = messageService.get("export.manual.grading", locale);
+                    } else if ("MATCHING".equals(type) || "ORDERING".equals(type)
+                            || "SHORT_ANSWER".equals(type) || "FILL_BLANK".equals(type)) {
+                        displayAnswer = rawAnswer.length() > 15
+                                ? rawAnswer.substring(0, 13) + ".." : rawAnswer;
+                    } else {
+                        displayAnswer = rawAnswer;
+                    }
                     setCellText(row.getCell(c * 2), numStr, false);
-                    setCellText(row.getCell(c * 2 + 1), answer, true);
+                    setCellText(row.getCell(c * 2 + 1), displayAnswer, true);
                 }
             }
         }

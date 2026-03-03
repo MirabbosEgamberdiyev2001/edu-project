@@ -107,17 +107,17 @@ public class TestGenerationService {
                 }
             }
 
-            // Filter only valid MCQ questions with options (A, B, C, D)
+            // Filter only valid questions (all 8 types supported)
             List<Question> invalidQuestions = selected.stream()
                     .filter(q -> !isValidForTest(q))
                     .toList();
 
             if (!invalidQuestions.isEmpty()) {
-                log.warn("Manual mode: {} out of {} questions are not valid MCQ with options, filtering out",
+                log.warn("Manual mode: {} out of {} questions are invalid, filtering out",
                         invalidQuestions.size(), selected.size());
                 selected = new ArrayList<>(selected.stream().filter(this::isValidForTest).toList());
                 if (selected.isEmpty()) {
-                    throw BusinessException.ofKey("test.manual.no.valid.mcq.questions");
+                    throw BusinessException.ofKey("test.manual.no.valid.questions");
                 }
             }
 
@@ -150,13 +150,13 @@ public class TestGenerationService {
                 throw BusinessException.ofKey("test.no.active.questions");
             }
 
-            // 2.1 Filter only valid MCQ questions with options (A, B, C, D)
+            // 2.1 Filter only valid questions (all 8 types supported)
             candidates = candidates.stream().filter(this::isValidForTest).toList();
             if (candidates.isEmpty()) {
-                throw BusinessException.ofKey("test.no.valid.mcq.questions");
+                throw BusinessException.ofKey("test.no.valid.questions");
             }
 
-            log.debug("Auto mode: {} valid MCQ questions found for test generation", candidates.size());
+            log.debug("Auto mode: {} valid questions found for test generation", candidates.size());
 
             // 3. Group by difficulty
             Map<Difficulty, List<Question>> byDifficulty = candidates.stream()
@@ -402,20 +402,51 @@ public class TestGenerationService {
 
             } else if (q.getQuestionType() == QuestionType.TRUE_FALSE) {
                 // TRUE_FALSE: answer key from correctAnswer field
-                String correctAnswer = findCorrectAnswer(q);
+                String correctAnswer = q.getCorrectAnswer() != null ? q.getCorrectAnswer() : "";
                 Map<String, Object> keyEntry = new LinkedHashMap<>();
                 keyEntry.put("questionNumber", i + 1);
                 keyEntry.put("answer", correctAnswer);
+                keyEntry.put("type", "TRUE_FALSE");
+                answerKey.add(keyEntry);
+                allOptionsOrder.add(null);
+            } else if (q.getQuestionType() == QuestionType.MATCHING) {
+                String ca = q.getCorrectAnswer() != null ? q.getCorrectAnswer() : "{}";
+                Map<String, Object> keyEntry = new LinkedHashMap<>();
+                keyEntry.put("questionNumber", i + 1);
+                keyEntry.put("answer", ca);
+                keyEntry.put("type", "MATCHING");
+                answerKey.add(keyEntry);
+                allOptionsOrder.add(null);
+            } else if (q.getQuestionType() == QuestionType.ORDERING) {
+                String ca = q.getCorrectAnswer() != null ? q.getCorrectAnswer() : "[]";
+                Map<String, Object> keyEntry = new LinkedHashMap<>();
+                keyEntry.put("questionNumber", i + 1);
+                keyEntry.put("answer", ca);
+                keyEntry.put("type", "ORDERING");
+                answerKey.add(keyEntry);
+                allOptionsOrder.add(null);
+            } else if (q.getQuestionType() == QuestionType.SHORT_ANSWER
+                    || q.getQuestionType() == QuestionType.FILL_BLANK) {
+                Map<String, Object> keyEntry = new LinkedHashMap<>();
+                keyEntry.put("questionNumber", i + 1);
+                keyEntry.put("answer", q.getCorrectAnswer() != null ? q.getCorrectAnswer() : "");
+                keyEntry.put("type", q.getQuestionType().name());
+                answerKey.add(keyEntry);
+                allOptionsOrder.add(null);
+            } else if (q.getQuestionType() == QuestionType.ESSAY) {
+                Map<String, Object> keyEntry = new LinkedHashMap<>();
+                keyEntry.put("questionNumber", i + 1);
+                keyEntry.put("answer", "MANUAL");
+                keyEntry.put("type", "ESSAY");
                 answerKey.add(keyEntry);
                 allOptionsOrder.add(null);
             } else {
-                // Fallback for any other type - should not reach here after isValidForTest filter
-                log.warn("Question {} (type={}) has no valid MCQ options, included with empty answer",
+                // Fallback — should not reach here after isValidForTest filter
+                log.warn("Question {} (type={}) fell through to fallback in createVariant",
                         q.getId(), q.getQuestionType());
-                String correctAnswer = findCorrectAnswer(q);
                 Map<String, Object> keyEntry = new LinkedHashMap<>();
                 keyEntry.put("questionNumber", i + 1);
-                keyEntry.put("answer", correctAnswer);
+                keyEntry.put("answer", q.getCorrectAnswer() != null ? q.getCorrectAnswer() : "");
                 answerKey.add(keyEntry);
                 allOptionsOrder.add(null);
             }
@@ -472,42 +503,37 @@ public class TestGenerationService {
     }
 
     /**
-     * Validates that a question is suitable for test generation:
-     * - Must be MCQ_SINGLE or MCQ_MULTI type
-     * - Must have a non-empty list of options (minimum 2)
-     * - Each option must have an "id" and "text" field
-     * - At least one option must be marked as correct (isCorrect=true)
+     * Validates that a question is suitable for test generation — supports all 8 question types.
      */
     @SuppressWarnings("unchecked")
     private boolean isValidForTest(Question q) {
-        // Only MCQ types are valid for printed tests
-        if (q.getQuestionType() != QuestionType.MCQ_SINGLE
-                && q.getQuestionType() != QuestionType.MCQ_MULTI) {
-            return false;
-        }
-
-        // Parse options JSON
-        Object parsed = parseJson(q.getOptions());
-        if (!(parsed instanceof List<?> optionsList) || optionsList.size() < 2) {
-            return false;
-        }
-
-        // Verify options have required structure and at least one correct answer
-        boolean hasCorrect = false;
-        for (Object opt : optionsList) {
-            if (!(opt instanceof Map<?, ?> optMap)) {
-                return false;
+        return switch (q.getQuestionType()) {
+            case MCQ_SINGLE, MCQ_MULTI -> {
+                Object parsed = parseJson(q.getOptions());
+                if (!(parsed instanceof List<?> optionsList) || optionsList.size() < 2) yield false;
+                boolean hasCorrect = false;
+                for (Object opt : optionsList) {
+                    if (!(opt instanceof Map<?, ?> optMap)) yield false;
+                    if (optMap.get("text") == null) yield false;
+                    if (Boolean.TRUE.equals(optMap.get("isCorrect"))) hasCorrect = true;
+                }
+                yield hasCorrect;
             }
-            // Each option must have text
-            if (optMap.get("text") == null) {
-                return false;
+            case TRUE_FALSE -> true;
+            case MATCHING -> {
+                Object parsed = parseJson(q.getOptions());
+                yield parsed instanceof Map<?, ?> m
+                        && m.get("premises") instanceof List<?> pr && pr.size() >= 2
+                        && m.get("options") instanceof List<?> op && op.size() >= 2;
             }
-            if (Boolean.TRUE.equals(optMap.get("isCorrect"))) {
-                hasCorrect = true;
+            case ORDERING -> {
+                Object parsed = parseJson(q.getOptions());
+                yield parsed instanceof List<?> l && l.size() >= 2;
             }
-        }
-
-        return hasCorrect;
+            case SHORT_ANSWER, FILL_BLANK ->
+                    q.getCorrectAnswer() != null && !q.getCorrectAnswer().isBlank();
+            case ESSAY -> true;
+        };
     }
 
     private Object parseJson(String json) {
