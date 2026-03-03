@@ -84,6 +84,8 @@
   "roleModal": {
     "title": "Kim sifatida boshlaysiz?",
     "subtitle": "Rolingizni tanlang va bepul boshlang",
+    "loginBtn": "Tizimga kirish",
+    "registerBtn": "Ro'yxatdan o'tish",
     "teacher": {
       "title": "O'qituvchi",
       "description": "Test yarating, guruhlarni boshqaring, natijalarni real vaqtda kuzating",

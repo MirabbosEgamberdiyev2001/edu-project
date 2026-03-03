@@ -54,7 +54,7 @@ export default function RegisterPage() {
       email: '', phone: '',
       firstName: '', lastName: '',
       password: '', confirmPassword: '',
-      role: Role.STUDENT,
+      role: initialRole,
     });
   };
 
@@ -208,7 +208,7 @@ export default function RegisterPage() {
           {t('register.hasAccount')}{' '}
           <MuiLink
             component={Link}
-            to="/auth/login"
+            to={`/auth/login?role=${selectedRole}`}
             sx={{ fontWeight: 600, textDecoration: 'none' }}
           >
             {t('register.login')}

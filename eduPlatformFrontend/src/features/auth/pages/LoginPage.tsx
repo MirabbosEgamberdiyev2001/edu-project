@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Box, Button, Typography, Link as MuiLink, TextField, CircularProgress, Divider } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AuthLayout from '../components/AuthLayout';
 import AuthMethodTabs from '../components/AuthMethodTabs';
@@ -19,7 +19,12 @@ const isAdminPanel = window.location.hostname.startsWith('admin.');
 export default function LoginPage() {
   const { t } = useTranslation('auth');
   const [method, setMethod] = useState<'email' | 'phone'>('email');
-  const [googleRole, setGoogleRole] = useState<Role>(Role.STUDENT);
+  const [searchParams] = useSearchParams();
+  const preselectedRole = searchParams.get('role');
+  const initialRole = (preselectedRole && Object.values(Role).includes(preselectedRole as Role))
+    ? (preselectedRole as Role)
+    : Role.STUDENT;
+  const [googleRole, setGoogleRole] = useState<Role>(initialRole);
   const login = useLogin();
 
   const {
@@ -145,7 +150,7 @@ export default function LoginPage() {
               {t('login.noAccount')}{' '}
               <MuiLink
                 component={Link}
-                to="/auth/register"
+                to={`/auth/register?role=${googleRole}`}
                 sx={{ fontWeight: 600, textDecoration: 'none' }}
               >
                 {t('login.register')}

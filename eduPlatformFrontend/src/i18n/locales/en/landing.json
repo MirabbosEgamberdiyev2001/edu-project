@@ -84,6 +84,8 @@
   "roleModal": {
     "title": "Who are you?",
     "subtitle": "Choose your role and start for free",
+    "loginBtn": "Sign in",
+    "registerBtn": "Create account",
     "teacher": {
       "title": "Teacher",
       "description": "Create tests, manage groups, track results in real time",
