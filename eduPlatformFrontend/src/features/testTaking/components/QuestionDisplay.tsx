@@ -41,7 +41,7 @@ export default function QuestionDisplay({ question, questionNumber, totalQuestio
       />
 
       {/* Optional attached image */}
-      {question.media && typeof question.media === 'object' && 'imageUrl' in question.media && question.media.imageUrl && (
+      {question.media && typeof question.media === 'object' && 'imageUrl' in question.media && !!question.media.imageUrl && (
         <Box sx={{ mt: 2 }}>
           <img
             src={question.media.imageUrl as string}

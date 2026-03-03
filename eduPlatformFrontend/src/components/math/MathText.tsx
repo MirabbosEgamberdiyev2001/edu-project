@@ -71,7 +71,9 @@ function renderMath(latex: string, displayMode: boolean): string {
   }
 }
 
-const VARIANT_STYLES: Record<string, SxProps<Theme>> = {
+// Use a concrete object type (not SxProps<Theme>) so indexing never returns an array type,
+// which would confuse TypeScript's Box overload resolution.
+const VARIANT_STYLES: Record<string, Record<string, string | number>> = {
   h5: { fontSize: '1.5rem', fontWeight: 700, lineHeight: 1.4 },
   h6: { fontSize: '1.125rem', fontWeight: 600, lineHeight: 1.5 },
   subtitle1: { fontSize: '1rem', fontWeight: 500, lineHeight: 1.75 },
@@ -97,7 +99,7 @@ export default function MathText({ text, variant = 'body1', sx }: MathTextProps)
   if (!hasMath) {
     // Fast path: no math delimiters — render as plain text
     return (
-      <Box sx={[VARIANT_STYLES[variant] ?? {}, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])] as SxProps<Theme>}>
+      <Box sx={[VARIANT_STYLES[variant] ?? {}, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}>
         {text}
       </Box>
     );
@@ -106,7 +108,7 @@ export default function MathText({ text, variant = 'body1', sx }: MathTextProps)
   const segments = parseSegments(text);
 
   return (
-    <Box sx={[VARIANT_STYLES[variant] ?? {}, { wordBreak: 'break-word' as const }, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])] as SxProps<Theme>}>
+    <Box sx={[VARIANT_STYLES[variant] ?? {}, { wordBreak: 'break-word' as const }, ...(Array.isArray(sx) ? sx : sx ? [sx] : [])]}>
       {segments.map((seg, i) => {
         if (seg.kind === 'text') {
           return <span key={i}>{seg.content}</span>;
