@@ -1,6 +1,8 @@
 package uz.eduplatform.modules.group.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import uz.eduplatform.modules.group.domain.GroupMember;
 
@@ -22,4 +24,7 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, UUID> 
     long countByGroupId(UUID groupId);
 
     List<GroupMember> findByStudentId(UUID studentId);
+
+    @Query("SELECT gm.group.id FROM GroupMember gm WHERE gm.studentId = :studentId")
+    List<UUID> findGroupIdsByStudentId(@Param("studentId") UUID studentId);
 }

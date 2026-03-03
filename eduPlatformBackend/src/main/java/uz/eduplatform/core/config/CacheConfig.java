@@ -37,7 +37,8 @@ public class CacheConfig {
         cacheBuilders.putAll(Map.of(
                 "global_tests", caffeineBuilder(Duration.ofMinutes(5), 200),
                 "notification_count", caffeineBuilder(Duration.ofSeconds(30), 5000),
-                "user_groups", caffeineBuilder(Duration.ofMinutes(10), 1000)
+                "user_groups", caffeineBuilder(Duration.ofMinutes(10), 1000),
+                "public_stats", caffeineBuilder(Duration.ofMinutes(10), 10)
         ));
 
         cacheBuilders.forEach((name, builder) ->

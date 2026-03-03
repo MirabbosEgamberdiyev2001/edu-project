@@ -30,6 +30,9 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import ImageIcon from '@mui/icons-material/Image';
 import CancelIcon from '@mui/icons-material/Cancel';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import { useTranslation } from 'react-i18next';
 import type { QuestionDto, CreateQuestionRequest, UpdateQuestionRequest } from '@/types/question';
 import { QuestionType, Difficulty, GradingStrategy } from '@/types/question';
@@ -75,6 +78,17 @@ const DIFFICULTY_OPTIONS = Object.values(Difficulty);
 interface McqOption {
   text: Record<string, string>;
   isCorrect: boolean;
+}
+
+interface MatchingPair {
+  id: string;
+  premiseText: Record<string, string>;
+  optionText: Record<string, string>;
+}
+
+interface OrderingItem {
+  id: string;
+  text: Record<string, string>;
 }
 
 interface FlatTopic {
@@ -147,6 +161,19 @@ export default function QuestionFormDialog({
   const [correctAnswer, setCorrectAnswer] = useState<Record<string, string>>({});
   const [optionsLangTab, setOptionsLangTab] = useState(0);
   const [trueFalseAnswer, setTrueFalseAnswer] = useState('');
+
+  // MATCHING state: list of premise→option pairs
+  const [matchingPairs, setMatchingPairs] = useState<MatchingPair[]>([
+    { id: '1', premiseText: {}, optionText: {} },
+    { id: '2', premiseText: {}, optionText: {} },
+  ]);
+
+  // ORDERING state: list of items in the correct order
+  const [orderingItems, setOrderingItems] = useState<OrderingItem[]>([
+    { id: '1', text: {} },
+    { id: '2', text: {} },
+    { id: '3', text: {} },
+  ]);
 
   // Step 5: Settings
   const [difficulty, setDifficulty] = useState<Difficulty>(Difficulty.MEDIUM);
@@ -256,6 +283,15 @@ export default function QuestionFormDialog({
         ]);
         setCorrectAnswer({});
         setTrueFalseAnswer('');
+        setMatchingPairs([
+          { id: '1', premiseText: {}, optionText: {} },
+          { id: '2', premiseText: {}, optionText: {} },
+        ]);
+        setOrderingItems([
+          { id: '1', text: {} },
+          { id: '2', text: {} },
+          { id: '3', text: {} },
+        ]);
         setDifficulty(Difficulty.MEDIUM);
         setPoints(1);
         setTimeLimitSeconds('');
@@ -345,8 +381,14 @@ export default function QuestionFormDialog({
       case QuestionType.ESSAY:
         return true; // no answer needed
       case QuestionType.MATCHING:
+        return matchingPairs.length >= 2 &&
+          matchingPairs.every((p) =>
+            Object.values(p.premiseText).some((v) => v.trim()) &&
+            Object.values(p.optionText).some((v) => v.trim()),
+          );
       case QuestionType.ORDERING:
-        return Boolean(correctAnswer['uz_latn']?.trim());
+        return orderingItems.length >= 2 &&
+          orderingItems.every((item) => Object.values(item.text).some((v) => v.trim()));
       default:
         return true;
     }
@@ -386,11 +428,15 @@ export default function QuestionFormDialog({
       questionType === QuestionType.FILL_BLANK
     ) {
       finalCorrectAnswer = cleanMap(correctAnswer);
-    } else if (
-      questionType === QuestionType.MATCHING ||
-      questionType === QuestionType.ORDERING
-    ) {
-      finalCorrectAnswer = cleanMap(correctAnswer);
+    } else if (questionType === QuestionType.MATCHING) {
+      finalOptions = {
+        premises: matchingPairs.map((p) => ({ id: p.id, text: cleanMap(p.premiseText) })),
+        options: matchingPairs.map((p) => ({ id: `${p.id}_opt`, text: cleanMap(p.optionText) })),
+      };
+      finalCorrectAnswer = Object.fromEntries(matchingPairs.map((p) => [p.id, `${p.id}_opt`]));
+    } else if (questionType === QuestionType.ORDERING) {
+      finalOptions = orderingItems.map((item) => ({ id: item.id, text: cleanMap(item.text) }));
+      finalCorrectAnswer = orderingItems.map((item) => item.id);
     }
 
     // Build image action
@@ -803,8 +849,9 @@ export default function QuestionFormDialog({
       case QuestionType.ESSAY:
         return renderEssayNote();
       case QuestionType.MATCHING:
+        return renderMatchingOptions();
       case QuestionType.ORDERING:
-        return renderAdvancedAnswer();
+        return renderOrderingOptions();
       default:
         return null;
     }
@@ -959,35 +1006,126 @@ export default function QuestionFormDialog({
     );
   }
 
-  function renderAdvancedAnswer() {
+  function renderMatchingOptions() {
     const currentFrontendLang = SUPPORTED_LANGUAGES[optionsLangTab] || 'uzl';
     const currentKey = langKey(currentFrontendLang);
+    const addPair = () =>
+      setMatchingPairs((prev) => [
+        ...prev,
+        { id: String(Date.now()), premiseText: {}, optionText: {} },
+      ]);
+    const removePair = (id: string) =>
+      setMatchingPairs((prev) => prev.filter((p) => p.id !== id));
+    const updatePair = (id: string, field: 'premiseText' | 'optionText', val: string) =>
+      setMatchingPairs((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, [field]: { ...p[field], [currentKey]: val } } : p)),
+      );
 
     return (
-      <Box>
-        <Tabs
-          value={optionsLangTab}
-          onChange={(_, v) => setOptionsLangTab(v)}
-          sx={{ mb: 2, borderBottom: 1, borderColor: 'divider' }}
-        >
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        <Alert severity="info" sx={{ py: 0.5 }}>{t('form.langHint')}</Alert>
+        <Tabs value={optionsLangTab} onChange={(_, v) => setOptionsLangTab(v)} sx={{ borderBottom: 1, borderColor: 'divider', mb: 1 }}>
           {SUPPORTED_LANGUAGES.map((lang) => (
-            <Tab
-              key={lang}
-              label={LANGUAGE_LABELS[lang]}
-              sx={{ textTransform: 'none', minWidth: 0, px: 1.5 }}
-            />
+            <Tab key={lang} label={LANGUAGE_LABELS[lang]} sx={{ textTransform: 'none', minWidth: 0, px: 1.5 }} />
           ))}
         </Tabs>
+        <Alert severity="success" sx={{ py: 0.5 }}>{t('form.matchingHint')}</Alert>
+        {matchingPairs.map((pair, idx) => (
+          <Paper key={pair.id} variant="outlined" sx={{ p: 1.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
+              <Typography variant="caption" fontWeight={700} color="text.secondary">{idx + 1}.</Typography>
+              <Box sx={{ flex: 1 }} />
+              <IconButton size="small" onClick={() => removePair(pair.id)} disabled={matchingPairs.length <= 2} color="error">
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            </Box>
+            <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
+              <TextField
+                size="small"
+                label={t('form.premise')}
+                value={pair.premiseText[currentKey] || ''}
+                onChange={(e) => updatePair(pair.id, 'premiseText', e.target.value)}
+                sx={{ flex: 1 }}
+              />
+              <SwapHorizIcon sx={{ color: 'text.disabled', flexShrink: 0 }} />
+              <TextField
+                size="small"
+                label={t('form.option')}
+                value={pair.optionText[currentKey] || ''}
+                onChange={(e) => updatePair(pair.id, 'optionText', e.target.value)}
+                sx={{ flex: 1 }}
+              />
+            </Box>
+          </Paper>
+        ))}
+        <Button startIcon={<AddIcon />} onClick={addPair} variant="outlined" size="small" sx={{ alignSelf: 'flex-start' }}>
+          {t('form.addPair')}
+        </Button>
+      </Box>
+    );
+  }
 
-        <TextField
-          label={`${t('form.correctAnswer')} (${LANGUAGE_LABELS[currentFrontendLang]})`}
-          value={correctAnswer[currentKey] || ''}
-          onChange={(e) => setCorrectAnswer({ ...correctAnswer, [currentKey]: e.target.value })}
-          fullWidth
-          multiline
-          rows={3}
-          placeholder={t("form.correctAnswerPlaceholder")}
-        />
+  function renderOrderingOptions() {
+    const currentFrontendLang = SUPPORTED_LANGUAGES[optionsLangTab] || 'uzl';
+    const currentKey = langKey(currentFrontendLang);
+    const addItem = () =>
+      setOrderingItems((prev) => [...prev, { id: String(Date.now()), text: {} }]);
+    const removeItem = (id: string) =>
+      setOrderingItems((prev) => prev.filter((item) => item.id !== id));
+    const updateItem = (id: string, val: string) =>
+      setOrderingItems((prev) =>
+        prev.map((item) => (item.id === id ? { ...item, text: { ...item.text, [currentKey]: val } } : item)),
+      );
+    const moveUp = (idx: number) => {
+      if (idx === 0) return;
+      setOrderingItems((prev) => {
+        const next = [...prev];
+        [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
+        return next;
+      });
+    };
+    const moveDown = (idx: number) => {
+      setOrderingItems((prev) => {
+        if (idx === prev.length - 1) return prev;
+        const next = [...prev];
+        [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
+        return next;
+      });
+    };
+
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        <Alert severity="info" sx={{ py: 0.5 }}>{t('form.langHint')}</Alert>
+        <Tabs value={optionsLangTab} onChange={(_, v) => setOptionsLangTab(v)} sx={{ borderBottom: 1, borderColor: 'divider', mb: 1 }}>
+          {SUPPORTED_LANGUAGES.map((lang) => (
+            <Tab key={lang} label={LANGUAGE_LABELS[lang]} sx={{ textTransform: 'none', minWidth: 0, px: 1.5 }} />
+          ))}
+        </Tabs>
+        <Alert severity="success" sx={{ py: 0.5 }}>{t('form.orderingHint')}</Alert>
+        {orderingItems.map((item, idx) => (
+          <Paper key={item.id} variant="outlined" sx={{ p: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ width: 28, height: 28, borderRadius: '50%', bgcolor: 'primary.main', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontWeight: 700, fontSize: '0.8rem' }}>
+              {idx + 1}
+            </Box>
+            <TextField
+              size="small"
+              value={item.text[currentKey] || ''}
+              onChange={(e) => updateItem(item.id, e.target.value)}
+              sx={{ flex: 1 }}
+              placeholder={`${t('form.item')} ${idx + 1}`}
+            />
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <IconButton size="small" onClick={() => moveUp(idx)} disabled={idx === 0}><ArrowUpwardIcon fontSize="small" /></IconButton>
+              <IconButton size="small" onClick={() => moveDown(idx)} disabled={idx === orderingItems.length - 1}><ArrowDownwardIcon fontSize="small" /></IconButton>
+            </Box>
+            <IconButton size="small" onClick={() => removeItem(item.id)} disabled={orderingItems.length <= 2} color="error">
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Paper>
+        ))}
+        <Button startIcon={<AddIcon />} onClick={addItem} variant="outlined" size="small" sx={{ alignSelf: 'flex-start' }}>
+          {t('form.addItem')}
+        </Button>
       </Box>
     );
   }

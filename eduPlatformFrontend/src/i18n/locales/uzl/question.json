@@ -42,7 +42,14 @@
     "false": "Noto'g'ri",
     "correctAnswerPlaceholder": "JSON ob'ekti yoki oddiy matn",
     "gradingStrategy": "Baholash usuli",
-    "gradeLevels": "Sinf darajalari (ko'p tanlash)"
+    "gradeLevels": "Sinf darajalari (ko'p tanlash)",
+    "premise": "Shart",
+    "option": "Mos variant",
+    "addPair": "Juft qo'shish",
+    "addItem": "Element qo'shish",
+    "item": "Element",
+    "matchingHint": "Shart-javob juftlarini kiriting. O'quvchilar ularni moslashtiradi.",
+    "orderingHint": "Elementlarni TO'G'RI tartibda kiriting. O'quvchilar tartibni o'zgartiradi."
   },
   "gradingStrategies": {
     "EXACT_MATCH": {

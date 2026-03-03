@@ -42,7 +42,14 @@
     "false": "False",
     "correctAnswerPlaceholder": "JSON object or plain text",
     "gradingStrategy": "Grading strategy",
-    "gradeLevels": "Grade levels (multi-select)"
+    "gradeLevels": "Grade levels (multi-select)",
+    "premise": "Premise",
+    "option": "Matching option",
+    "addPair": "Add pair",
+    "addItem": "Add item",
+    "item": "Item",
+    "matchingHint": "Define premise-option pairs. Students will match them.",
+    "orderingHint": "Define items in the CORRECT order. Students will reorder them."
   },
   "gradingStrategies": {
     "EXACT_MATCH": {

@@ -123,6 +123,24 @@
     "avgScore": "Ўрт. балл",
     "actions": "Амаллар"
   },
+  "grading": "Баҳолаш",
+  "grade": "Баҳолаш",
+  "manualGrading": "Қўлда баҳолаш",
+  "noManualQuestions": "Қўлда баҳолаш учун саволлар йўқ",
+  "studentAnswer": "Ўқувчи жавоби",
+  "feedback": "Изоҳ",
+  "feedbackPlaceholder": "Ўқувчига изоҳ киритинг...",
+  "gradeSubmit": "Баҳоларни сақлаш",
+  "points": "б",
+  "notStarted": "Бошланмаган",
+  "attemptStatus": {
+    "IN_PROGRESS": "Жараёнда",
+    "SUBMITTED": "Топширилган",
+    "AUTO_GRADED": "Баҳоланган",
+    "NEEDS_REVIEW": "Кўриб чиқилмоқда",
+    "GRADED": "Баҳоланган",
+    "EXPIRED": "Муддати ўтган"
+  },
   "success": {
     "created": "Топшириқ муваффақиятли яратилди",
     "updated": "Топшириқ муваффақиятли янгиланди",

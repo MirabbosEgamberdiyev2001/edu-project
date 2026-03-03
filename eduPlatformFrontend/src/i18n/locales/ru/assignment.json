@@ -123,6 +123,24 @@
     "avgScore": "Ср. балл",
     "actions": "Действия"
   },
+  "grading": "Оценивание",
+  "grade": "Оценить",
+  "manualGrading": "Ручная проверка",
+  "noManualQuestions": "Нет вопросов для ручной проверки",
+  "studentAnswer": "Ответ студента",
+  "feedback": "Комментарий",
+  "feedbackPlaceholder": "Введите комментарий для студента...",
+  "gradeSubmit": "Сохранить оценки",
+  "points": "б",
+  "notStarted": "Не начато",
+  "attemptStatus": {
+    "IN_PROGRESS": "В процессе",
+    "SUBMITTED": "Отправлено",
+    "AUTO_GRADED": "Оценено",
+    "NEEDS_REVIEW": "На проверке",
+    "GRADED": "Оценено",
+    "EXPIRED": "Истекло"
+  },
   "success": {
     "created": "Задание успешно создано",
     "updated": "Задание успешно обновлено",

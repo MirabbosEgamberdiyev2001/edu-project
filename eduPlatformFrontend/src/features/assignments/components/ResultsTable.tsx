@@ -17,8 +17,24 @@ interface ResultsTableProps {
   onGradeAttempt?: (attemptId: string, studentName: string) => void;
 }
 
+const statusColor = (status: string): 'default' | 'success' | 'error' | 'warning' | 'info' => {
+  switch (status) {
+    case 'AUTO_GRADED':
+    case 'GRADED': return 'success';
+    case 'NEEDS_REVIEW': return 'warning';
+    case 'SUBMITTED': return 'info';
+    case 'IN_PROGRESS': return 'default';
+    case 'EXPIRED': return 'error';
+    default: return 'default';
+  }
+};
+
 export default function ResultsTable({ students, onGradeAttempt }: ResultsTableProps) {
   const { t } = useTranslation('assignment');
+
+  const hasGradingColumn = students.some(
+    (s) => s.status === 'NEEDS_REVIEW' && s.latestAttemptId,
+  );
 
   return (
     <Table size="small">
@@ -32,6 +48,7 @@ export default function ResultsTable({ students, onGradeAttempt }: ResultsTableP
           <TableCell align="center">{t('tabSwitches')}</TableCell>
           <TableCell>{t('submittedAt')}</TableCell>
           <TableCell>{t('status')}</TableCell>
+          {hasGradingColumn && <TableCell align="center">{t('grading')}</TableCell>}
         </TableRow>
       </TableHead>
       <TableBody>
@@ -65,8 +82,34 @@ export default function ResultsTable({ students, onGradeAttempt }: ResultsTableP
               {student.submittedAt ? new Date(student.submittedAt).toLocaleString() : '-'}
             </TableCell>
             <TableCell>
-              <Chip label={student.status} size="small" variant="outlined" />
+              <Chip
+                label={t(`attemptStatus.${student.status}`, { defaultValue: student.status })}
+                size="small"
+                color={statusColor(student.status)}
+                variant={student.status === 'NEEDS_REVIEW' ? 'filled' : 'outlined'}
+              />
             </TableCell>
+            {hasGradingColumn && (
+              <TableCell align="center">
+                {student.status === 'NEEDS_REVIEW' && student.latestAttemptId && onGradeAttempt ? (
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    color="warning"
+                    startIcon={<GradingIcon />}
+                    onClick={() =>
+                      onGradeAttempt(
+                        student.latestAttemptId!,
+                        `${student.firstName} ${student.lastName}`,
+                      )
+                    }
+                    sx={{ whiteSpace: 'nowrap', textTransform: 'none' }}
+                  >
+                    {t('grade')}
+                  </Button>
+                ) : null}
+              </TableCell>
+            )}
           </TableRow>
         ))}
       </TableBody>

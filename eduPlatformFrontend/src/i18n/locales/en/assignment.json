@@ -123,6 +123,24 @@
     "avgScore": "Avg. Score",
     "actions": "Actions"
   },
+  "grading": "Grading",
+  "grade": "Grade",
+  "manualGrading": "Manual Grading",
+  "noManualQuestions": "No questions pending manual grading",
+  "studentAnswer": "Student Answer",
+  "feedback": "Feedback",
+  "feedbackPlaceholder": "Enter feedback for the student...",
+  "gradeSubmit": "Submit Grades",
+  "points": "pts",
+  "notStarted": "Not Started",
+  "attemptStatus": {
+    "IN_PROGRESS": "In Progress",
+    "SUBMITTED": "Submitted",
+    "AUTO_GRADED": "Graded",
+    "NEEDS_REVIEW": "Needs Review",
+    "GRADED": "Graded",
+    "EXPIRED": "Expired"
+  },
   "success": {
     "created": "Assignment created successfully",
     "updated": "Assignment updated successfully",

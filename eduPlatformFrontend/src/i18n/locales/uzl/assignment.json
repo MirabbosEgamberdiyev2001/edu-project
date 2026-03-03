@@ -123,6 +123,24 @@
     "avgScore": "O'rt. ball",
     "actions": "Amallar"
   },
+  "grading": "Baholash",
+  "grade": "Baholash",
+  "manualGrading": "Qo'lda baholash",
+  "noManualQuestions": "Qo'lda baholash uchun savollar yo'q",
+  "studentAnswer": "O'quvchi javobi",
+  "feedback": "Izoh",
+  "feedbackPlaceholder": "O'quvchiga izoh kiriting...",
+  "gradeSubmit": "Baholarni saqlash",
+  "points": "b",
+  "notStarted": "Boshlanmagan",
+  "attemptStatus": {
+    "IN_PROGRESS": "Jarayonda",
+    "SUBMITTED": "Topshirilgan",
+    "AUTO_GRADED": "Baholangan",
+    "NEEDS_REVIEW": "Ko'rib chiqilmoqda",
+    "GRADED": "Baholangan",
+    "EXPIRED": "Muddati o'tgan"
+  },
   "success": {
     "created": "Topshiriq muvaffaqiyatli yaratildi",
     "updated": "Topshiriq muvaffaqiyatli yangilandi",

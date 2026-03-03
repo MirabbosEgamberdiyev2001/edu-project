@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -23,6 +24,7 @@ import { AssignmentStatus } from '@/types/assignment';
 import AssignmentSettingsForm from '../components/AssignmentSettingsForm';
 import PromoCodeSection from '../components/PromoCodeSection';
 import ResultsTable from '../components/ResultsTable';
+import ManualGradingDialog from '../components/ManualGradingDialog';
 
 const STATUS_COLORS: Record<string, 'default' | 'info' | 'success' | 'error' | 'warning'> = {
   DRAFT: 'default',
@@ -41,6 +43,14 @@ export default function AssignmentDetailPage() {
   const { activate, cancel } = useAssignmentMutations();
   const { data: results } = useAssignmentResults(id!);
   const { exportResults } = useExportResults();
+
+  const [gradingAttemptId, setGradingAttemptId] = useState<string | null>(null);
+  const [gradingStudentName, setGradingStudentName] = useState('');
+
+  const handleGradeAttempt = (attemptId: string, studentName: string) => {
+    setGradingAttemptId(attemptId);
+    setGradingStudentName(studentName);
+  };
 
   if (isLoading) {
     return (
@@ -77,6 +87,16 @@ export default function AssignmentDetailPage() {
         />
       }
     >
+      {gradingAttemptId && (
+        <ManualGradingDialog
+          open={!!gradingAttemptId}
+          onClose={() => setGradingAttemptId(null)}
+          attemptId={gradingAttemptId}
+          assignmentId={id!}
+          studentName={gradingStudentName}
+        />
+      )}
+
       <Paper sx={{ p: 3, mb: 3 }}>
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6} md={3}>
@@ -190,7 +210,6 @@ export default function AssignmentDetailPage() {
         )}
       </Box>
 
-      {/* Inline Statistics — shown as soon as there are results */}
       {results && results.students.length > 0 && (
         <Paper sx={{ p: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
@@ -217,7 +236,7 @@ export default function AssignmentDetailPage() {
                 <Typography variant="h4" color="text.secondary">
                   {results.totalStudents - results.completedStudents}
                 </Typography>
-                <Typography variant="caption" color="text.secondary">{t('notStarted', 'Ishlamagan')}</Typography>
+                <Typography variant="caption" color="text.secondary">{t('notStarted')}</Typography>
               </Box>
             </Grid>
             <Grid item xs={6} sm={3}>
@@ -237,7 +256,7 @@ export default function AssignmentDetailPage() {
           <Divider sx={{ mb: 2 }} />
 
           <TableContainer>
-            <ResultsTable students={results.students} />
+            <ResultsTable students={results.students} onGradeAttempt={handleGradeAttempt} />
           </TableContainer>
         </Paper>
       )}

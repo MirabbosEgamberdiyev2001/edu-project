@@ -15,6 +15,7 @@ import uz.eduplatform.core.common.exception.ResourceNotFoundException;
 import uz.eduplatform.core.storage.FileStorageService;
 import uz.eduplatform.modules.auth.domain.User;
 import uz.eduplatform.modules.auth.repository.UserRepository;
+import uz.eduplatform.modules.group.repository.GroupMemberRepository;
 import uz.eduplatform.modules.homework.domain.Homework;
 import uz.eduplatform.modules.homework.domain.HomeworkSubmission;
 import uz.eduplatform.modules.homework.dto.*;
@@ -26,7 +27,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -37,6 +40,7 @@ public class HomeworkService {
     private final HomeworkRepository homeworkRepository;
     private final HomeworkSubmissionRepository submissionRepository;
     private final UserRepository userRepository;
+    private final GroupMemberRepository groupMemberRepository;
     private final FileStorageService fileStorageService;
     private final InAppNotificationService notificationService;
 
@@ -123,9 +127,20 @@ public class HomeworkService {
 
     @Transactional(readOnly = true)
     public PagedResponse<HomeworkDto> getStudentHomeworks(UUID studentId, UUID groupId, Pageable pageable) {
-        Page<Homework> page = (groupId != null)
-                ? homeworkRepository.findByGroupIdAndStatusOrderByCreatedAtDesc(groupId, "ACTIVE", pageable)
-                : Page.empty(pageable);
+        Page<Homework> page;
+        if (groupId != null) {
+            // Filter to a specific group (used from GroupDetailPage)
+            page = homeworkRepository.findByGroupIdAndStatusOrderByCreatedAtDesc(groupId, "ACTIVE", pageable);
+        } else {
+            // Fetch homeworks for ALL groups the student belongs to
+            Set<UUID> studentGroupIds = new HashSet<>(
+                    groupMemberRepository.findGroupIdsByStudentId(studentId));
+
+            if (studentGroupIds.isEmpty()) {
+                return PagedResponse.of(List.of(), pageable.getPageNumber(), pageable.getPageSize(), 0, 0);
+            }
+            page = homeworkRepository.findByGroupIdInAndStatus(studentGroupIds, "ACTIVE", pageable);
+        }
 
         List<HomeworkDto> dtos = page.getContent().stream().map(hw -> {
             HomeworkSubmission mySubmission = submissionRepository
