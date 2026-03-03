@@ -52,6 +52,18 @@ export const questionApi = {
   bulkSubmitForModeration: (questionIds: string[]) =>
     api.post<ApiResponse<BulkModerationResponse>>(`${QUESTIONS}/bulk-submit`, { questionIds }),
 
+  // Image upload / delete
+  uploadImage: (id: string, file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post<ApiResponse<QuestionDto>>(`${QUESTIONS}/${id}/image`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+
+  deleteImage: (id: string) =>
+    api.delete<ApiResponse<void>>(`${QUESTIONS}/${id}/image`),
+
   // Import / Export
   importQuestions: (formData: FormData) =>
     api.post<ApiResponse<{ successCount: number; errorCount: number; errors: string[] }>>(

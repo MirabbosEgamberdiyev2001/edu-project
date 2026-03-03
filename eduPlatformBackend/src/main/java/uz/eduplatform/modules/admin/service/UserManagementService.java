@@ -3,6 +3,7 @@ package uz.eduplatform.modules.admin.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.eduplatform.core.audit.AuditService;
@@ -18,6 +19,7 @@ import uz.eduplatform.modules.auth.domain.UserStatus;
 import uz.eduplatform.modules.auth.repository.UserRepository;
 import uz.eduplatform.modules.auth.repository.UserSessionRepository;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +32,10 @@ public class UserManagementService {
     private final UserRepository userRepository;
     private final UserSessionRepository userSessionRepository;
     private final AuditService auditService;
+    private final PasswordEncoder passwordEncoder;
+
+    private static final String TEMP_PWD_CHARS = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#";
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     @Transactional(readOnly = true)
     public PagedResponse<AdminUserDto> getUsers(String search, Role role, UserStatus status, Pageable pageable) {
@@ -144,6 +150,33 @@ public class UserManagementService {
                 "User", targetUserId);
 
         return mapToAdminDto(user);
+    }
+
+    @Transactional
+    public String resetPassword(UUID targetUserId, UUID adminId) {
+        User user = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", targetUserId));
+
+        if (user.getRole() == Role.SUPER_ADMIN) {
+            throw BusinessException.ofKey("admin.superadmin.role.protected");
+        }
+
+        // Generate a random 12-char temporary password
+        StringBuilder sb = new StringBuilder(12);
+        for (int i = 0; i < 12; i++) {
+            sb.append(TEMP_PWD_CHARS.charAt(RANDOM.nextInt(TEMP_PWD_CHARS.length())));
+        }
+        String tempPassword = sb.toString();
+
+        user.setPasswordHash(passwordEncoder.encode(tempPassword));
+        // Invalidate all existing sessions so the user must log in again with new password
+        userSessionRepository.deactivateAllByUserId(targetUserId);
+        userRepository.save(user);
+
+        auditService.log(adminId, "ADMIN", "USER_PASSWORD_RESET", "USER_MANAGEMENT",
+                "User", targetUserId);
+
+        return tempPassword;
     }
 
     private AdminUserDto mapToAdminDto(User user) {

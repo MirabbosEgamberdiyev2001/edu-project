@@ -7,18 +7,22 @@ import {
   Button,
   CircularProgress,
   Grid,
+  Divider,
+  TableContainer,
 } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import CancelIcon from '@mui/icons-material/Cancel';
 import MonitorIcon from '@mui/icons-material/Monitor';
-import BarChartIcon from '@mui/icons-material/BarChart';
+import DownloadIcon from '@mui/icons-material/Download';
 import { useTranslation } from 'react-i18next';
 import { PageShell } from '@/components/ui';
 import { useAssignment } from '../hooks/useAssignments';
 import { useAssignmentMutations } from '../hooks/useAssignmentMutations';
+import { useAssignmentResults, useExportResults } from '../hooks/useAssignmentResults';
 import { AssignmentStatus } from '@/types/assignment';
 import AssignmentSettingsForm from '../components/AssignmentSettingsForm';
 import PromoCodeSection from '../components/PromoCodeSection';
+import ResultsTable from '../components/ResultsTable';
 
 const STATUS_COLORS: Record<string, 'default' | 'info' | 'success' | 'error' | 'warning'> = {
   DRAFT: 'default',
@@ -35,6 +39,8 @@ export default function AssignmentDetailPage() {
   const { t } = useTranslation('assignment');
   const { data: assignment, isLoading } = useAssignment(id!);
   const { activate, cancel } = useAssignmentMutations();
+  const { data: results } = useAssignmentResults(id!);
+  const { exportResults } = useExportResults();
 
   if (isLoading) {
     return (
@@ -140,7 +146,7 @@ export default function AssignmentDetailPage() {
         <PromoCodeSection assignmentId={id!} />
       )}
 
-      <Box sx={{ display: 'flex', gap: 2 }}>
+      <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
         {assignment.status === AssignmentStatus.DRAFT && (
           <Button
             variant="contained"
@@ -182,16 +188,59 @@ export default function AssignmentDetailPage() {
             </Button>
           </>
         )}
-        {(assignment.status === AssignmentStatus.COMPLETED || assignment.status === AssignmentStatus.CANCELLED) && (
-          <Button
-            variant="contained"
-            startIcon={<BarChartIcon />}
-            onClick={() => navigate(`/assignments/${id}/results`)}
-          >
-            {t('viewResults')}
-          </Button>
-        )}
       </Box>
+
+      {/* Inline Statistics — shown as soon as there are results */}
+      {results && results.students.length > 0 && (
+        <Paper sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+            <Typography variant="h6">{t('studentResults')}</Typography>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button size="small" startIcon={<DownloadIcon />} onClick={() => exportResults(id!, 'CSV')}>
+                CSV
+              </Button>
+              <Button size="small" startIcon={<DownloadIcon />} onClick={() => exportResults(id!, 'EXCEL')}>
+                Excel
+              </Button>
+            </Box>
+          </Box>
+
+          <Grid container spacing={2} sx={{ mb: 3 }}>
+            <Grid item xs={6} sm={3}>
+              <Box sx={{ textAlign: 'center', p: 1.5, bgcolor: 'action.hover', borderRadius: 2 }}>
+                <Typography variant="h4" color="primary.main">{results.completedStudents}</Typography>
+                <Typography variant="caption" color="text.secondary">{t('completed')}</Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={6} sm={3}>
+              <Box sx={{ textAlign: 'center', p: 1.5, bgcolor: 'action.hover', borderRadius: 2 }}>
+                <Typography variant="h4" color="text.secondary">
+                  {results.totalStudents - results.completedStudents}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">{t('notStarted', 'Ishlamagan')}</Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={6} sm={3}>
+              <Box sx={{ textAlign: 'center', p: 1.5, bgcolor: 'action.hover', borderRadius: 2 }}>
+                <Typography variant="h4" color="info.main">{Math.round(results.averageScore)}%</Typography>
+                <Typography variant="caption" color="text.secondary">{t('averageScore')}</Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={6} sm={3}>
+              <Box sx={{ textAlign: 'center', p: 1.5, bgcolor: 'action.hover', borderRadius: 2 }}>
+                <Typography variant="h4" color="success.main">{Math.round(results.highestScore)}%</Typography>
+                <Typography variant="caption" color="text.secondary">{t('highestScore')}</Typography>
+              </Box>
+            </Grid>
+          </Grid>
+
+          <Divider sx={{ mb: 2 }} />
+
+          <TableContainer>
+            <ResultsTable students={results.students} />
+          </TableContainer>
+        </Paper>
+      )}
     </PageShell>
   );
 }

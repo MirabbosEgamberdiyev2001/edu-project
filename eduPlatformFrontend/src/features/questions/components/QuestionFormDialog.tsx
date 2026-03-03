@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -28,9 +28,11 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
+import ImageIcon from '@mui/icons-material/Image';
+import CancelIcon from '@mui/icons-material/Cancel';
 import { useTranslation } from 'react-i18next';
 import type { QuestionDto, CreateQuestionRequest, UpdateQuestionRequest } from '@/types/question';
-import { QuestionType, Difficulty } from '@/types/question';
+import { QuestionType, Difficulty, GradingStrategy } from '@/types/question';
 import { useSubjects } from '@/features/subjects/hooks/useSubjects';
 import { useTopicTree } from '@/features/topics/hooks/useTopicTree';
 import { useTopicMutations } from '@/features/topics/hooks/useTopicMutations';
@@ -40,10 +42,15 @@ import { SUPPORTED_LANGUAGES, LANGUAGE_LABELS } from '@/config';
 import type { TopicTreeDto, CreateTopicRequest } from '@/types/topic';
 import { MathTextField } from '@/components/math';
 
+export interface ImageAction {
+  file?: File;
+  remove?: boolean;
+}
+
 interface QuestionFormDialogProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: CreateQuestionRequest | UpdateQuestionRequest) => void;
+  onSubmit: (data: CreateQuestionRequest | UpdateQuestionRequest, imageAction?: ImageAction) => void;
   question?: QuestionDto | null;
   isPending: boolean;
   defaultSubjectId?: string;
@@ -123,7 +130,6 @@ export default function QuestionFormDialog({
 
   // Step 1: Subject & Topic & Grade
   const [subjectId, setSubjectId] = useState('');
-  const [gradeLevel, setGradeLevel] = useState<number | null>(null);
   const [topicId, setTopicId] = useState('');
 
   // Step 2: Question Type
@@ -146,18 +152,26 @@ export default function QuestionFormDialog({
   const [difficulty, setDifficulty] = useState<Difficulty>(Difficulty.MEDIUM);
   const [points, setPoints] = useState(1);
   const [timeLimitSeconds, setTimeLimitSeconds] = useState<string>('');
+  const [selectedGradeLevels, setSelectedGradeLevels] = useState<number[]>([]);
+  const [gradingStrategy, setGradingStrategy] = useState<GradingStrategy>(GradingStrategy.MANUAL);
 
   // Step 6: Proof (language tabs)
   const [proofLangTab, setProofLangTab] = useState(0);
   const [proof, setProof] = useState<Record<string, string>>({});
   const [changeReason, setChangeReason] = useState('');
 
+  // Image state
+  const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
+  const [pendingImagePreview, setPendingImagePreview] = useState<string | null>(null);
+  const [removeExistingImage, setRemoveExistingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // Load subjects
   const { data: subjectsData } = useSubjects({ size: 100 });
   const subjects = subjectsData?.content || [];
 
-  // Load topics for selected subject + grade
-  const { data: topicTree } = useTopicTree(subjectId || undefined, gradeLevel);
+  // Load all topics for selected subject (no grade filter)
+  const { data: topicTree } = useTopicTree(subjectId || undefined);
   const { create: createTopic } = useTopicMutations(subjectId || undefined);
 
   const flatTopics = useMemo(() => {
@@ -185,6 +199,8 @@ export default function QuestionFormDialog({
             ? String(question.timeLimitSeconds)
             : '',
         );
+        setGradingStrategy(question.gradingStrategy || GradingStrategy.MANUAL);
+        setSelectedGradeLevels(question.gradeLevels ?? []);
         setProof(
           question.proofTranslations ? { ...question.proofTranslations } : {},
         );
@@ -231,7 +247,6 @@ export default function QuestionFormDialog({
       } else {
         // Create mode: start fresh (use defaults if provided)
         setSubjectId(defaultSubjectId || '');
-        setGradeLevel(null);
         setTopicId(defaultTopicId || '');
         setQuestionType('');
         setQuestionText({});
@@ -244,6 +259,8 @@ export default function QuestionFormDialog({
         setDifficulty(Difficulty.MEDIUM);
         setPoints(1);
         setTimeLimitSeconds('');
+        setSelectedGradeLevels([]);
+        setGradingStrategy(GradingStrategy.MANUAL);
         setProof({});
         setChangeReason('');
       }
@@ -251,23 +268,22 @@ export default function QuestionFormDialog({
       setQuestionLangTab(0);
       setOptionsLangTab(0);
       setProofLangTab(0);
+      // Reset image state
+      if (pendingImagePreview) {
+        URL.revokeObjectURL(pendingImagePreview);
+      }
+      setPendingImageFile(null);
+      setPendingImagePreview(null);
+      setRemoveExistingImage(false);
     }
-  }, [open, question, defaultSubjectId, defaultTopicId]);
+  }, [open, question, defaultSubjectId, defaultTopicId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Clear grade+topic when subject changes (only in create mode)
+  // Clear topic when subject changes (only in create mode)
   useEffect(() => {
     if (!isEdit) {
-      setGradeLevel(null);
       setTopicId('');
     }
   }, [subjectId, isEdit]);
-
-  // Clear topic when grade changes (only in create mode)
-  useEffect(() => {
-    if (!isEdit) {
-      setTopicId('');
-    }
-  }, [gradeLevel, isEdit]);
 
   // -- Helpers --
 
@@ -292,8 +308,7 @@ export default function QuestionFormDialog({
   function isStepValid(step: number): boolean {
     switch (step) {
       case 0:
-        if (isEdit) return Boolean(subjectId) && Boolean(topicId);
-        return Boolean(subjectId) && gradeLevel !== null && Boolean(topicId);
+        return Boolean(subjectId) && Boolean(topicId);
       case 1:
         return Boolean(questionType);
       case 2:
@@ -378,6 +393,14 @@ export default function QuestionFormDialog({
       finalCorrectAnswer = cleanMap(correctAnswer);
     }
 
+    // Build image action
+    const imageAction: ImageAction | undefined =
+      pendingImageFile ? { file: pendingImageFile } :
+      removeExistingImage ? { remove: true } :
+      undefined;
+
+    const isTextGrading = questionType === QuestionType.SHORT_ANSWER || questionType === QuestionType.FILL_BLANK;
+
     if (isEdit) {
       const data: UpdateQuestionRequest = {
         questionText: cleanQuestion,
@@ -389,8 +412,10 @@ export default function QuestionFormDialog({
         correctAnswer: finalCorrectAnswer ?? '',
         proof: cleanProof,
         ...(changeReason.trim() ? { changeReason: changeReason.trim() } : {}),
+        ...(selectedGradeLevels.length > 0 ? { gradeLevels: selectedGradeLevels } : { gradeLevels: [] }),
+        ...(isTextGrading ? { gradingStrategy } : {}),
       };
-      onSubmit(data);
+      onSubmit(data, imageAction);
     } else {
       const data: CreateQuestionRequest = {
         topicId,
@@ -402,8 +427,10 @@ export default function QuestionFormDialog({
         options: finalOptions ?? [],
         correctAnswer: finalCorrectAnswer ?? '',
         ...(Object.keys(cleanProof).length > 0 ? { proof: cleanProof } : {}),
+        gradeLevels: selectedGradeLevels,
+        ...(isTextGrading ? { gradingStrategy } : {}),
       };
-      onSubmit(data);
+      onSubmit(data, imageAction);
     }
   }
 
@@ -477,18 +504,29 @@ export default function QuestionFormDialog({
 
         {subjectId && !isEdit && (
           <Box>
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>{t('form.gradeLevel')}</Typography>
+            <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+              {t('form.gradeLevel')}
+            </Typography>
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-              {grades.map((grade) => (
-                <Chip
-                  key={grade}
-                  label={`${grade}`}
-                  color={gradeLevel === grade ? 'primary' : 'default'}
-                  variant={gradeLevel === grade ? 'filled' : 'outlined'}
-                  onClick={() => setGradeLevel(grade)}
-                  sx={{ minWidth: 40 }}
-                />
-              ))}
+              {grades.map((grade) => {
+                const selected = selectedGradeLevels.includes(grade);
+                return (
+                  <Chip
+                    key={grade}
+                    label={`${grade}`}
+                    color={selected ? 'primary' : 'default'}
+                    variant={selected ? 'filled' : 'outlined'}
+                    onClick={() =>
+                      setSelectedGradeLevels(
+                        selected
+                          ? selectedGradeLevels.filter((x) => x !== grade)
+                          : [...selectedGradeLevels, grade].sort((a, b) => a - b),
+                      )
+                    }
+                    sx={{ minWidth: 40 }}
+                  />
+                );
+              })}
             </Box>
           </Box>
         )}
@@ -501,7 +539,7 @@ export default function QuestionFormDialog({
             onChange={(e) => setTopicId(e.target.value)}
             fullWidth
             required
-            disabled={isEdit || !subjectId || gradeLevel === null}
+            disabled={isEdit || !subjectId}
           >
             <MenuItem value="">{t('form.selectTopic')}</MenuItem>
             {flatTopics.map((topic) => (
@@ -513,7 +551,7 @@ export default function QuestionFormDialog({
               </MenuItem>
             ))}
           </TextField>
-          {!isEdit && subjectId && gradeLevel !== null && (
+          {!isEdit && subjectId && (
             <Button
               variant="outlined"
               size="small"
@@ -526,7 +564,7 @@ export default function QuestionFormDialog({
           )}
         </Box>
 
-        {!isEdit && subjectId && gradeLevel !== null && flatTopics.length === 0 && (
+        {!isEdit && subjectId && flatTopics.length === 0 && (
           <Alert severity="info" sx={{ py: 0.5 }}>
             {tTopic('empty')}
           </Alert>
@@ -536,7 +574,10 @@ export default function QuestionFormDialog({
           open={topicFormOpen}
           onClose={() => setTopicFormOpen(false)}
           onSubmit={(data) => {
-            const createData = { ...data, gradeLevel: gradeLevel! } as CreateTopicRequest;
+            const createData = {
+              ...data,
+              gradeLevel: selectedGradeLevels[0] ?? null,
+            } as CreateTopicRequest;
             createTopic.mutate(createData, {
               onSuccess: (response) => {
                 setTopicFormOpen(false);
@@ -628,6 +669,115 @@ export default function QuestionFormDialog({
           rows={4}
           required={currentFrontendLang === 'uzl'}
         />
+
+        {/* ── Image upload section ── */}
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+            {t('form.image', 'Rasm (ixtiyoriy)')}
+          </Typography>
+
+          {/* Show existing image in edit mode (unless marked for removal) */}
+          {isEdit && question?.imageUrl && !removeExistingImage && !pendingImageFile && (
+            <Box sx={{ position: 'relative', display: 'inline-block', mb: 1 }}>
+              <img
+                src={question.imageUrl}
+                alt="question"
+                style={{ maxWidth: '100%', maxHeight: 180, borderRadius: 8, display: 'block' }}
+              />
+              <IconButton
+                size="small"
+                onClick={() => setRemoveExistingImage(true)}
+                sx={{
+                  position: 'absolute', top: 4, right: 4,
+                  bgcolor: 'rgba(0,0,0,0.5)', color: '#fff',
+                  '&:hover': { bgcolor: 'rgba(0,0,0,0.7)' },
+                }}
+              >
+                <CancelIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          )}
+
+          {/* Preview for newly selected file */}
+          {pendingImagePreview && (
+            <Box sx={{ position: 'relative', display: 'inline-block', mb: 1 }}>
+              <img
+                src={pendingImagePreview}
+                alt="preview"
+                style={{ maxWidth: '100%', maxHeight: 180, borderRadius: 8, display: 'block' }}
+              />
+              <IconButton
+                size="small"
+                onClick={() => {
+                  URL.revokeObjectURL(pendingImagePreview);
+                  setPendingImageFile(null);
+                  setPendingImagePreview(null);
+                }}
+                sx={{
+                  position: 'absolute', top: 4, right: 4,
+                  bgcolor: 'rgba(0,0,0,0.5)', color: '#fff',
+                  '&:hover': { bgcolor: 'rgba(0,0,0,0.7)' },
+                }}
+              >
+                <CancelIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          )}
+
+          {/* Removed label */}
+          {removeExistingImage && !pendingImageFile && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+              <Typography variant="body2" color="text.disabled">
+                {t('form.imageRemoved', 'Rasm o\'chiriladi')}
+              </Typography>
+              <Button size="small" onClick={() => setRemoveExistingImage(false)}>
+                {t('common:cancel')}
+              </Button>
+            </Box>
+          )}
+
+          {/* Upload button */}
+          {!pendingImagePreview && !(isEdit && question?.imageUrl && !removeExistingImage) && (
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<ImageIcon />}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {t('form.uploadImage', 'Rasm yuklash')}
+            </Button>
+          )}
+
+          {/* Replace button (edit mode with existing image, not removed) */}
+          {isEdit && question?.imageUrl && !removeExistingImage && !pendingImageFile && (
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<ImageIcon />}
+              onClick={() => fileInputRef.current?.click()}
+              sx={{ ml: 1 }}
+            >
+              {t('form.replaceImage', 'Rasm almashtirish')}
+            </Button>
+          )}
+
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
+            style={{ display: 'none' }}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              if (pendingImagePreview) URL.revokeObjectURL(pendingImagePreview);
+              setPendingImageFile(file);
+              setPendingImagePreview(URL.createObjectURL(file));
+              setRemoveExistingImage(false);
+              e.target.value = '';
+            }}
+          />
+        </Box>
       </Box>
     );
   }
@@ -843,6 +993,8 @@ export default function QuestionFormDialog({
   }
 
   function renderStepSettings() {
+    const isTextGrading = questionType === QuestionType.SHORT_ANSWER || questionType === QuestionType.FILL_BLANK;
+
     return (
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <TextField
@@ -876,6 +1028,23 @@ export default function QuestionFormDialog({
           fullWidth
           inputProps={{ min: 0 }}
         />
+
+        {isTextGrading && (
+          <TextField
+            select
+            label={t('form.gradingStrategy')}
+            value={gradingStrategy}
+            onChange={(e) => setGradingStrategy(e.target.value as GradingStrategy)}
+            fullWidth
+            helperText={t(`gradingStrategies.${gradingStrategy}.hint`)}
+          >
+            {Object.values(GradingStrategy).map((s) => (
+              <MenuItem key={s} value={s}>
+                {t(`gradingStrategies.${s}.label`)}
+              </MenuItem>
+            ))}
+          </TextField>
+        )}
       </Box>
     );
   }

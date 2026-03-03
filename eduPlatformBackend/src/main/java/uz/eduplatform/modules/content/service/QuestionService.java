@@ -17,6 +17,7 @@ import uz.eduplatform.core.common.exception.ResourceNotFoundException;
 import uz.eduplatform.core.common.utils.MessageService;
 import uz.eduplatform.core.i18n.AcceptLanguage;
 import uz.eduplatform.core.i18n.TranslatedField;
+import uz.eduplatform.core.storage.FileStorageService;
 import uz.eduplatform.modules.auth.domain.User;
 import uz.eduplatform.modules.auth.repository.UserRepository;
 import uz.eduplatform.modules.content.domain.*;
@@ -30,6 +31,8 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 @Slf4j
 @Service
@@ -43,10 +46,8 @@ public class QuestionService {
     private final AuditService auditService;
     private final MessageService messageService;
     private final ObjectMapper objectMapper;
+    private final FileStorageService fileStorageService;
 
-    private static final Set<String> PROOF_REQUIRED_SUBJECTS = Set.of(
-            "matematika", "fizika", "kimyo", "informatika"
-    );
 
     @Transactional(readOnly = true)
     public PagedResponse<QuestionDto> getQuestions(UUID userId, QuestionFilterRequest filter, Pageable pageable, AcceptLanguage language) {
@@ -139,13 +140,6 @@ public class QuestionService {
         // Validate options based on question type
         validateQuestionOptions(request.getQuestionType(), request.getOptions(), request.getCorrectAnswer(), language.toLocale());
 
-        // Check if proof is required
-        boolean proofRequired = isProofRequired(topic.getSubject().getName());
-        String resolvedProof = TranslatedField.resolve(cleanedProof);
-        if (proofRequired && (resolvedProof == null || resolvedProof.isBlank())) {
-            throw new BusinessException(messageService.get("question.proof.required.subject", language.toLocale(),
-                    TranslatedField.resolve(topic.getSubject().getName(), localeKey)));
-        }
 
         Question question = Question.builder()
                 .topic(topic)
@@ -158,9 +152,11 @@ public class QuestionService {
                 .media(request.getMedia() != null ? request.getMedia() : Map.of())
                 .options(request.getOptions() != null ? toJson(request.getOptions()) : "[]")
                 .correctAnswer(request.getCorrectAnswer() != null ? toJson(request.getCorrectAnswer()) : "\"\"")
-
+                .gradeLevels(request.getGradeLevels() != null ? request.getGradeLevels() : new ArrayList<>())
+                .gradingStrategy(request.getGradingStrategy() != null ? request.getGradingStrategy()
+                        : uz.eduplatform.modules.content.domain.GradingStrategy.MANUAL)
                 .proof(cleanedProof)
-                .proofRequired(proofRequired)
+                .proofRequired(false)
                 .status(QuestionStatus.DRAFT)
                 .build();
 
@@ -257,6 +253,12 @@ public class QuestionService {
         if (request.getCorrectAnswer() != null) {
             question.setCorrectAnswer(toJson(request.getCorrectAnswer()));
         }
+        if (request.getGradeLevels() != null) {
+            question.setGradeLevels(request.getGradeLevels());
+        }
+        if (request.getGradingStrategy() != null) {
+            question.setGradingStrategy(request.getGradingStrategy());
+        }
         if (fullUpdate) {
             Map<String, String> cleanedProof = request.getProof() != null
                     ? TranslatedField.clean(request.getProof()) : Map.of();
@@ -311,6 +313,52 @@ public class QuestionService {
     }
 
     @Transactional
+    public QuestionDto setQuestionImage(UUID questionId, UUID userId, String imageUrl, String imageFilename, AcceptLanguage language) {
+        String localeKey = language.toLocaleKey();
+        Question question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Question", "id", questionId));
+
+        if (!question.getUser().getId().equals(userId)) {
+            throw new BusinessException(messageService.get("question.not.owner", language.toLocale()));
+        }
+
+        // Delete old image file if exists
+        Map<String, Object> currentMedia = question.getMedia();
+        if (currentMedia != null && currentMedia.containsKey("imageFilename")) {
+            fileStorageService.delete((String) currentMedia.get("imageFilename"));
+        }
+
+        Map<String, Object> media = new HashMap<>();
+        media.put("imageUrl", imageUrl);
+        media.put("imageFilename", imageFilename);
+        question.setMedia(media);
+        question = questionRepository.save(question);
+
+        auditService.log(userId, null, "QUESTION_IMAGE_UPLOADED", "CONTENT", "Question", questionId);
+        return mapToDto(question, localeKey);
+    }
+
+    @Transactional
+    public String clearQuestionImage(UUID questionId, UUID userId, AcceptLanguage language) {
+        Question question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Question", "id", questionId));
+
+        if (!question.getUser().getId().equals(userId)) {
+            throw new BusinessException(messageService.get("question.not.owner", language.toLocale()));
+        }
+
+        Map<String, Object> currentMedia = question.getMedia();
+        String filename = (currentMedia != null && currentMedia.containsKey("imageFilename"))
+                ? (String) currentMedia.get("imageFilename") : null;
+
+        question.setMedia(new HashMap<>());
+        questionRepository.save(question);
+
+        auditService.log(userId, null, "QUESTION_IMAGE_DELETED", "CONTENT", "Question", questionId);
+        return filename;
+    }
+
+    @Transactional
     public QuestionDto submitForModeration(UUID questionId, UUID userId, AcceptLanguage language) {
         String localeKey = language.toLocaleKey();
         Question question = questionRepository.findById(questionId)
@@ -322,12 +370,6 @@ public class QuestionService {
 
         if (question.getStatus() != QuestionStatus.DRAFT && question.getStatus() != QuestionStatus.REJECTED) {
             throw new BusinessException(messageService.get("question.submit.invalid.status", language.toLocale()));
-        }
-
-        // Validate proof requirement before submission
-        String resolvedProof = TranslatedField.resolve(question.getProof());
-        if (question.getProofRequired() && (resolvedProof == null || resolvedProof.isBlank())) {
-            throw new BusinessException(messageService.get("question.proof.required", language.toLocale()));
         }
 
         question.setStatus(QuestionStatus.PENDING);
@@ -508,12 +550,6 @@ public class QuestionService {
         }
     }
 
-    private boolean isProofRequired(Map<String, String> subjectName) {
-        if (subjectName == null) return false;
-        String defaultName = TranslatedField.defaultValue(subjectName);
-        if (defaultName == null) return false;
-        return PROOF_REQUIRED_SUBJECTS.contains(defaultName.toLowerCase().trim());
-    }
 
     private void updateTopicQuestionCount(UUID topicId) {
         Topic topic = topicRepository.findById(topicId).orElse(null);
@@ -548,6 +584,10 @@ public class QuestionService {
     }
 
     public QuestionDto mapToDto(Question q, String localeKey) {
+        Map<String, Object> media = q.getMedia();
+        String imageUrl = (media != null && media.containsKey("imageUrl"))
+                ? (String) media.get("imageUrl") : null;
+
         return QuestionDto.builder()
                 .id(q.getId())
                 .topicId(q.getTopic().getId())
@@ -564,9 +604,12 @@ public class QuestionService {
                 .difficulty(q.getDifficulty())
                 .points(q.getPoints())
                 .timeLimitSeconds(q.getTimeLimitSeconds())
-                .media(q.getMedia())
+                .imageUrl(imageUrl)
+                .media(media)
                 .options(resolveOptions(fromJson(q.getOptions()), localeKey))
                 .correctAnswer(fromJson(q.getCorrectAnswer()))
+                .gradeLevels(q.getGradeLevels() != null ? q.getGradeLevels() : List.of())
+                .gradingStrategy(q.getGradingStrategy())
                 .proof(TranslatedField.resolve(q.getProof(), localeKey))
                 .proofTranslations(TranslatedField.clean(q.getProof()))
                 .proofRequired(q.getProofRequired())

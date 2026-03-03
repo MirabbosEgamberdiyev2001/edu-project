@@ -20,6 +20,7 @@ import uz.eduplatform.modules.assessment.repository.TestAttemptRepository;
 import uz.eduplatform.modules.auth.repository.UserRepository;
 import uz.eduplatform.modules.content.domain.Question;
 import uz.eduplatform.modules.content.repository.QuestionRepository;
+import uz.eduplatform.modules.inappnotification.service.InAppNotificationService;
 import uz.eduplatform.modules.parent.service.ParentNotificationService;
 import uz.eduplatform.modules.test.domain.TestQuestion;
 import uz.eduplatform.modules.test.repository.TestHistoryRepository;
@@ -47,6 +48,7 @@ public class TestTakingService {
     private final GradingService gradingService;
     private final LiveMonitoringService liveMonitoringService;
     private final ParentNotificationService parentNotificationService;
+    private final InAppNotificationService inAppNotificationService;
     private final TestHistoryRepository testHistoryRepository;
     private final TestQuestionRepository testQuestionRepository;
     private final QuestionRepository questionRepository;
@@ -302,6 +304,32 @@ public class TestTakingService {
                     attempt.getPercentage(), new java.math.BigDecimal("40.00"));
         } catch (Exception e) {
             log.warn("Failed to notify parents: {}", e.getMessage());
+        }
+
+        // Notify teacher that a student submitted an attempt
+        try {
+            TestAssignment assignment = attempt.getAssignment();
+            if (assignment != null && assignment.getTeacherId() != null) {
+                String studentName = userRepository.findById(studentId)
+                        .map(u -> u.getFirstName() + " " + u.getLastName()).orElse("O'quvchi");
+                String testTitle = assignment.getTitle();
+                String pct = attempt.getPercentage() != null
+                        ? attempt.getPercentage().setScale(0, java.math.RoundingMode.HALF_UP) + "%" : "—";
+                boolean needsReview = attempt.getStatus() == AttemptStatus.NEEDS_REVIEW;
+
+                String notifType = needsReview ? "NEEDS_REVIEW" : "ATTEMPT_SUBMITTED";
+                String notifTitle = needsReview
+                        ? "Ko'rib chiqish kerak: " + testTitle
+                        : "Yangi natija: " + testTitle;
+                String notifBody = studentName + " testni yakunladi. Natija: " + pct +
+                        (needsReview ? ". Qo'lda baholash talab etiladi." : "");
+
+                inAppNotificationService.createAsync(
+                        assignment.getTeacherId(), notifType, notifTitle, notifBody,
+                        attempt.getId(), "ATTEMPT");
+            }
+        } catch (Exception e) {
+            log.warn("Failed to notify teacher: {}", e.getMessage());
         }
 
         // Broadcast WebSocket event

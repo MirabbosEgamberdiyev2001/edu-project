@@ -40,7 +40,23 @@
     "stepProof": "Proof",
     "true": "True",
     "false": "False",
-    "correctAnswerPlaceholder": "JSON object or plain text"
+    "correctAnswerPlaceholder": "JSON object or plain text",
+    "gradingStrategy": "Grading strategy",
+    "gradeLevels": "Grade levels (multi-select)"
+  },
+  "gradingStrategies": {
+    "EXACT_MATCH": {
+      "label": "Exact match",
+      "hint": "Student answer must exactly match the correct answer (case-insensitive)"
+    },
+    "CONTAINS": {
+      "label": "Contains",
+      "hint": "Student answer must contain the correct answer as a substring"
+    },
+    "MANUAL": {
+      "label": "Manual grading",
+      "hint": "Teacher reviews and grades each answer manually"
+    }
   },
   "detail": {
     "title": "Question Details",

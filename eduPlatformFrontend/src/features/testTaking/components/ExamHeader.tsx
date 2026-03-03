@@ -1,6 +1,10 @@
 import { AppBar, Toolbar, Typography, Box, Chip, LinearProgress } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import CloudDoneIcon from '@mui/icons-material/CloudDone';
+import CloudOffIcon from '@mui/icons-material/CloudOff';
+import SyncIcon from '@mui/icons-material/Sync';
 import TimerCountdown from './TimerCountdown';
+import type { SaveStatus } from '../hooks/useAutoSave';
 
 interface ExamHeaderProps {
   title: string;
@@ -8,13 +12,49 @@ interface ExamHeaderProps {
   totalQuestions: number;
   timeRemaining: number | null;
   onTimeUp: () => void;
+  saveStatus?: SaveStatus;
 }
 
-export default function ExamHeader({ title, answeredCount, totalQuestions, timeRemaining, onTimeUp }: ExamHeaderProps) {
+export default function ExamHeader({ title, answeredCount, totalQuestions, timeRemaining, onTimeUp, saveStatus }: ExamHeaderProps) {
   const { t } = useTranslation('testTaking');
   const progress = totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
   const allAnswered = answeredCount === totalQuestions && totalQuestions > 0;
   const isTimerUrgent = timeRemaining != null && timeRemaining <= 60;
+
+  const renderSaveIndicator = () => {
+    if (!saveStatus || saveStatus === 'idle') return null;
+    if (saveStatus === 'saving') {
+      return (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
+          <SyncIcon fontSize="small" sx={{ animation: 'spin 1s linear infinite', '@keyframes spin': { from: { transform: 'rotate(0deg)' }, to: { transform: 'rotate(360deg)' } } }} />
+          <Typography variant="caption" sx={{ display: { xs: 'none', sm: 'block' } }}>
+            {t('exam.autoSave.saving')}
+          </Typography>
+        </Box>
+      );
+    }
+    if (saveStatus === 'saved') {
+      return (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'success.main' }}>
+          <CloudDoneIcon fontSize="small" />
+          <Typography variant="caption" sx={{ display: { xs: 'none', sm: 'block' } }}>
+            {t('exam.autoSave.saved')}
+          </Typography>
+        </Box>
+      );
+    }
+    if (saveStatus === 'error') {
+      return (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'error.main' }}>
+          <CloudOffIcon fontSize="small" />
+          <Typography variant="caption" sx={{ display: { xs: 'none', sm: 'block' } }}>
+            {t('exam.autoSave.error')}
+          </Typography>
+        </Box>
+      );
+    }
+    return null;
+  };
 
   return (
     <AppBar
@@ -32,6 +72,9 @@ export default function ExamHeader({ title, answeredCount, totalQuestions, timeR
         </Typography>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5 } }}>
+          {/* Auto-save status indicator */}
+          {renderSaveIndicator()}
+
           {/* Answered progress chip */}
           <Chip
             label={

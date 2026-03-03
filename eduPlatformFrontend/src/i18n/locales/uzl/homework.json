@@ -1,0 +1,59 @@
+{
+  "title": "Uy vazifalari",
+  "teacherSubtitle": "Yaratilgan barcha uy vazifalari",
+  "studentSubtitle": "O'qituvchilar tomonidan berilgan uy vazifalari",
+  "create": "Yaratish",
+  "noHomeworks": "Hali uy vazifasi yaratilmagan",
+  "noStudentHomeworks": "Hali uy vazifasi yo'q",
+  "deadline": "Muddat",
+  "fileRequired": "Fayl talab",
+  "allowResubmission": "Qayta topshirish",
+  "submissions": "topshirildi",
+  "graded": "baholandi",
+  "view": "Ko'rish",
+  "submitted": "Topshirildi",
+  "notSubmitted": "Topshirilmagan",
+  "overdue": "(o'tib ketdi)",
+  "teacherComment": "O'qituvchi izohi",
+  "resubmit": "Qayta topshirish",
+  "submit": "Topshirish",
+  "cancel": "Bekor",
+  "save": "Saqlash",
+  "close": "Yopish",
+  "yourAnswer": "Javobingiz",
+  "answerPlaceholder": "Uy vazifangiz javobini yozing...",
+  "attachFile": "Fayl biriktirish",
+  "fileRequiredError": "* Fayl talab qilinadi",
+  "noSubmissions": "Hali hech kim topshirmagan",
+  "downloading": "Yuklanmoqda...",
+  "excelExport": "Excel",
+  "gradeLabel": "Baholash (0-100)",
+  "grade": "Baho",
+  "commentOptional": "Izoh (ixtiyoriy)",
+  "allowResubmissionLabel": {
+    "yes": "Ruxsat berilgan",
+    "no": "Ruxsat yo'q"
+  },
+  "fileRequiredLabel": {
+    "yes": "Ha",
+    "no": "Yo'q"
+  },
+  "tableHeaders": {
+    "student": "O'quvchi",
+    "answer": "Javob",
+    "file": "Fayl",
+    "grade": "Baho",
+    "status": "Holat"
+  },
+  "dialog": {
+    "createTitle": "Yangi uy vazifasi",
+    "submissionsTitle": "Topshiriqlar",
+    "title": "Sarlavha *",
+    "description": "Tavsif",
+    "group": "Guruh",
+    "allGroups": "Barchasi",
+    "deadline": "Muddat",
+    "resubmission": "Qayta topshirish",
+    "fileRequired": "Fayl talab"
+  }
+}

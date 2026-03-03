@@ -1,0 +1,59 @@
+{
+  "title": "Домашние задания",
+  "teacherSubtitle": "Все созданные домашние задания",
+  "studentSubtitle": "Домашние задания, назначенные учителями",
+  "create": "Создать",
+  "noHomeworks": "Домашних заданий ещё нет",
+  "noStudentHomeworks": "Нет домашних заданий",
+  "deadline": "Срок",
+  "fileRequired": "Файл обязателен",
+  "allowResubmission": "Повторная сдача",
+  "submissions": "сдано",
+  "graded": "оценено",
+  "view": "Просмотр",
+  "submitted": "Сдано",
+  "notSubmitted": "Не сдано",
+  "overdue": "(просрочено)",
+  "teacherComment": "Комментарий учителя",
+  "resubmit": "Сдать повторно",
+  "submit": "Сдать",
+  "cancel": "Отмена",
+  "save": "Сохранить",
+  "close": "Закрыть",
+  "yourAnswer": "Ваш ответ",
+  "answerPlaceholder": "Напишите ответ на домашнее задание...",
+  "attachFile": "Прикрепить файл",
+  "fileRequiredError": "* Файл обязателен",
+  "noSubmissions": "Пока никто не сдал",
+  "downloading": "Загрузка...",
+  "excelExport": "Excel",
+  "gradeLabel": "Оценка (0-100)",
+  "grade": "Оценка",
+  "commentOptional": "Комментарий (необязательно)",
+  "allowResubmissionLabel": {
+    "yes": "Разрешено",
+    "no": "Запрещено"
+  },
+  "fileRequiredLabel": {
+    "yes": "Да",
+    "no": "Нет"
+  },
+  "tableHeaders": {
+    "student": "Ученик",
+    "answer": "Ответ",
+    "file": "Файл",
+    "grade": "Оценка",
+    "status": "Статус"
+  },
+  "dialog": {
+    "createTitle": "Новое домашнее задание",
+    "submissionsTitle": "Сданные работы",
+    "title": "Заголовок *",
+    "description": "Описание",
+    "group": "Группа",
+    "allGroups": "Все",
+    "deadline": "Срок сдачи",
+    "resubmission": "Повторная сдача",
+    "fileRequired": "Файл обязателен"
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "title": "Уй вазифалари",
+  "teacherSubtitle": "Яратилган барча уй вазифалари",
+  "studentSubtitle": "Ўқитувчилар томонидан берилган уй вазифалари",
+  "create": "Яратиш",
+  "noHomeworks": "Ҳали уй вазифаси яратилмаган",
+  "noStudentHomeworks": "Ҳали уй вазифаси йўқ",
+  "deadline": "Муддат",
+  "fileRequired": "Файл талаб",
+  "allowResubmission": "Қайта топшириш",
+  "submissions": "топширишди",
+  "graded": "баҳоланди",
+  "view": "Кўриш",
+  "submitted": "Топширишди",
+  "notSubmitted": "Топширилмаган",
+  "overdue": "(ўтиб кетди)",
+  "teacherComment": "Ўқитувчи изоҳи",
+  "resubmit": "Қайта топшириш",
+  "submit": "Топшириш",
+  "cancel": "Бекор",
+  "save": "Сақлаш",
+  "close": "Ёпиш",
+  "yourAnswer": "Жавобингиз",
+  "answerPlaceholder": "Уй вазифангиз жавобини ёзинг...",
+  "attachFile": "Файл бириктириш",
+  "fileRequiredError": "* Файл талаб қилинади",
+  "noSubmissions": "Ҳали ҳеч ким топширмаган",
+  "downloading": "Юкланмоқда...",
+  "excelExport": "Excel",
+  "gradeLabel": "Баҳолаш (0-100)",
+  "grade": "Баҳо",
+  "commentOptional": "Изоҳ (ихтиёрий)",
+  "allowResubmissionLabel": {
+    "yes": "Рухсат берилган",
+    "no": "Рухсат йўқ"
+  },
+  "fileRequiredLabel": {
+    "yes": "Ҳа",
+    "no": "Йўқ"
+  },
+  "tableHeaders": {
+    "student": "Ўқувчи",
+    "answer": "Жавоб",
+    "file": "Файл",
+    "grade": "Баҳо",
+    "status": "Ҳолат"
+  },
+  "dialog": {
+    "createTitle": "Янги уй вазифаси",
+    "submissionsTitle": "Топшириқлар",
+    "title": "Сарлавҳа *",
+    "description": "Тавсиф",
+    "group": "Гуруҳ",
+    "allGroups": "Барчаси",
+    "deadline": "Муддат",
+    "resubmission": "Қайта топшириш",
+    "fileRequired": "Файл талаб"
+  }
+}

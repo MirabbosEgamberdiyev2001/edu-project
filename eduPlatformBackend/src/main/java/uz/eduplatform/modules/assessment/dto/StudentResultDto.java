@@ -25,4 +25,5 @@ public class StudentResultDto {
     private Integer attemptCount;
     private Integer tabSwitches;
     private String status;
+    private UUID latestAttemptId;
 }

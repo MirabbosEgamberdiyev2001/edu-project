@@ -12,6 +12,8 @@ import uz.eduplatform.modules.auth.domain.User;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -84,6 +86,16 @@ public class Question {
     @Builder.Default
     @Column(name = "proof_required")
     private Boolean proofRequired = false;
+
+    @Builder.Default
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "grade_levels", columnDefinition = "jsonb")
+    private List<Integer> gradeLevels = new ArrayList<>();
+
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "grading_strategy", nullable = false, length = 20)
+    private GradingStrategy gradingStrategy = GradingStrategy.MANUAL;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)

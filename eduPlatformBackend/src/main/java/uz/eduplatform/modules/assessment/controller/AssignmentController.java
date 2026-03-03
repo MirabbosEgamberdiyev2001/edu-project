@@ -70,12 +70,13 @@ public class AssignmentController {
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestParam(required = false) AssignmentStatus status,
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) UUID testHistoryId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
 
         UUID teacherId = isAdmin(principal) ? null : principal.getId();
         PagedResponse<AssignmentDto> response = assignmentService.getTeacherAssignments(
-                teacherId, status, search,
+                teacherId, status, search, testHistoryId,
                 PageRequest.of(page, size, Sort.by("createdAt").descending()));
         return ResponseEntity.ok(ApiResponse.success(response));
     }

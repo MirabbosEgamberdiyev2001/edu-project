@@ -15,15 +15,28 @@ import QuestionNavigation from '../components/QuestionNavigation';
 import SubmitConfirmDialog from '../components/SubmitConfirmDialog';
 import ErrorState from '@/components/ErrorState';
 
+function getPositionKey(attemptId: string) {
+  return `exam_position_${attemptId}`;
+}
+
 export default function ExamPage() {
   const { attemptId } = useParams<{ attemptId: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation('testTaking');
   const { data: attempt, isLoading, isError, refetch } = useAttempt(attemptId!);
   const { submitAttempt, reportTabSwitch } = useAttemptMutations();
-  const { addAnswer, flush } = useAutoSave(attemptId!, !!attempt);
+  const { addAnswer, flush, saveStatus } = useAutoSave(attemptId!, !!attempt);
 
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    // Restore last question position from localStorage on initial mount
+    if (!attemptId) return 0;
+    try {
+      const saved = localStorage.getItem(getPositionKey(attemptId));
+      return saved ? parseInt(saved, 10) : 0;
+    } catch {
+      return 0;
+    }
+  });
   const [localAnswers, setLocalAnswers] = useState<Record<string, unknown>>({});
   const [submitOpen, setSubmitOpen] = useState(false);
 
@@ -38,6 +51,23 @@ export default function ExamPage() {
       setLocalAnswers((prev) => ({ ...existing, ...prev }));
     }
   }, [attempt]);
+
+  // Clamp restored index to valid range when questions are loaded
+  useEffect(() => {
+    if (attempt?.questions?.length) {
+      setCurrentIndex((i) => Math.min(i, attempt.questions.length - 1));
+    }
+  }, [attempt?.questions?.length]);
+
+  // Persist current question index to localStorage on every navigation
+  useEffect(() => {
+    if (!attemptId) return;
+    try {
+      localStorage.setItem(getPositionKey(attemptId), String(currentIndex));
+    } catch {
+      // Silently ignore quota/private-mode errors
+    }
+  }, [currentIndex, attemptId]);
 
   // Anti-cheat: report tab switch + re-sync server timer on tab restore
   useEffect(() => {
@@ -108,6 +138,9 @@ export default function ExamPage() {
 
   const handleTimeUp = useCallback(async () => {
     await flush();
+    if (attemptId) {
+      try { localStorage.removeItem(getPositionKey(attemptId)); } catch { /* ignore */ }
+    }
     submitAttempt.mutate(attemptId!, {
       onSuccess: () => navigate(`/attempt-result/${attemptId}`, { replace: true }),
     });
@@ -115,6 +148,9 @@ export default function ExamPage() {
 
   const handleSubmit = async () => {
     await flush();
+    if (attemptId) {
+      try { localStorage.removeItem(getPositionKey(attemptId)); } catch { /* ignore */ }
+    }
     submitAttempt.mutate(attemptId!, {
       onSuccess: () => navigate(`/attempt-result/${attemptId}`, { replace: true }),
     });
@@ -158,6 +194,7 @@ export default function ExamPage() {
         totalQuestions={questions.length}
         timeRemaining={attempt.timeRemaining}
         onTimeUp={handleTimeUp}
+        saveStatus={saveStatus}
       />
 
       <Box sx={{ pt: { xs: 9, sm: 10 }, px: { xs: 1.5, sm: 2 }, pb: 2, maxWidth: 860, mx: 'auto', width: '100%' }}>

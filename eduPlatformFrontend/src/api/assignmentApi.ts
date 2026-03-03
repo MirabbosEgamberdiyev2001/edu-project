@@ -16,6 +16,7 @@ const ASSIGNMENTS = '/assignments';
 export interface AssignmentListParams {
   status?: AssignmentStatus;
   search?: string;
+  testHistoryId?: string;
   page?: number;
   size?: number;
 }

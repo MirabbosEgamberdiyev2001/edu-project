@@ -15,6 +15,7 @@ import uz.eduplatform.modules.assessment.domain.TestAttempt;
 import uz.eduplatform.modules.assessment.dto.GradeAnswerRequest;
 import uz.eduplatform.modules.assessment.repository.AnswerRepository;
 import uz.eduplatform.modules.assessment.repository.TestAttemptRepository;
+import uz.eduplatform.modules.content.domain.GradingStrategy;
 import uz.eduplatform.modules.content.domain.Question;
 import uz.eduplatform.modules.content.domain.QuestionType;
 import uz.eduplatform.modules.content.repository.QuestionRepository;
@@ -77,8 +78,22 @@ public class GradingService {
                 case TRUE_FALSE -> gradeTrueFalse(answer, question);
                 case MATCHING -> gradeMatching(answer, question);
                 case ORDERING -> gradeOrdering(answer, question);
+                case SHORT_ANSWER, FILL_BLANK -> {
+                    GradingStrategy strategy = question.getGradingStrategy() != null
+                            ? question.getGradingStrategy() : GradingStrategy.MANUAL;
+                    if (strategy == GradingStrategy.EXACT_MATCH) {
+                        gradeShortAnswerExact(answer, question);
+                    } else if (strategy == GradingStrategy.CONTAINS) {
+                        gradeShortAnswerContains(answer, question);
+                    } else {
+                        // MANUAL — route to teacher
+                        answer.setNeedsManualGrading(true);
+                        answer.setEarnedPoints(BigDecimal.ZERO);
+                        needsManualReview = true;
+                    }
+                }
                 default -> {
-                    // SHORT_ANSWER, ESSAY, FILL_BLANK - need manual grading
+                    // ESSAY - always manual grading
                     answer.setNeedsManualGrading(true);
                     answer.setEarnedPoints(BigDecimal.ZERO);
                     needsManualReview = true;
@@ -285,6 +300,87 @@ public class GradingService {
         answer.setIsCorrect(correctCount == correctPairs.size());
         answer.setIsPartial(correctCount > 0 && correctCount < correctPairs.size());
         answer.setEarnedPoints(earned);
+    }
+
+    /**
+     * Grade SHORT_ANSWER / FILL_BLANK with EXACT_MATCH strategy.
+     * Student answer must exactly match (case-insensitive, trimmed) at least one
+     * of the acceptable answers stored in correctAnswer.
+     *
+     * correctAnswer formats supported:
+     *   - plain string: "Paris"
+     *   - JSON string: "\"Paris\""
+     *   - JSON array of strings: ["Paris", "paris", "PARIS"]
+     *   - JSON multilingual map: {"uz_latn": "Paris", "en": "Paris"}
+     */
+    private void gradeShortAnswerExact(Answer answer, Question question) {
+        Object studentRaw = parseJson(answer.getSelectedAnswer());
+        if (studentRaw == null) {
+            answer.setIsCorrect(false);
+            answer.setEarnedPoints(BigDecimal.ZERO);
+            return;
+        }
+        String studentAnswer = String.valueOf(studentRaw).trim().toLowerCase();
+        Set<String> acceptableAnswers = extractAcceptableAnswers(question.getCorrectAnswer());
+
+        boolean correct = acceptableAnswers.stream()
+                .anyMatch(a -> a.equalsIgnoreCase(studentAnswer));
+
+        answer.setIsCorrect(correct);
+        answer.setEarnedPoints(correct ? question.getPoints() : BigDecimal.ZERO);
+    }
+
+    /**
+     * Grade SHORT_ANSWER / FILL_BLANK with CONTAINS strategy.
+     * The student answer must contain (case-insensitive) at least one
+     * of the acceptable answers as a substring.
+     */
+    private void gradeShortAnswerContains(Answer answer, Question question) {
+        Object studentRaw = parseJson(answer.getSelectedAnswer());
+        if (studentRaw == null) {
+            answer.setIsCorrect(false);
+            answer.setEarnedPoints(BigDecimal.ZERO);
+            return;
+        }
+        String studentAnswer = String.valueOf(studentRaw).trim().toLowerCase();
+        Set<String> acceptableAnswers = extractAcceptableAnswers(question.getCorrectAnswer());
+
+        boolean correct = acceptableAnswers.stream()
+                .anyMatch(a -> studentAnswer.contains(a.toLowerCase()));
+
+        answer.setIsCorrect(correct);
+        answer.setEarnedPoints(correct ? question.getPoints() : BigDecimal.ZERO);
+    }
+
+    /**
+     * Extracts all acceptable answer strings from the correctAnswer JSON.
+     * Handles: plain string, JSON string, JSON string array, JSON multilingual map.
+     */
+    @SuppressWarnings("unchecked")
+    private Set<String> extractAcceptableAnswers(String correctAnswerJson) {
+        Object parsed = parseJson(correctAnswerJson);
+        if (parsed == null) return Set.of();
+
+        if (parsed instanceof List<?> list) {
+            Set<String> results = new HashSet<>();
+            for (Object item : list) {
+                String s = String.valueOf(item).trim();
+                if (!s.isBlank()) results.add(s);
+            }
+            return results;
+        }
+
+        if (parsed instanceof Map<?, ?> map) {
+            Set<String> results = new HashSet<>();
+            for (Object val : map.values()) {
+                String s = String.valueOf(val).trim();
+                if (!s.isBlank()) results.add(s);
+            }
+            return results;
+        }
+
+        String s = String.valueOf(parsed).trim();
+        return s.isBlank() ? Set.of() : Set.of(s);
     }
 
     private void gradeOrdering(Answer answer, Question question) {

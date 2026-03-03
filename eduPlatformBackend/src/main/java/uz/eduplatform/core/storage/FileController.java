@@ -67,8 +67,8 @@ public class FileController {
 
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(contentType))
-                    .header(HttpHeaders.CONTENT_DISPOSITION,
-                            "inline; filename=\"" + filename + "\"")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                    .header(HttpHeaders.CACHE_CONTROL, "public, max-age=31536000, immutable")
                     .body(resource);
         } catch (MalformedURLException e) {
             throw BusinessException.ofKey("file.not.found");

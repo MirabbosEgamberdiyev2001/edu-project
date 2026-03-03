@@ -50,17 +50,24 @@ export default function AttemptResultPage() {
       : 0,
     answers: (attempt.questions ?? []).map((q) => {
       const ans = answersMap[q.id];
+      const imageUrl = (q.media && typeof q.media === 'object' && 'imageUrl' in q.media)
+        ? (q.media.imageUrl as string | null)
+        : null;
       return {
+        answerId: ans?.id,
         questionId: q.id,
         questionText: q.questionText,
         questionType: q.questionType,
         options: q.options,
         correctAnswer: q.correctAnswer ?? null,
         studentAnswer: ans?.response ?? ans?.selectedAnswer ?? null,
-        isCorrect: ans?.isCorrect ?? false,
+        isCorrect: ans?.isCorrect ?? null,
         score: ans?.score ?? ans?.earnedPoints ?? 0,
         maxScore: q.points,
         proof: q.proof ?? null,
+        imageUrl: imageUrl ?? null,
+        needsManualGrading: ans?.needsManualGrading ?? false,
+        manualFeedback: (ans as Record<string, unknown>)?.manualFeedback as string | null ?? null,
       };
     }),
   };

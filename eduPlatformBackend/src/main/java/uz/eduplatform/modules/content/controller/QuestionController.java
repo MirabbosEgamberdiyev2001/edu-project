@@ -18,6 +18,8 @@ import uz.eduplatform.core.common.dto.ApiResponse;
 import uz.eduplatform.core.common.dto.PagedResponse;
 import uz.eduplatform.core.common.utils.MessageService;
 import uz.eduplatform.core.i18n.AcceptLanguage;
+import uz.eduplatform.core.storage.FileStorageService;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import uz.eduplatform.core.security.UserPrincipal;
 import uz.eduplatform.modules.content.domain.Difficulty;
 import uz.eduplatform.modules.content.domain.QuestionStatus;
@@ -40,6 +42,7 @@ public class QuestionController {
     private final QuestionImportService importService;
     private final QuestionSearchService searchService;
     private final MessageService messageService;
+    private final FileStorageService fileStorageService;
 
     @GetMapping("/questions")
     @Operation(summary = "Savollarni filtrlash", description = "Foydalanuvchi savollarini filtrlash: fan, mavzu, tur, qiyinlik, holat va qidiruv bo'yicha. Sahifalash va saralash qo'llab-quvvatlanadi.")
@@ -255,5 +258,43 @@ public class QuestionController {
                 topicId, principal.getId(), PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")), language);
 
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @PostMapping(value = "/questions/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Savolga rasm biriktirish", description = "Savolga rasm yuklash (JPEG, PNG, GIF, WebP, SVG). Maksimal hajm: 5MB. Avvalgi rasm avtomatik o'chiriladi.")
+    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<ApiResponse<QuestionDto>> uploadQuestionImage(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestParam("file") MultipartFile file,
+            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
+
+        FileStorageService.FileInfo info = fileStorageService.store(file);
+        String imageUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/api/v1/files/")
+                .path(info.storedFilename())
+                .toUriString();
+
+        QuestionDto question = questionService.setQuestionImage(
+                id, principal.getId(), imageUrl, info.storedFilename(), language);
+
+        return ResponseEntity.ok(ApiResponse.success(question,
+                messageService.get("question.image.uploaded", language.toLocale())));
+    }
+
+    @DeleteMapping("/questions/{id}/image")
+    @Operation(summary = "Savol rasmini o'chirish", description = "Savolga biriktirilgan rasmni o'chirish.")
+    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> deleteQuestionImage(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestHeader(value = "Accept-Language", defaultValue = "uzl") AcceptLanguage language) {
+
+        String filename = questionService.clearQuestionImage(id, principal.getId(), language);
+        if (filename != null) {
+            fileStorageService.delete(filename);
+        }
+        return ResponseEntity.ok(ApiResponse.success(null,
+                messageService.get("question.image.deleted", language.toLocale())));
     }
 }

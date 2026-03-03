@@ -6,9 +6,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uz.eduplatform.modules.content.domain.Difficulty;
+import uz.eduplatform.modules.content.domain.GradingStrategy;
 import uz.eduplatform.modules.content.domain.QuestionType;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -40,4 +42,7 @@ public class CreateQuestionRequest {
     private Object correctAnswer;
 
     private Map<String, String> proof;
+
+    private List<Integer> gradeLevels;
+    private GradingStrategy gradingStrategy;
 }

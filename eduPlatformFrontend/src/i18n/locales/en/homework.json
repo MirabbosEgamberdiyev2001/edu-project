@@ -1,0 +1,59 @@
+{
+  "title": "Homeworks",
+  "teacherSubtitle": "All created homeworks",
+  "studentSubtitle": "Homeworks assigned by your teachers",
+  "create": "Create",
+  "noHomeworks": "No homeworks created yet",
+  "noStudentHomeworks": "No homeworks assigned yet",
+  "deadline": "Deadline",
+  "fileRequired": "File required",
+  "allowResubmission": "Resubmission",
+  "submissions": "submitted",
+  "graded": "graded",
+  "view": "View",
+  "submitted": "Submitted",
+  "notSubmitted": "Not submitted",
+  "overdue": "(overdue)",
+  "teacherComment": "Teacher comment",
+  "resubmit": "Resubmit",
+  "submit": "Submit",
+  "cancel": "Cancel",
+  "save": "Save",
+  "close": "Close",
+  "yourAnswer": "Your answer",
+  "answerPlaceholder": "Write your homework answer...",
+  "attachFile": "Attach file",
+  "fileRequiredError": "* File is required",
+  "noSubmissions": "No submissions yet",
+  "downloading": "Downloading...",
+  "excelExport": "Excel",
+  "gradeLabel": "Grade (0-100)",
+  "grade": "Grade",
+  "commentOptional": "Comment (optional)",
+  "allowResubmissionLabel": {
+    "yes": "Allowed",
+    "no": "Not allowed"
+  },
+  "fileRequiredLabel": {
+    "yes": "Yes",
+    "no": "No"
+  },
+  "tableHeaders": {
+    "student": "Student",
+    "answer": "Answer",
+    "file": "File",
+    "grade": "Grade",
+    "status": "Status"
+  },
+  "dialog": {
+    "createTitle": "New Homework",
+    "submissionsTitle": "Submissions",
+    "title": "Title *",
+    "description": "Description",
+    "group": "Group",
+    "allGroups": "All",
+    "deadline": "Deadline",
+    "resubmission": "Resubmission",
+    "fileRequired": "File required"
+  }
+}

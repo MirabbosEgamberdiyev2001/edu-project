@@ -16,6 +16,13 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Grid,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  TableContainer,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
@@ -29,6 +36,7 @@ import PrintIcon from '@mui/icons-material/Print';
 import DescriptionIcon from '@mui/icons-material/Description';
 import { useTestDetail } from '../hooks/useTests';
 import { useTestMutations } from '../hooks/useTestMutations';
+import { useAssignments } from '@/features/assignments/hooks/useAssignments';
 import { useQuestionMutations } from '@/features/questions/hooks/useQuestionMutations';
 import { MathText } from '@/components/math';
 import { generateMultiVariantDocument, downloadFile, printHtml, type ExportVariant } from '@/utils/mathExport';
@@ -70,6 +78,7 @@ export default function TestDetailPage() {
 
   const { data: test, isLoading } = useTestDetail(id!);
   const { update, remove, regenerate } = useTestMutations();
+  const { data: testAssignments } = useAssignments(id ? { testHistoryId: id, size: 100 } : undefined);
   const { bulkSubmit } = useQuestionMutations();
 
   const queryClient = useQueryClient();
@@ -475,6 +484,106 @@ export default function TestDetailPage() {
       <Paper sx={{ p: 3, mb: 3 }}>
         <TestExportButtons testId={test.id} variants={exportVariants} testTitle={displayTitle} />
       </Paper>
+
+      {/* Test-level Statistics — all assignments using this test */}
+      {testAssignments && testAssignments.content.length > 0 && (() => {
+        const assignments = testAssignments.content;
+        const totalCompleted = assignments.reduce((s, a) => s + a.completedStudents, 0);
+        const totalStudents = assignments.reduce((s, a) => s + a.totalStudents, 0);
+        const scoresWithData = assignments.filter((a) => a.averageScore != null);
+        const overallAvg = scoresWithData.length > 0
+          ? Math.round(scoresWithData.reduce((s, a) => s + (a.averageScore ?? 0), 0) / scoresWithData.length)
+          : null;
+        return (
+          <Paper sx={{ p: 3, mb: 3 }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>{t('detail.statistics', 'Statistika')}</Typography>
+            <Grid container spacing={2} sx={{ mb: 3 }}>
+              <Grid item xs={6} sm={3}>
+                <Box sx={{ textAlign: 'center', p: 1.5, bgcolor: 'action.hover', borderRadius: 2 }}>
+                  <Typography variant="h4" color="primary.main">{assignments.length}</Typography>
+                  <Typography variant="caption" color="text.secondary">{t('detail.assignmentsCount', 'Topshiriqlar')}</Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={6} sm={3}>
+                <Box sx={{ textAlign: 'center', p: 1.5, bgcolor: 'action.hover', borderRadius: 2 }}>
+                  <Typography variant="h4" color="info.main">{totalStudents}</Typography>
+                  <Typography variant="caption" color="text.secondary">{t('detail.totalStudents', 'Jami o\'quvchilar')}</Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={6} sm={3}>
+                <Box sx={{ textAlign: 'center', p: 1.5, bgcolor: 'action.hover', borderRadius: 2 }}>
+                  <Typography variant="h4" color="success.main">{totalCompleted}</Typography>
+                  <Typography variant="caption" color="text.secondary">{t('detail.completedStudents', 'Ishlagan')}</Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={6} sm={3}>
+                <Box sx={{ textAlign: 'center', p: 1.5, bgcolor: 'action.hover', borderRadius: 2 }}>
+                  <Typography variant="h4" color="warning.main">
+                    {overallAvg != null ? `${overallAvg}%` : '-'}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">{t('detail.avgScore', "O'rtacha ball")}</Typography>
+                </Box>
+              </Grid>
+            </Grid>
+            <Divider sx={{ mb: 2 }} />
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>#</TableCell>
+                    <TableCell>{t('detail.assignmentTitle', 'Topshiriq')}</TableCell>
+                    <TableCell>{t('detail.group', 'Guruh')}</TableCell>
+                    <TableCell align="center">{t('detail.status', 'Holat')}</TableCell>
+                    <TableCell align="center">{t('detail.progress', 'Bajarish')}</TableCell>
+                    <TableCell align="center">{t('detail.avgScore', "O'rtacha ball")}</TableCell>
+                    <TableCell />
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {assignments.map((a, idx) => {
+                    const prog = a.totalStudents > 0
+                      ? Math.round((a.completedStudents / a.totalStudents) * 100)
+                      : 0;
+                    return (
+                      <TableRow key={a.id} hover>
+                        <TableCell>{idx + 1}</TableCell>
+                        <TableCell>
+                          <Typography variant="body2" fontWeight={500}>{a.title}</Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">{a.groupName || '-'}</Typography>
+                        </TableCell>
+                        <TableCell align="center">
+                          <Chip label={a.status} size="small" variant="outlined" />
+                        </TableCell>
+                        <TableCell align="center">
+                          <Typography variant="body2">
+                            {a.completedStudents}/{a.totalStudents} ({prog}%)
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="center">
+                          {a.averageScore != null ? (
+                            <Chip
+                              label={`${Math.round(a.averageScore)}%`}
+                              size="small"
+                              color={a.averageScore >= 70 ? 'success' : a.averageScore >= 40 ? 'warning' : 'error'}
+                            />
+                          ) : '-'}
+                        </TableCell>
+                        <TableCell>
+                          <Button size="small" onClick={() => navigate(`/assignments/${a.id}`)}>
+                            {t('detail.view', "Ko'rish")}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        );
+      })()}
 
       <Divider sx={{ my: 2 }} />
 

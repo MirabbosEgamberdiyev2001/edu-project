@@ -81,6 +81,7 @@ public class ResultService {
                     .attemptCount(studentAttempts.size())
                     .tabSwitches(totalTabSwitches)
                     .status(bestAttempt.getStatus() != null ? bestAttempt.getStatus().name() : null)
+                    .latestAttemptId(bestAttempt.getId())
                     .build());
         }
 

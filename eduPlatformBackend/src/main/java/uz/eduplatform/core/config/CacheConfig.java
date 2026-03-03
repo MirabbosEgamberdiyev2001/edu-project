@@ -22,7 +22,7 @@ public class CacheConfig {
                 .maximumSize(1000));
 
         // Register per-cache configurations
-        Map<String, Caffeine<Object, Object>> cacheBuilders = Map.of(
+        Map<String, Caffeine<Object, Object>> cacheBuilders = new java.util.HashMap<>(Map.of(
                 "subjects", caffeineBuilder(Duration.ofHours(1), 500),
                 "topics", caffeineBuilder(Duration.ofHours(1), 500),
                 "questions", caffeineBuilder(Duration.ofMinutes(15), 2000),
@@ -32,7 +32,13 @@ public class CacheConfig {
                 "system_info", caffeineBuilder(Duration.ofMinutes(2), 50),
                 "activePlans", caffeineBuilder(Duration.ofHours(1), 50),
                 "plans", caffeineBuilder(Duration.ofHours(1), 100)
-        );
+        ));
+        // Additional caches for new features
+        cacheBuilders.putAll(Map.of(
+                "global_tests", caffeineBuilder(Duration.ofMinutes(5), 200),
+                "notification_count", caffeineBuilder(Duration.ofSeconds(30), 5000),
+                "user_groups", caffeineBuilder(Duration.ofMinutes(10), 1000)
+        ));
 
         cacheBuilders.forEach((name, builder) ->
                 cacheManager.registerCustomCache(name,

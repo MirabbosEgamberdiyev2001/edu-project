@@ -102,6 +102,9 @@
     "deleteUser": "Delete User",
     "viewDetails": "View Details",
     "noUsers": "No users found",
+    "info": "User Info",
+    "resetPassword": "Reset Password",
+    "resetPasswordWarning": "Share this temporary password with the user. It will not be shown again.",
     "verified": "Verified",
     "notVerified": "Not verified",
     "failedAttempts": "Failed Attempts",
@@ -152,7 +155,10 @@
     "filterDateRange": "Filter by Date Range",
     "from": "From",
     "to": "To",
-    "noLogs": "No audit logs found"
+    "noLogs": "No audit logs found",
+    "searchAction": "Search action",
+    "clearFilters": "Clear filters",
+    "totalEntries": "entries"
   },
   "recentActivity": {
     "title": "Recent Activity"

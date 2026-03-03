@@ -107,6 +107,8 @@ export interface AttemptResultDto {
 }
 
 export interface DetailedAnswerDto {
+  /** Backend answer entity ID — required for manual grading */
+  answerId?: string;
   questionId: string;
   questionText: string;
   questionType: string;
@@ -114,9 +116,22 @@ export interface DetailedAnswerDto {
   /** string | boolean | string[] | Record<string,string> (multilingual map) | null */
   correctAnswer: unknown;
   studentAnswer: unknown;
-  isCorrect: boolean;
+  /** null when the question uses MANUAL grading and hasn't been graded by a teacher yet */
+  isCorrect: boolean | null;
   score: number;
   maxScore: number;
   /** Resolved locale-specific proof/explanation string from backend */
   proof: string | null;
+  /** Image URL attached to this question (null if no image) */
+  imageUrl: string | null;
+  /** True when this question uses MANUAL grading strategy and is awaiting teacher review */
+  needsManualGrading?: boolean;
+  /** Teacher-assigned score after manual review */
+  manualScore?: number | null;
+  /** Teacher feedback text */
+  manualFeedback?: string | null;
+  /** Teacher who graded this */
+  gradedBy?: string | null;
+  /** When manual grading was done */
+  gradedAt?: string | null;
 }

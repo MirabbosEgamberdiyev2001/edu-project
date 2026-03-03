@@ -3,7 +3,13 @@ import {
   Box,
   Typography,
   Paper,
+  Select,
+  MenuItem,
+  FormControl,
+  IconButton,
 } from '@mui/material';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { useTranslation } from 'react-i18next';
 import type { AttemptQuestionDto } from '@/types/testTaking';
 import { resolveTranslation } from '@/utils/i18nUtils';
@@ -259,6 +265,138 @@ export default function AnswerInput({ question, value, onChange, disabled }: Ans
           />
         </Box>
       );
+
+    case 'MATCHING': {
+      type MatchItem = { id: string; text: string | Record<string, string> };
+      const matchingData = question.options as { premises: MatchItem[]; options: MatchItem[] } | null;
+      if (!matchingData?.premises?.length) return null;
+      const currentMap = (value as Record<string, string>) || {};
+      return (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+          {matchingData.premises.map((premise) => (
+            <Box key={premise.id} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box
+                sx={{
+                  flex: 1,
+                  p: '10px 14px',
+                  borderRadius: 1.5,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  bgcolor: 'background.paper',
+                }}
+              >
+                <MathText text={resolveOptionText(premise.text)} variant="body1" />
+              </Box>
+              <Typography color="text.secondary" sx={{ flexShrink: 0 }}>→</Typography>
+              <FormControl sx={{ flex: 1 }} size="small">
+                <Select
+                  value={currentMap[premise.id] || ''}
+                  onChange={(e) => onChange({ ...currentMap, [premise.id]: e.target.value })}
+                  disabled={disabled}
+                  displayEmpty
+                >
+                  <MenuItem value="" disabled>
+                    {t('matchSelectPlaceholder')}
+                  </MenuItem>
+                  {matchingData.options.map((opt) => (
+                    <MenuItem key={opt.id} value={opt.id}>
+                      {resolveOptionText(opt.text)}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+          ))}
+        </Box>
+      );
+    }
+
+    case 'ORDERING': {
+      type OrderItem = { id: string; text: string | Record<string, string> };
+      const items = Array.isArray(question.options) ? (question.options as OrderItem[]) : [];
+      const currentOrder: string[] =
+        Array.isArray(value) && (value as string[]).length > 0
+          ? (value as string[])
+          : items.map((item) => item.id);
+      const itemById = new Map(items.map((item) => [item.id, item]));
+
+      const moveUp = (index: number) => {
+        if (index === 0 || disabled) return;
+        const next = [...currentOrder];
+        [next[index - 1], next[index]] = [next[index], next[index - 1]];
+        onChange(next);
+      };
+      const moveDown = (index: number) => {
+        if (index === currentOrder.length - 1 || disabled) return;
+        const next = [...currentOrder];
+        [next[index], next[index + 1]] = [next[index + 1], next[index]];
+        onChange(next);
+      };
+
+      return (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mt: 2 }}>
+          <Typography variant="caption" color="text.secondary">
+            {t('orderInstruction')}
+          </Typography>
+          {currentOrder.map((id, index) => {
+            const item = itemById.get(id);
+            if (!item) return null;
+            return (
+              <Box
+                key={id}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.5,
+                  p: '10px 14px',
+                  borderRadius: 1.5,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  bgcolor: 'background.paper',
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: '50%',
+                    bgcolor: 'primary.main',
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    fontWeight: 700,
+                    fontSize: '0.8rem',
+                  }}
+                >
+                  {index + 1}
+                </Box>
+                <MathText text={resolveOptionText(item.text)} variant="body1" sx={{ flex: 1 }} />
+                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                  <IconButton
+                    size="small"
+                    onClick={() => moveUp(index)}
+                    disabled={disabled || index === 0}
+                    aria-label="Move up"
+                  >
+                    <ArrowUpwardIcon fontSize="small" />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    onClick={() => moveDown(index)}
+                    disabled={disabled || index === currentOrder.length - 1}
+                    aria-label="Move down"
+                  >
+                    <ArrowDownwardIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+              </Box>
+            );
+          })}
+        </Box>
+      );
+    }
 
     default:
       return (

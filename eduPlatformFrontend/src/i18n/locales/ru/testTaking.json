@@ -71,6 +71,8 @@
   "trueFalseFalse": "Ложь",
   "answerPlaceholder": "Ваш ответ...",
   "essayPlaceholder": "Напишите ваш ответ...",
+  "matchSelectPlaceholder": "— выберите вариант —",
+  "orderInstruction": "Расположите элементы в правильном порядке:",
   "testName": "Название теста",
   "date": "Дата",
   "actions": "Действия",
@@ -96,7 +98,14 @@
     "tabWrong": "Неправильные",
     "tabSkipped": "Пропущенные",
     "explanation": "Объяснение",
-    "showExplanation": "Показать объяснение"
+    "showExplanation": "Показать объяснение",
+    "pendingManualGrading": "Ожидает проверки учителем",
+    "premise": "Условие",
+    "yourChoice": "Ваш ответ",
+    "correctChoice": "Правильный ответ",
+    "matchStatus": "Статус",
+    "shouldBe": "должно быть",
+    "teacherFeedback": "Комментарий учителя"
   },
   "attemptStatus": {
     "IN_PROGRESS": "В процессе",
@@ -243,6 +252,11 @@
       "unanswered": "Не отвечен"
     },
     "finishLabel": "Завершить экзамен",
-    "submitWarning": "{{count}} вопросов без ответа"
+    "submitWarning": "{{count}} вопросов без ответа",
+    "autoSave": {
+      "saving": "Сохранение...",
+      "saved": "Сохранено",
+      "error": "Не сохранено"
+    }
   }
 }

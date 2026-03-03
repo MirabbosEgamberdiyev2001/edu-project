@@ -176,7 +176,7 @@ class AssignmentServiceTest {
         when(assignmentRepository.findByTeacherIdOrderByCreatedAtDesc(teacherId, pageable))
                 .thenReturn(page);
 
-        PagedResponse<AssignmentDto> result = assignmentService.getTeacherAssignments(teacherId, null, null, pageable);
+        PagedResponse<AssignmentDto> result = assignmentService.getTeacherAssignments(teacherId, null, null, null, pageable);
 
         assertEquals(1, result.getContent().size());
         assertEquals("Test Assignment", result.getContent().get(0).getTitle());

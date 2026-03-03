@@ -38,12 +38,14 @@ import LinkIcon from '@mui/icons-material/Link';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import GradingIcon from '@mui/icons-material/Grading';
 import SchoolIcon from '@mui/icons-material/School';
+import HomeWorkIcon from '@mui/icons-material/HomeWork';
 import { useAuth } from '@/hooks/useAuth';
 import { Role } from '@/types/user';
 import { authApi } from '@/api/authApi';
 import { storage } from '@/lib/storage';
 import Logo from './Logo';
 import LanguageSwitcher from '@/features/auth/components/LanguageSwitcher';
+import NotificationBell from './NotificationBell';
 
 const DRAWER_WIDTH = 260;
 
@@ -69,6 +71,7 @@ function getMenuItems(role: Role, t: (key: string) => string): (NavItem | 'divid
       items.push({ label: t('common:assignments'), icon: <AssignmentTurnedInIcon />, path: '/assignments' });
       items.push({ label: t('common:analytics'), icon: <BarChartIcon />, path: '/analytics/teacher' });
       items.push({ label: t('common:attestation'), icon: <SchoolIcon />, path: '/attestation' });
+      items.push({ label: t('common:homeworks'), icon: <HomeWorkIcon />, path: '/homeworks' });
       break;
 
     case Role.STUDENT:
@@ -77,6 +80,7 @@ function getMenuItems(role: Role, t: (key: string) => string): (NavItem | 'divid
       items.push({ label: t('common:myGroups'), icon: <GroupsIcon />, path: '/my-groups' });
       items.push({ label: t('common:myAttempts'), icon: <GradingIcon />, path: '/my-attempts' });
       items.push({ label: t('common:analytics'), icon: <BarChartIcon />, path: '/analytics/student' });
+      items.push({ label: t('common:myHomework'), icon: <HomeWorkIcon />, path: '/my-homework' });
       items.push({ label: t('common:pairing'), icon: <LinkIcon />, path: '/pairing' });
       break;
 
@@ -225,7 +229,8 @@ export default function AppLayout() {
           </IconButton>
           <Box sx={{ flexGrow: 1 }} />
           <LanguageSwitcher />
-          <IconButton onClick={(e) => setAnchorEl(e.currentTarget)} sx={{ ml: 2 }}>
+          <NotificationBell />
+          <IconButton onClick={(e) => setAnchorEl(e.currentTarget)} sx={{ ml: 1 }}>
             <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: '0.875rem' }}>
               {user?.firstName?.[0]?.toUpperCase() || user?.lastName?.[0]?.toUpperCase() || '?'}
             </Avatar>

@@ -92,6 +92,7 @@ export interface StudentResultDto {
   attemptCount: number;
   tabSwitches: number;
   status: string;
+  latestAttemptId?: string | null;
 }
 
 export interface LiveMonitoringDto {

@@ -71,6 +71,8 @@
   "trueFalseFalse": "Noto'g'ri",
   "answerPlaceholder": "Javobingiz...",
   "essayPlaceholder": "Javobingizni yozing...",
+  "matchSelectPlaceholder": "— variantni tanlang —",
+  "orderInstruction": "Elementlarni to'g'ri tartibda joylashtiring:",
   "testName": "Test nomi",
   "date": "Sana",
   "actions": "Amallar",
@@ -96,7 +98,14 @@
     "tabWrong": "Noto'g'ri",
     "tabSkipped": "O'tkazilgan",
     "explanation": "Izoh",
-    "showExplanation": "Izohni ko'rish"
+    "showExplanation": "Izohni ko'rish",
+    "pendingManualGrading": "Qo'lda baholanadi",
+    "premise": "Shart",
+    "yourChoice": "Sizning javobingiz",
+    "correctChoice": "To'g'ri javob",
+    "matchStatus": "Holat",
+    "shouldBe": "kerak edi",
+    "teacherFeedback": "O'qituvchi izohi"
   },
   "attemptStatus": {
     "IN_PROGRESS": "Jarayonda",
@@ -243,6 +252,11 @@
       "unanswered": "Javoblanmagan"
     },
     "finishLabel": "Imtihonni yakunlash",
-    "submitWarning": "{{count}} savol javoblanmagan"
+    "submitWarning": "{{count}} savol javoblanmagan",
+    "autoSave": {
+      "saving": "Saqlanmoqda...",
+      "saved": "Saqlandi",
+      "error": "Saqlanmadi"
+    }
   }
 }

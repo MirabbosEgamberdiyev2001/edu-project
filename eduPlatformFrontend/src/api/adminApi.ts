@@ -54,6 +54,9 @@ export const adminApi = {
   deleteUser: (id: string) =>
     api.delete<ApiResponse<void>>(`${ADMIN}/users/${id}`),
 
+  resetPassword: (id: string) =>
+    api.post<ApiResponse<{ temporaryPassword: string }>>(`${ADMIN}/users/${id}/reset-password`),
+
   // Audit Logs
   getAuditLogs: (params?: { page?: number; size?: number }) =>
     api.get<ApiResponse<PagedResponse<AuditLogDto>>>(`${ADMIN}/audit-logs`, { params }),

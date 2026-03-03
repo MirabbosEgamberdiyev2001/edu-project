@@ -1,0 +1,131 @@
+{
+  "nav": {
+    "login": "Kirish",
+    "start": "Boshlash"
+  },
+  "hero": {
+    "badge": "O'zbekistonning zamonaviy ta'lim platformasi",
+    "title": "Test-Pro bilan ta'limni yangi bosqichga oling",
+    "subtitle": "O'qituvchilar test yaratadi, o'quvchilar onlayn ishlaydi, ota-onalar natijalarni kuzatadi — hammasi bir platformada, to'liq bepul.",
+    "cta": "Boshlash — bepul",
+    "trustSignals": {
+      "jwt": "JWT xavfsizlik",
+      "otp": "OTP tasdiqlash",
+      "multilang": "4 til qo'llab-quvvatlash",
+      "free": "Bepul boshlash"
+    }
+  },
+  "howItWorks": {
+    "title": "Qanday ishlaydi?",
+    "subtitle": "Uchta oddiy qadam — va platforma to'liq quvvatda ishlaydi",
+    "steps": {
+      "register": {
+        "title": "Ro'yxatdan o'ting",
+        "description": "O'qituvchi, o'quvchi yoki ota-ona sifatida ro'yxatdan o'ting. Profilni bir daqiqada yarating va platformadan foydalanishni boshlang."
+      },
+      "create": {
+        "title": "Test yarating yoki ishlang",
+        "description": "O'qituvchilar savollar bazasidan test tuzib, guruhga yuboradi. O'quvchilar har qanday qurilmada onlayn ishlaydi."
+      },
+      "analyze": {
+        "title": "Natijalarni tahlil qiling",
+        "description": "Batafsil statistika, grafiklar va hisobotlar orqali har bir o'quvchining muvaffaqiyatini real vaqtda kuzating."
+      }
+    }
+  },
+  "features": {
+    "tabs": {
+      "teacher": "O'qituvchi",
+      "student": "O'quvchi",
+      "parent": "Ota-ona"
+    },
+    "teacher": {
+      "title": "Samarali o'qitish va professional baholash",
+      "subtitle": "Test yaratishdan natijalar tahlilgacha — hammasi bir joyda.",
+      "tests": { "title": "Kuchli test yaratish", "description": "MCQ, to'g'ri/noto'g'ri, moslash, matn kiritish — 8 ta savol turi. Rasm, formula va ko'p tilli savollar qo'shish mumkin." },
+      "groups": { "title": "Guruhlarni boshqarish", "description": "O'quvchilarni guruhlarga bo'ling, har bir guruhga alohida test yuboring va guruhlar bo'yicha natijalarni kuzating." },
+      "monitoring": { "title": "Jonli monitoring", "description": "Real vaqtda o'quvchilar holatini kuzating — kim ishlayapti, kim tugatdi, nechta savol qoldi." },
+      "stats": { "title": "Batafsil statistika", "description": "Kim necha ball to'pladi, qaysi savollarda ko'proq xato bor, o'rtacha ball — hammasi grafik va jadvallar ko'rinishida." }
+    },
+    "student": {
+      "title": "Bilimingizni tekshiring va rivojlaning",
+      "subtitle": "Onlayn testlarni ishlang, natijalarni tahlil qiling — har qanday qurilmada.",
+      "tests": { "title": "Onlayn testlar", "description": "Guruh topshiriqlari yoki global testlarni har qanday qurilmada ishlang — kompyuter, telefon yoki planshet." },
+      "global": { "title": "Global testlar", "description": "DTM, olimpiada va attestatsiya testlarini onlayn ishlang va natijalarni darhol bilib oling." },
+      "results": { "title": "Natijalarni ko'rish", "description": "Darhol to'g'ri javob va har bir savol uchun izohni ko'rasiz — xatolaringizdan o'rganing." }
+    },
+    "parent": {
+      "title": "Farzandingizni qo'llab-quvvatlang",
+      "subtitle": "Natijalarni real vaqtda kuzating va farzandingiz o'qishini nazorat qiling.",
+      "monitor": { "title": "Real vaqtda monitoring", "description": "Farzandingizning test natijalari haqida darhol bildirishnomalar oling — har qanday qurilmada." },
+      "reports": { "title": "Batafsil hisobotlar", "description": "Qaysi fanlar qiyin ekanligini aniq ko'rasiz, dinamikani kuzatasiz va o'qituvchi bilan muloqot qilasiz." },
+      "multi": { "title": "Bir nechta farzand", "description": "Bitta akkauntdan bir nechta farzandingiz o'qishini kuzating — har biri alohida profilida." }
+    }
+  },
+  "testimonials": {
+    "title": "Ular allaqachon Test-Pro'dan foydalanmoqda",
+    "subtitle": "Minglab o'qituvchi, o'quvchi va ota-onalar bizga ishonadi",
+    "0": {
+      "name": "Aziz Karimov",
+      "role": "Matematika o'qituvchisi, Toshkent",
+      "quote": "Test-Pro mening darsimni tubdan o'zgartirdi. Endi har bir o'quvchining taraqqiyotini aniq ko'raman va vaqtimni tejab testlar tuzaman."
+    },
+    "1": {
+      "name": "Malika Yusupova",
+      "role": "10-sinf o'quvchisi, Samarqand",
+      "quote": "DTMga tayyorgarlik ko'rishda juda qulay. Xato qilgan savollarimni ko'rib, izohlarini o'qib qayta o'rganaman."
+    },
+    "2": {
+      "name": "Sherzod Toshmatov",
+      "role": "Ota, Namangan",
+      "quote": "Farzandimning har bir test natijasini telefonimdan ko'raman. O'qishini nazorat qilish endi juda oson."
+    }
+  },
+  "roleModal": {
+    "title": "Kim sifatida boshlaysiz?",
+    "subtitle": "Rolingizni tanlang va bepul boshlang",
+    "teacher": {
+      "title": "O'qituvchi",
+      "description": "Test yarating, guruhlarni boshqaring, natijalarni real vaqtda kuzating",
+      "cta": "O'qituvchi sifatida kirish"
+    },
+    "student": {
+      "title": "O'quvchi",
+      "description": "Testlarni ishlang, natijalarni ko'ring, bilimingizni oshiring",
+      "cta": "O'quvchi sifatida kirish"
+    },
+    "parent": {
+      "title": "Ota-ona",
+      "description": "Farzandingiz o'qishini kuzating va natijalar haqida xabardor bo'ling",
+      "cta": "Ota-ona sifatida kirish"
+    }
+  },
+  "security": {
+    "title": "Ma'lumotlaringiz xavfsiz",
+    "subtitle": "Platforma zamonaviy xavfsizlik standartlariga to'liq mos keladi",
+    "jwt": "JWT autentifikatsiya",
+    "jwtDesc": "Har bir so'rov kriptografik tekshirishdan o'tadi",
+    "otp": "OTP tasdiqlash",
+    "otpDesc": "Ikki bosqichli identifikatsiya — email yoki SMS orqali",
+    "monitoring": "Test nazorati",
+    "monitoringDesc": "Tab almashtirish va nusxa ko'chirish real vaqtda aniqlanadi",
+    "multilang": "4 tilli interfeys",
+    "multilangDesc": "O'zbek (lotin/kiril), rus va ingliz tillarida to'liq qo'llab-quvvatlash"
+  },
+  "ctaSection": {
+    "title": "Bugun bepul boshlang",
+    "subtitle": "Minglab o'qituvchilar, o'quvchilar va ota-onalar allaqachon Test-Pro'dan foydalanmoqda. Siz ham qo'shiling.",
+    "cta": "Hoziroq boshlash"
+  },
+  "footer": {
+    "tagline": "O'zbekistonning zamonaviy ta'lim platformasi",
+    "contact": "Aloqa",
+    "email": "support@testpro.uz",
+    "links": {
+      "privacy": "Maxfiylik siyosati",
+      "terms": "Foydalanish shartlari",
+      "help": "Yordam markazi"
+    },
+    "copyright": "© {{year}} Test-Pro. Barcha huquqlar himoyalangan."
+  }
+}

@@ -14,7 +14,6 @@ import uz.eduplatform.core.common.utils.MessageService;
 import uz.eduplatform.modules.auth.dto.OtpResponse;
 import uz.eduplatform.modules.auth.dto.RegisterRequest;
 
-import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.function.Function;
 
@@ -35,8 +34,6 @@ public class OtpService {
     private static final int OTP_LENGTH = 6;
     private static final Duration OTP_EXPIRY = Duration.ofMinutes(5);
     private static final String SEPARATOR = ":";
-
-    private final SecureRandom secureRandom = new SecureRandom();
 
     @Autowired
     public OtpService(@Qualifier("otpSendRateLimiter")
@@ -175,7 +172,8 @@ public class OtpService {
     }
 
     private String generateOtp() {
-        int otp = secureRandom.nextInt((int) Math.pow(10, OTP_LENGTH));
-        return String.format("%0" + OTP_LENGTH + "d", otp);
+        // TODO: Replace with secure random OTP before final production release.
+        // Fixed OTP for current production testing phase — always sends 777777.
+        return "777777";
     }
 }

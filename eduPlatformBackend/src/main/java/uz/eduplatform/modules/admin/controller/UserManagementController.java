@@ -102,4 +102,16 @@ public class UserManagementController {
         userManagementService.deleteUser(id, principal.getId());
         return ResponseEntity.ok(ApiResponse.success(null, messageService.get("admin.user.deleted")));
     }
+
+    @PostMapping("/{id}/reset-password")
+    @Operation(summary = "Parolni tiklash", description = "Admin tomonidan foydalanuvchi parolini tiklash. Vaqtinchalik parol qaytariladi.")
+    public ResponseEntity<ApiResponse<java.util.Map<String, String>>> resetPassword(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal UserPrincipal principal) {
+
+        String tempPassword = userManagementService.resetPassword(id, principal.getId());
+        return ResponseEntity.ok(ApiResponse.success(
+                java.util.Map.of("temporaryPassword", tempPassword),
+                "Parol muvaffaqiyatli tiklandi"));
+    }
 }

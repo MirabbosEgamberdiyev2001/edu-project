@@ -1,5 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import { questionApi } from '@/api/questionApi';
 import {
   Box,
   Typography,
@@ -31,6 +33,7 @@ import QuestionFormDialog from '../components/QuestionFormDialog';
 import QuestionDeleteDialog from '../components/QuestionDeleteDialog';
 import { QuestionType, Difficulty, QuestionStatus } from '@/types/question';
 import type { QuestionDto, CreateQuestionRequest, UpdateQuestionRequest, QuestionListParams } from '@/types/question';
+import type { ImageAction } from '../components/QuestionFormDialog';
 import { useDebounce } from '@/features/subjects/hooks/useDebounce';
 
 const PAGE_SIZES = [12, 24, 48];
@@ -87,7 +90,8 @@ export default function QuestionsPage() {
   }), [debouncedSearch, questionType, difficulty, status, page, pageSize]);
 
   const { data, isLoading } = useQuestions(params);
-  const { create, update, remove, submitForModeration, bulkSubmit } = useQuestionMutations();
+  const { create, update, remove, submitForModeration, bulkSubmit, uploadImage, deleteImage } = useQuestionMutations();
+  const queryClient = useQueryClient();
 
   // ── Selection state (single source of truth) ──
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -192,16 +196,41 @@ export default function QuestionsPage() {
     setFormOpen(true);
   };
 
-  const handleFormSubmit = (formData: CreateQuestionRequest | UpdateQuestionRequest) => {
+  const handleFormSubmit = (
+    formData: CreateQuestionRequest | UpdateQuestionRequest,
+    imageAction?: ImageAction,
+  ) => {
+    const handleImageAction = async (questionId: string) => {
+      if (imageAction?.remove) {
+        try {
+          await questionApi.deleteImage(questionId);
+          queryClient.invalidateQueries({ queryKey: ['questions'] });
+        } catch { /* toast shown by api error handler */ }
+      } else if (imageAction?.file) {
+        uploadImage.mutate({ id: questionId, file: imageAction.file });
+      }
+    };
+
     if (editQuestion) {
       update.mutate(
         { id: editQuestion.id, data: formData as UpdateQuestionRequest },
-        { onSuccess: () => setFormOpen(false) },
+        {
+          onSuccess: async () => {
+            if (imageAction) await handleImageAction(editQuestion.id);
+            setFormOpen(false);
+          },
+        },
       );
     } else {
       create.mutate(
         formData as CreateQuestionRequest,
-        { onSuccess: () => setFormOpen(false) },
+        {
+          onSuccess: async (resp) => {
+            const newId = resp.data.data.id;
+            if (imageAction?.file) await handleImageAction(newId);
+            setFormOpen(false);
+          },
+        },
       );
     }
   };
@@ -452,7 +481,7 @@ export default function QuestionsPage() {
         onClose={() => setFormOpen(false)}
         onSubmit={handleFormSubmit}
         question={editQuestion}
-        isPending={create.isPending || update.isPending}
+        isPending={create.isPending || update.isPending || uploadImage.isPending || deleteImage.isPending}
       />
 
       <QuestionDeleteDialog

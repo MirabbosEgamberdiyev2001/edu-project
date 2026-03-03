@@ -367,6 +367,17 @@ export default function QuestionDetailPage() {
         {/* Question text */}
         <MathText text={displayText} variant="h6" sx={{ mb: 2, lineHeight: 1.6 }} />
 
+        {/* Question image */}
+        {question.imageUrl && (
+          <Box sx={{ mb: 2 }}>
+            <img
+              src={question.imageUrl}
+              alt="question"
+              style={{ maxWidth: '100%', maxHeight: 320, borderRadius: 8, display: 'block' }}
+            />
+          </Box>
+        )}
+
         {/* Translations */}
         {question.questionTextTranslations && Object.keys(question.questionTextTranslations).length > 1 && (
           <Box sx={{ mb: 2 }}>

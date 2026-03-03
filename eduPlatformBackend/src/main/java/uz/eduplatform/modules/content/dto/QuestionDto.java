@@ -5,11 +5,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uz.eduplatform.modules.content.domain.Difficulty;
+import uz.eduplatform.modules.content.domain.GradingStrategy;
 import uz.eduplatform.modules.content.domain.QuestionStatus;
 import uz.eduplatform.modules.content.domain.QuestionType;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -36,6 +38,7 @@ public class QuestionDto {
     private BigDecimal points;
     private Integer timeLimitSeconds;
 
+    private String imageUrl;
     private Map<String, Object> media;
     private Object options;
     private Object correctAnswer;
@@ -43,6 +46,9 @@ public class QuestionDto {
     private String proof;
     private Map<String, String> proofTranslations;
     private Boolean proofRequired;
+
+    private List<Integer> gradeLevels;
+    private GradingStrategy gradingStrategy;
 
     private QuestionStatus status;
     private String rejectionReason;

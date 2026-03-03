@@ -10,6 +10,11 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -144,13 +149,14 @@ export default function ResultDisplay({ result }: ResultDisplayProps) {
     (Array.isArray(a.studentAnswer) && (a.studentAnswer as unknown[]).length === 0);
 
   // Compute counts from the actual answers array for accurate tab labels
+  const isPendingManualFn = (a: DetailedAnswerDto) => a.needsManualGrading === true && a.isCorrect == null;
   const correctCount = result.answers.filter((a) => a.isCorrect === true).length;
   const skippedCount = result.answers.filter(isSkipped).length;
-  const wrongCount = result.answers.filter((a) => a.isCorrect === false && !isSkipped(a)).length;
+  const wrongCount = result.answers.filter((a) => a.isCorrect === false && !isSkipped(a) && !isPendingManualFn(a)).length;
 
   const filtered = result.answers.filter((a) => {
     if (tab === 'correct') return a.isCorrect === true;
-    if (tab === 'wrong') return a.isCorrect === false && !isSkipped(a);
+    if (tab === 'wrong') return a.isCorrect === false && !isSkipped(a) && !isPendingManualFn(a);
     if (tab === 'skipped') return isSkipped(a);
     return true;
   });
@@ -251,7 +257,8 @@ export default function ResultDisplay({ result }: ResultDisplayProps) {
       {filtered.map((answer) => {
         const globalIndex = result.answers.indexOf(answer);
         const skipped = isSkipped(answer);
-        const chipColor = answer.isCorrect ? 'success' : skipped ? 'default' : 'error';
+        const isPendingManual = answer.needsManualGrading === true && answer.isCorrect == null;
+        const chipColor = answer.isCorrect === true ? 'success' : isPendingManual ? 'warning' : skipped ? 'default' : 'error';
 
         const studentAnswerText = resolveStudentAnswerText(
           answer.options,
@@ -261,7 +268,7 @@ export default function ResultDisplay({ result }: ResultDisplayProps) {
           answer.questionType,
           noAnswerText,
         );
-        const correctAnswerText = !answer.isCorrect
+        const correctAnswerText = answer.isCorrect !== true && !isPendingManual
           ? resolveCorrectOptionText(answer, trueFalseTrue, trueFalseFalse)
           : null;
 
@@ -281,31 +288,153 @@ export default function ResultDisplay({ result }: ResultDisplayProps) {
               </Typography>
             </Box>
 
+            {/* Question image */}
+            {answer.imageUrl && (
+              <Box sx={{ px: 2, pb: 1 }}>
+                <img
+                  src={answer.imageUrl}
+                  alt="Question image"
+                  style={{ maxWidth: '100%', maxHeight: 220, borderRadius: 8, display: 'block' }}
+                />
+              </Box>
+            )}
+
             <Divider />
 
             {/* Answer details */}
             <Box sx={{ px: 2, py: 1.5, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'baseline' }}>
-                <Typography variant="body2" color="text.secondary" sx={{ minWidth: 130, flexShrink: 0 }}>
-                  {t('result.yourAnswer')}:
-                </Typography>
-                <Typography
-                  variant="body2"
-                  fontWeight={600}
-                  color={skipped ? 'text.disabled' : answer.isCorrect ? 'success.dark' : 'error.dark'}
-                  fontStyle={skipped ? 'italic' : 'normal'}
-                >
-                  {studentAnswerText}
-                </Typography>
-              </Box>
 
-              {correctAnswerText && (
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'baseline' }}>
-                  <Typography variant="body2" color="text.secondary" sx={{ minWidth: 130, flexShrink: 0 }}>
-                    {t('result.correctAnswer')}:
+              {/* MATCHING visual table */}
+              {answer.questionType === 'MATCHING' && (() => {
+                type MItem = { id: string; text: string | Record<string, string> };
+                const matchOpts = answer.options as { premises: MItem[]; options: MItem[] } | null;
+                const studentMap = (answer.studentAnswer ?? {}) as Record<string, string>;
+                const correctMap = (answer.correctAnswer ?? {}) as Record<string, string>;
+                const optById = new Map((matchOpts?.options ?? []).map((o) => [o.id, resolveValue(o.text)]));
+                if (!matchOpts?.premises?.length) return null;
+                return (
+                  <Box sx={{ overflowX: 'auto' }}>
+                    <Table size="small" sx={{ '& th, & td': { border: '1px solid', borderColor: 'divider', py: 0.75 } }}>
+                      <TableHead>
+                        <TableRow sx={{ bgcolor: 'grey.50' }}>
+                          <TableCell><Typography variant="caption" fontWeight={700}>{t('result.premise')}</Typography></TableCell>
+                          <TableCell><Typography variant="caption" fontWeight={700}>{t('result.yourChoice')}</Typography></TableCell>
+                          <TableCell><Typography variant="caption" fontWeight={700}>{t('result.correctChoice')}</Typography></TableCell>
+                          <TableCell align="center"><Typography variant="caption" fontWeight={700}>{t('result.matchStatus')}</Typography></TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {matchOpts.premises.map((premise) => {
+                          const studentChoiceId = studentMap[premise.id];
+                          const correctChoiceId = correctMap[premise.id];
+                          const isMatch = studentChoiceId === correctChoiceId;
+                          return (
+                            <TableRow key={premise.id}>
+                              <TableCell><Typography variant="body2">{resolveValue(premise.text)}</Typography></TableCell>
+                              <TableCell>
+                                <Typography variant="body2" color={studentChoiceId ? (isMatch ? 'success.dark' : 'error.dark') : 'text.disabled'} fontWeight={studentChoiceId ? 600 : 400}>
+                                  {studentChoiceId ? (optById.get(studentChoiceId) ?? studentChoiceId) : noAnswerText}
+                                </Typography>
+                              </TableCell>
+                              <TableCell>
+                                <Typography variant="body2" color="success.dark" fontWeight={600}>
+                                  {optById.get(correctChoiceId) ?? correctChoiceId ?? '—'}
+                                </Typography>
+                              </TableCell>
+                              <TableCell align="center">
+                                {isMatch
+                                  ? <CheckCircleIcon sx={{ fontSize: 18, color: 'success.main' }} />
+                                  : <CancelIcon sx={{ fontSize: 18, color: 'error.main' }} />}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </Box>
+                );
+              })()}
+
+              {/* ORDERING visual list */}
+              {answer.questionType === 'ORDERING' && (() => {
+                type OItem = { id: string; text: string | Record<string, string> };
+                const items = Array.isArray(answer.options) ? (answer.options as OItem[]) : [];
+                const studentOrder = Array.isArray(answer.studentAnswer) ? (answer.studentAnswer as string[]) : [];
+                const correctOrder = Array.isArray(answer.correctAnswer) ? (answer.correctAnswer as string[]) : [];
+                const textById = new Map(items.map((item) => [item.id, resolveValue(item.text)]));
+                if (!studentOrder.length) return (
+                  <Typography variant="body2" color="text.disabled" fontStyle="italic">{noAnswerText}</Typography>
+                );
+                return (
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+                    {studentOrder.map((id, idx) => {
+                      const correctPos = correctOrder.indexOf(id);
+                      const isCorrectPos = correctPos === idx;
+                      return (
+                        <Box key={id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Box sx={{ width: 24, height: 24, borderRadius: '50%', bgcolor: isCorrectPos ? 'success.main' : 'error.main', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '0.75rem', fontWeight: 700 }}>
+                            {idx + 1}
+                          </Box>
+                          <Typography variant="body2" sx={{ flex: 1 }}>{textById.get(id) ?? id}</Typography>
+                          {!isCorrectPos && correctPos >= 0 && (
+                            <Typography variant="caption" color="error.dark">
+                              ({t('result.shouldBe')} #{correctPos + 1})
+                            </Typography>
+                          )}
+                        </Box>
+                      );
+                    })}
+                  </Box>
+                );
+              })()}
+
+              {/* Generic answer row (non-MATCHING, non-ORDERING) */}
+              {answer.questionType !== 'MATCHING' && answer.questionType !== 'ORDERING' && (
+                <>
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'baseline' }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ minWidth: 130, flexShrink: 0 }}>
+                      {t('result.yourAnswer')}:
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      fontWeight={600}
+                      color={skipped ? 'text.disabled' : answer.isCorrect === true ? 'success.dark' : isPendingManual ? 'warning.dark' : 'error.dark'}
+                      fontStyle={skipped ? 'italic' : 'normal'}
+                    >
+                      {studentAnswerText}
+                    </Typography>
+                  </Box>
+
+                  {correctAnswerText && (
+                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'baseline' }}>
+                      <Typography variant="body2" color="text.secondary" sx={{ minWidth: 130, flexShrink: 0 }}>
+                        {t('result.correctAnswer')}:
+                      </Typography>
+                      <Typography variant="body2" fontWeight={600} color="success.dark">
+                        {correctAnswerText}
+                      </Typography>
+                    </Box>
+                  )}
+                </>
+              )}
+
+              {isPendingManual && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <AccessTimeIcon sx={{ fontSize: 16, color: 'warning.main' }} />
+                  <Typography variant="caption" color="warning.dark" fontWeight={500}>
+                    {t('result.pendingManualGrading')}
                   </Typography>
-                  <Typography variant="body2" fontWeight={600} color="success.dark">
-                    {correctAnswerText}
+                </Box>
+              )}
+
+              {/* Teacher feedback */}
+              {!isPendingManual && answer.manualFeedback && (
+                <Box sx={{ mt: 0.5, p: 1.5, bgcolor: '#eff6ff', borderRadius: 1.5, border: '1px solid #bfdbfe' }}>
+                  <Typography variant="caption" fontWeight={700} color="primary.main" display="block" sx={{ mb: 0.5 }}>
+                    {t('result.teacherFeedback')}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {answer.manualFeedback}
                   </Typography>
                 </Box>
               )}

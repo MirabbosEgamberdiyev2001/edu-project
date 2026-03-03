@@ -1,0 +1,131 @@
+{
+  "nav": {
+    "login": "Login",
+    "start": "Get Started"
+  },
+  "hero": {
+    "badge": "Uzbekistan's modern education platform",
+    "title": "Take education to the next level with Test-Pro",
+    "subtitle": "Teachers create tests, students take them online, parents track results — all in one platform, completely free.",
+    "cta": "Get Started — Free",
+    "trustSignals": {
+      "jwt": "JWT Security",
+      "otp": "OTP Verification",
+      "multilang": "4 Languages Supported",
+      "free": "Free to Start"
+    }
+  },
+  "howItWorks": {
+    "title": "How does it work?",
+    "subtitle": "Three simple steps — and the platform is running at full power",
+    "steps": {
+      "register": {
+        "title": "Register",
+        "description": "Sign up as a teacher, student, or parent. Create your profile in one minute and start using the platform."
+      },
+      "create": {
+        "title": "Create or Take a Test",
+        "description": "Teachers build tests from the question bank and send them to groups. Students take them online on any device."
+      },
+      "analyze": {
+        "title": "Analyze Results",
+        "description": "Track each student's progress in real time through detailed statistics, charts, and reports."
+      }
+    }
+  },
+  "features": {
+    "tabs": {
+      "teacher": "Teacher",
+      "student": "Student",
+      "parent": "Parent"
+    },
+    "teacher": {
+      "title": "Effective teaching and professional assessment",
+      "subtitle": "From test creation to results analysis — all in one place.",
+      "tests": { "title": "Powerful Test Creation", "description": "MCQ, true/false, matching, fill-in-the-blank — 8 question types. Add images, formulas, and multilingual questions." },
+      "groups": { "title": "Group Management", "description": "Organize students into groups, assign individual tests to each group, and track results per group." },
+      "monitoring": { "title": "Live Monitoring", "description": "Track students in real time — who is working, who has finished, how many questions remain." },
+      "stats": { "title": "Detailed Statistics", "description": "Who scored what, which questions have the most errors, average score — all in charts and tables." }
+    },
+    "student": {
+      "title": "Test your knowledge and grow",
+      "subtitle": "Take online tests, analyze results — on any device.",
+      "tests": { "title": "Online Tests", "description": "Take group assignments or global tests on any device — computer, phone, or tablet." },
+      "global": { "title": "Global Tests", "description": "Take national exams, olympiad, and attestation tests online and get results instantly." },
+      "results": { "title": "View Results", "description": "Immediately see the correct answer and explanation for every question — learn from your mistakes." }
+    },
+    "parent": {
+      "title": "Support your child's learning",
+      "subtitle": "Monitor results in real time and stay in control of your child's education.",
+      "monitor": { "title": "Real-time Monitoring", "description": "Receive instant notifications about your child's test results — on any device." },
+      "reports": { "title": "Detailed Reports", "description": "Clearly see which subjects are challenging, track trends, and communicate with the teacher." },
+      "multi": { "title": "Multiple Children", "description": "Monitor multiple children's studies from one account — each in a separate profile." }
+    }
+  },
+  "testimonials": {
+    "title": "They already use Test-Pro",
+    "subtitle": "Thousands of teachers, students, and parents trust us",
+    "0": {
+      "name": "Aziz Karimov",
+      "role": "Mathematics Teacher, Tashkent",
+      "quote": "Test-Pro has completely transformed my teaching. I can now clearly see each student's progress and save time creating tests."
+    },
+    "1": {
+      "name": "Malika Yusupova",
+      "role": "Grade 10 Student, Samarkand",
+      "quote": "It's very helpful for exam preparation. I can review the questions I got wrong, read the explanations, and study again."
+    },
+    "2": {
+      "name": "Sherzod Toshmatov",
+      "role": "Parent, Namangan",
+      "quote": "I can view my child's test results from my phone. Monitoring their studies has become so much easier."
+    }
+  },
+  "roleModal": {
+    "title": "Who are you?",
+    "subtitle": "Choose your role and start for free",
+    "teacher": {
+      "title": "Teacher",
+      "description": "Create tests, manage groups, track results in real time",
+      "cta": "Continue as Teacher"
+    },
+    "student": {
+      "title": "Student",
+      "description": "Take tests, view results, improve your knowledge",
+      "cta": "Continue as Student"
+    },
+    "parent": {
+      "title": "Parent",
+      "description": "Monitor your child's studies and stay informed about results",
+      "cta": "Continue as Parent"
+    }
+  },
+  "security": {
+    "title": "Your data is secure",
+    "subtitle": "The platform fully complies with modern security standards",
+    "jwt": "JWT Authentication",
+    "jwtDesc": "Every request passes cryptographic verification",
+    "otp": "OTP Verification",
+    "otpDesc": "Two-step identification — via email or SMS",
+    "monitoring": "Test Monitoring",
+    "monitoringDesc": "Tab switching and copy-paste are detected in real time",
+    "multilang": "4-language Interface",
+    "multilangDesc": "Full support in Uzbek (Latin/Cyrillic), Russian, and English"
+  },
+  "ctaSection": {
+    "title": "Start for free today",
+    "subtitle": "Thousands of teachers, students, and parents already use Test-Pro. Join them.",
+    "cta": "Get Started Now"
+  },
+  "footer": {
+    "tagline": "Uzbekistan's modern education platform",
+    "contact": "Contact",
+    "email": "support@testpro.uz",
+    "links": {
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service",
+      "help": "Help Center"
+    },
+    "copyright": "© {{year}} Test-Pro. All rights reserved."
+  }
+}

@@ -71,6 +71,8 @@
   "trueFalseFalse": "Нотўғри",
   "answerPlaceholder": "Жавобингиз...",
   "essayPlaceholder": "Жавобингизни ёзинг...",
+  "matchSelectPlaceholder": "— вариантни танланг —",
+  "orderInstruction": "Элементларни тўғри тартибда жойлаштиринг:",
   "testName": "Тест номи",
   "date": "Сана",
   "actions": "Амаллар",
@@ -96,7 +98,14 @@
     "tabWrong": "Нотўғри",
     "tabSkipped": "Ўтказилган",
     "explanation": "Изоҳ",
-    "showExplanation": "Изоҳни кўриш"
+    "showExplanation": "Изоҳни кўриш",
+    "pendingManualGrading": "Қўлда баҳоланади",
+    "premise": "Шарт",
+    "yourChoice": "Сизнинг жавобингиз",
+    "correctChoice": "Тўғри жавоб",
+    "matchStatus": "Ҳолат",
+    "shouldBe": "керак эди",
+    "teacherFeedback": "Ўқитувчи иzoҳи"
   },
   "attemptStatus": {
     "IN_PROGRESS": "Жараёнда",
@@ -243,6 +252,11 @@
       "unanswered": "Жавобланмаган"
     },
     "finishLabel": "Имтиҳонни якунлаш",
-    "submitWarning": "{{count}} савол жавобланмаган"
+    "submitWarning": "{{count}} савол жавобланмаган",
+    "autoSave": {
+      "saving": "Сақланмоқда...",
+      "saved": "Сақланди",
+      "error": "Сақланмади"
+    }
   }
 }

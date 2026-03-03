@@ -40,7 +40,23 @@
     "stepProof": "Isbot",
     "true": "To'g'ri",
     "false": "Noto'g'ri",
-    "correctAnswerPlaceholder": "JSON ob'ekti yoki oddiy matn"
+    "correctAnswerPlaceholder": "JSON ob'ekti yoki oddiy matn",
+    "gradingStrategy": "Baholash usuli",
+    "gradeLevels": "Sinf darajalari (ko'p tanlash)"
+  },
+  "gradingStrategies": {
+    "EXACT_MATCH": {
+      "label": "Aniq moslik",
+      "hint": "Talaba javobi to'g'ri javobga to'liq mos kelishi kerak (katta-kichik harf farq qilmaydi)"
+    },
+    "CONTAINS": {
+      "label": "O'z ichiga olish",
+      "hint": "Talaba javobida to'g'ri javob qism sifatida mavjud bo'lishi kerak"
+    },
+    "MANUAL": {
+      "label": "Qo'lda baholash",
+      "hint": "O'qituvchi har bir javobni o'zi ko'rib chiqadi va baholaydi"
+    }
   },
   "detail": {
     "title": "Savol tafsilotlari",

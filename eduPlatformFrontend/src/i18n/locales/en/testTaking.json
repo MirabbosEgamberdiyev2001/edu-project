@@ -71,6 +71,8 @@
   "trueFalseFalse": "False",
   "answerPlaceholder": "Your answer...",
   "essayPlaceholder": "Write your answer...",
+  "matchSelectPlaceholder": "— select an option —",
+  "orderInstruction": "Arrange the items in the correct order:",
   "testName": "Test Name",
   "date": "Date",
   "actions": "Actions",
@@ -96,7 +98,14 @@
     "tabWrong": "Incorrect",
     "tabSkipped": "Skipped",
     "explanation": "Explanation",
-    "showExplanation": "Show explanation"
+    "showExplanation": "Show explanation",
+    "pendingManualGrading": "Pending manual grading",
+    "premise": "Premise",
+    "yourChoice": "Your Answer",
+    "correctChoice": "Correct Answer",
+    "matchStatus": "Status",
+    "shouldBe": "should be",
+    "teacherFeedback": "Teacher Feedback"
   },
   "attemptStatus": {
     "IN_PROGRESS": "In Progress",
@@ -243,6 +252,11 @@
       "unanswered": "Unanswered"
     },
     "finishLabel": "Finish and submit exam",
-    "submitWarning": "{{count}} questions unanswered"
+    "submitWarning": "{{count}} questions unanswered",
+    "autoSave": {
+      "saving": "Saving...",
+      "saved": "Saved",
+      "error": "Not saved"
+    }
   }
 }

@@ -40,13 +40,13 @@ export default function QuestionDisplay({ question, questionNumber, totalQuestio
         sx={{ lineHeight: 1.65, fontSize: { xs: '1rem', sm: '1.125rem' } }}
       />
 
-      {/* Optional attached media */}
-      {question.media && typeof question.media === 'object' && 'url' in question.media && (
+      {/* Optional attached image */}
+      {question.media && typeof question.media === 'object' && 'imageUrl' in question.media && question.media.imageUrl && (
         <Box sx={{ mt: 2 }}>
           <img
-            src={question.media.url as string}
-            alt="Question media"
-            style={{ maxWidth: '100%', maxHeight: 300, borderRadius: 8 }}
+            src={question.media.imageUrl as string}
+            alt="Question image"
+            style={{ maxWidth: '100%', maxHeight: 300, borderRadius: 8, display: 'block' }}
           />
         </Box>
       )}

@@ -102,6 +102,9 @@
     "deleteUser": "Foydalanuvchini o'chirish",
     "viewDetails": "Batafsil ko'rish",
     "noUsers": "Foydalanuvchilar topilmadi",
+    "info": "Ma'lumotlar",
+    "resetPassword": "Parolni tiklash",
+    "resetPasswordWarning": "Bu vaqtinchalik parolni foydalanuvchiga yuboring. U qayta ko'rsatilmaydi.",
     "verified": "Tasdiqlangan",
     "notVerified": "Tasdiqlanmagan",
     "failedAttempts": "Muvaffaqiyatsiz urinishlar",
@@ -152,7 +155,10 @@
     "filterDateRange": "Sana bo'yicha filtrlash",
     "from": "Dan",
     "to": "Gacha",
-    "noLogs": "Audit yozuvlari topilmadi"
+    "noLogs": "Audit yozuvlari topilmadi",
+    "searchAction": "Amalni qidirish",
+    "clearFilters": "Filtrlarni tozalash",
+    "totalEntries": "yozuv"
   },
   "recentActivity": {
     "title": "So'nggi faoliyat"

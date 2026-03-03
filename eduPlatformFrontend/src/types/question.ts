@@ -24,6 +24,12 @@ export enum QuestionStatus {
   ARCHIVED = 'ARCHIVED',
 }
 
+export enum GradingStrategy {
+  EXACT_MATCH = 'EXACT_MATCH',
+  CONTAINS = 'CONTAINS',
+  MANUAL = 'MANUAL',
+}
+
 export interface QuestionVersionDto {
   id: string;
   questionId: string;
@@ -55,9 +61,12 @@ export interface QuestionDto {
   difficulty: Difficulty;
   points: number;
   timeLimitSeconds: number | null;
+  imageUrl: string | null;
   media: Record<string, unknown> | null;
   options: unknown;
   correctAnswer: unknown;
+  gradeLevels: number[];
+  gradingStrategy: GradingStrategy | null;
   proof: string | null;
   proofTranslations: Record<string, string> | null;
   proofRequired: boolean;
@@ -85,6 +94,8 @@ export interface CreateQuestionRequest {
   options?: unknown;
   correctAnswer?: unknown;
   proof?: Record<string, string>;
+  gradeLevels?: number[];
+  gradingStrategy?: GradingStrategy;
 }
 
 export interface UpdateQuestionRequest {
@@ -98,6 +109,8 @@ export interface UpdateQuestionRequest {
   correctAnswer?: unknown;
   proof?: Record<string, string>;
   changeReason?: string;
+  gradeLevels?: number[];
+  gradingStrategy?: GradingStrategy;
 }
 
 export interface BulkModerationRequest {

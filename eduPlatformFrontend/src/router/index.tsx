@@ -100,10 +100,24 @@ const PaymentHistoryPage = lazy(() => import('@/features/subscriptions/pages/Pay
 // Public test page
 const PublicTestPage = lazy(() => import('@/features/tests/pages/PublicTestPage'));
 
+// Landing page (public, no auth required)
+const LandingPage = lazy(() => import('@/pages/LandingPage'));
+
+// Static public pages
+const PrivacyPage = lazy(() => import('@/pages/PrivacyPage'));
+const TermsPage = lazy(() => import('@/pages/TermsPage'));
+
+// Homework pages
+const TeacherHomeworkPage = lazy(() => import('@/features/homework/pages/TeacherHomeworkPage'));
+const StudentHomeworkPage = lazy(() => import('@/features/homework/pages/StudentHomeworkPage'));
+
+// Notifications page (all authenticated users)
+const NotificationsPage = lazy(() => import('@/features/notifications/pages/NotificationsPage'));
+
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <Navigate to="/dashboard" replace />,
+    element: <Lazy component={LandingPage} />,
   },
 
   // Guest routes (redirect to dashboard if authenticated)
@@ -138,6 +152,7 @@ export const router = createBrowserRouter([
           { path: '/dashboard', element: <Lazy component={DashboardPage} /> },
           { path: '/profile', element: <Lazy component={ProfilePage} /> },
           { path: '/settings/change-password', element: <Lazy component={ChangePasswordPage} /> },
+          { path: '/notifications', element: <Lazy component={NotificationsPage} /> },
 
           // Subscription routes (all authenticated users)
           { path: '/my-subscription', element: <Lazy component={MySubscriptionPage} /> },
@@ -172,6 +187,7 @@ export const router = createBrowserRouter([
               { path: '/analytics/teacher', element: <Lazy component={TeacherAnalyticsPage} /> },
               { path: '/attestation', element: <Lazy component={AttestatsiyaPage} /> },
               { path: '/analytics/group/:groupId', element: <Lazy component={GroupAnalyticsPage} /> },
+              { path: '/homeworks', element: <Lazy component={TeacherHomeworkPage} /> },
             ],
           },
 
@@ -202,6 +218,7 @@ export const router = createBrowserRouter([
               { path: '/pairing', element: <Lazy component={StudentPairingPage} /> },
               // My Attempts — inside AppLayout so sidebar is visible
               { path: '/my-attempts', element: <Lazy component={MyAttemptsPage} /> },
+              { path: '/my-homework', element: <Lazy component={StudentHomeworkPage} /> },
             ],
           },
 
@@ -240,6 +257,8 @@ export const router = createBrowserRouter([
 
   // Public routes
   { path: '/test/:slug', element: <Lazy component={PublicTestPage} /> },
+  { path: '/privacy', element: <Lazy component={PrivacyPage} /> },
+  { path: '/terms', element: <Lazy component={TermsPage} /> },
   { path: '/unauthorized', element: <Lazy component={UnauthorizedPage} /> },
   { path: '*', element: <Lazy component={NotFoundPage} /> },
 ]);

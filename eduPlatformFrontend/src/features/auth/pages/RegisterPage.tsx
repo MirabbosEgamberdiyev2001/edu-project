@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Box, Button, Typography, Link as MuiLink, TextField, CircularProgress, Divider } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AuthLayout from '../components/AuthLayout';
 import AuthMethodTabs from '../components/AuthMethodTabs';
@@ -19,6 +19,11 @@ export default function RegisterPage() {
   const { t } = useTranslation('auth');
   const [method, setMethod] = useState<'email' | 'phone'>('email');
   const register = useRegister();
+  const [searchParams] = useSearchParams();
+  const preselectedRole = searchParams.get('role');
+  const initialRole = (preselectedRole && Object.values(Role).includes(preselectedRole as Role))
+    ? (preselectedRole as Role)
+    : Role.STUDENT;
 
   const {
     control,
@@ -35,7 +40,7 @@ export default function RegisterPage() {
       lastName: '',
       password: '',
       confirmPassword: '',
-      role: Role.STUDENT,
+      role: initialRole,
     },
   });
 

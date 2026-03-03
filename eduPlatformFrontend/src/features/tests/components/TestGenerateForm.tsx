@@ -46,7 +46,7 @@ interface FormState {
   titleTranslations: Record<string, string>;
   category: TestCategory | '';
   subjectId: string;
-  gradeLevel: number | null;
+  gradeLevels: number[];
   topicIds: string[];
   questionCount: string;
   variantCount: string;
@@ -60,7 +60,7 @@ const INITIAL_FORM: FormState = {
   titleTranslations: {},
   category: '',
   subjectId: '',
-  gradeLevel: null,
+  gradeLevels: [],
   topicIds: [],
   questionCount: '20',
   variantCount: '4',
@@ -139,7 +139,6 @@ export default function TestGenerateForm() {
       title: resolvedTitle,
       titleTranslations: translations,
       ...(form.category && { category: form.category as TestCategory }),
-      ...(form.gradeLevel != null && { gradeLevel: form.gradeLevel }),
       subjectId: form.subjectId,
       topicIds: form.topicIds,
       questionCount: parsedQuestionCount,
@@ -360,7 +359,7 @@ export default function TestGenerateForm() {
                 setForm((prev) => ({
                   ...prev,
                   subjectId: e.target.value,
-                  gradeLevel: null,
+                  gradeLevels: [],
                   topicIds: [],
                   questionCount: '20',
                   variantCount: '4',
@@ -385,20 +384,24 @@ export default function TestGenerateForm() {
                   <Typography variant="caption" color="text.disabled">({t('form.optional', 'ixtiyoriy')})</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                  {GRADES.map((grade) => (
-                    <Chip
-                      key={grade}
-                      label={`${grade}`}
-                      color={form.gradeLevel === grade ? 'primary' : 'default'}
-                      variant={form.gradeLevel === grade ? 'filled' : 'outlined'}
-                      onClick={() => setForm((prev) => ({
-                        ...prev,
-                        gradeLevel: prev.gradeLevel === grade ? null : grade,
-                        topicIds: [],
-                      }))}
-                      sx={{ minWidth: 40 }}
-                    />
-                  ))}
+                  {GRADES.map((grade) => {
+                    const selected = form.gradeLevels.includes(grade);
+                    return (
+                      <Chip
+                        key={grade}
+                        label={`${grade}`}
+                        color={selected ? 'primary' : 'default'}
+                        variant={selected ? 'filled' : 'outlined'}
+                        onClick={() => setForm((prev) => ({
+                          ...prev,
+                          gradeLevels: selected
+                            ? prev.gradeLevels.filter((g) => g !== grade)
+                            : [...prev.gradeLevels, grade].sort((a, b) => a - b),
+                        }))}
+                        sx={{ minWidth: 40 }}
+                      />
+                    );
+                  })}
                 </Box>
               </Box>
             )}
@@ -408,7 +411,7 @@ export default function TestGenerateForm() {
                 <Paper variant="outlined" sx={{ p: 2, maxHeight: 300, overflow: 'auto' }}>
                   <TopicCheckboxTree
                     subjectId={form.subjectId}
-                    gradeLevel={form.gradeLevel}
+                    gradeLevels={form.gradeLevels}
                     selected={form.topicIds}
                     onChange={(ids) => updateForm('topicIds', ids)}
                   />

@@ -6,6 +6,8 @@ import type { CreateQuestionRequest, UpdateQuestionRequest } from '@/types/quest
 import type { AxiosError } from 'axios';
 import type { ApiError } from '@/types/api';
 
+export type ImageAction = { file?: File; remove?: boolean };
+
 export function useQuestionMutations() {
   const queryClient = useQueryClient();
   const toast = useToast();
@@ -90,5 +92,28 @@ export function useQuestionMutations() {
     },
   });
 
-  return { create, update, remove, submitForModeration, rollback, bulkSubmit };
+  const uploadImage = useMutation({
+    mutationFn: ({ id, file }: { id: string; file: File }) =>
+      questionApi.uploadImage(id, file),
+    onSuccess: ({ data: resp }) => {
+      toast.success(resp.message);
+      invalidate();
+    },
+    onError: (error: AxiosError<ApiError>) => {
+      toast.error(error.response?.data?.message || t('error'));
+    },
+  });
+
+  const deleteImage = useMutation({
+    mutationFn: (id: string) => questionApi.deleteImage(id),
+    onSuccess: ({ data: resp }) => {
+      toast.success(resp.message);
+      invalidate();
+    },
+    onError: (error: AxiosError<ApiError>) => {
+      toast.error(error.response?.data?.message || t('error'));
+    },
+  });
+
+  return { create, update, remove, submitForModeration, rollback, bulkSubmit, uploadImage, deleteImage };
 }

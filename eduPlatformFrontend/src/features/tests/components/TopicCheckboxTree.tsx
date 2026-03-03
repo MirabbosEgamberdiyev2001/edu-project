@@ -12,23 +12,23 @@ import { useTopicMutations } from '@/features/topics/hooks/useTopicMutations';
 
 interface TopicCheckboxTreeProps {
   subjectId: string;
-  gradeLevel: number | null;
+  gradeLevels: number[];
   selected: string[];
   onChange: (selected: string[]) => void;
 }
 
-export default function TopicCheckboxTree({ subjectId, gradeLevel, selected, onChange }: TopicCheckboxTreeProps) {
-  const { t } = useTranslation('test');
+export default function TopicCheckboxTree({ subjectId, gradeLevels, selected, onChange }: TopicCheckboxTreeProps) {
   const { t: tTopic } = useTranslation('topic');
 
   const [topicFormOpen, setTopicFormOpen] = useState(false);
 
   const { create: createTopic } = useTopicMutations(subjectId);
 
+  // Always load all topics for the subject (null = no grade filter)
   const { data: topics, isLoading } = useQuery({
-    queryKey: ['topics', subjectId, gradeLevel],
+    queryKey: ['topics', subjectId],
     queryFn: async () => {
-      const { data } = await topicApi.getTopicTree(subjectId, gradeLevel);
+      const { data } = await topicApi.getTopicTree(subjectId, null);
       return data.data;
     },
     enabled: !!subjectId,
@@ -128,7 +128,7 @@ export default function TopicCheckboxTree({ subjectId, gradeLevel, selected, onC
           open={topicFormOpen}
           onClose={() => setTopicFormOpen(false)}
           onSubmit={(data) => {
-            const createData = { ...data, gradeLevel } as CreateTopicRequest;
+            const createData = { ...data, gradeLevel: gradeLevels[0] ?? null } as CreateTopicRequest;
             createTopic.mutate(createData, {
               onSuccess: () => {
                 setTopicFormOpen(false);
@@ -156,7 +156,7 @@ export default function TopicCheckboxTree({ subjectId, gradeLevel, selected, onC
         open={topicFormOpen}
         onClose={() => setTopicFormOpen(false)}
         onSubmit={(data) => {
-          const createData = { ...data, gradeLevel } as CreateTopicRequest;
+          const createData = { ...data, gradeLevel: gradeLevels[0] ?? null } as CreateTopicRequest;
           createTopic.mutate(createData, {
             onSuccess: () => {
               setTopicFormOpen(false);

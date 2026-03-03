@@ -74,3 +74,21 @@ export function useDeleteUser() {
     },
   });
 }
+
+export function useResetPassword() {
+  return useMutation({
+    mutationFn: (id: string) => adminApi.resetPassword(id),
+  });
+}
+
+export function useUserAuditLogs(userId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ['admin', 'audit-logs', 'user', userId],
+    queryFn: async () => {
+      const { data } = await adminApi.getAuditLogsByUser(userId, { size: 20 });
+      return data.data;
+    },
+    enabled: enabled && !!userId,
+    staleTime: 30_000,
+  });
+}
