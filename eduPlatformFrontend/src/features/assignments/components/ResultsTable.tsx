@@ -6,15 +6,18 @@ import {
   TableBody,
   Chip,
   Typography,
+  Button,
 } from '@mui/material';
+import GradingIcon from '@mui/icons-material/Grading';
 import { useTranslation } from 'react-i18next';
 import type { StudentResultDto } from '@/types/assignment';
 
 interface ResultsTableProps {
   students: StudentResultDto[];
+  onGradeAttempt?: (attemptId: string, studentName: string) => void;
 }
 
-export default function ResultsTable({ students }: ResultsTableProps) {
+export default function ResultsTable({ students, onGradeAttempt }: ResultsTableProps) {
   const { t } = useTranslation('assignment');
 
   return (
