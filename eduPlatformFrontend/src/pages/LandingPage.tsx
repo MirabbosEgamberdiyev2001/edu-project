@@ -110,7 +110,7 @@ const TEST_CATEGORY_KEYS = ['dtm', 'school', 'olympiad', 'certificate', 'attesta
 // Main component
 // ─────────────────────────────────────────────────────────────────────────────
 export default function LandingPage() {
-  const { t } = useTranslation('landing');
+  const { t, i18n } = useTranslation('landing');
   const navigate = useNavigate();
   const [roleModalOpen, setRoleModalOpen] = useState(false);
   const [featuresTab, setFeaturesTab] = useState(0);
@@ -125,9 +125,13 @@ export default function LandingPage() {
     staleTime: 10 * 60 * 1000,
   });
 
-  const { data: subjects, isLoading: subjectsLoading } = useQuery({
-    queryKey: ['public', 'subjects'],
-    queryFn: () => publicApi.getSubjects().then((r) => r.data.data),
+  const {
+    data: subjects,
+    isLoading: subjectsLoading,
+    isError: subjectsError,
+  } = useQuery({
+    queryKey: ['public', 'subjects', i18n.language],
+    queryFn: () => publicApi.getSubjects(i18n.language).then((r) => r.data.data),
     staleTime: 10 * 60 * 1000,
   });
 
@@ -486,29 +490,95 @@ export default function LandingPage() {
           </Typography>
 
           {subjectsLoading ? (
-            <Stack direction="row" flexWrap="wrap" gap={1.5} justifyContent="center">
-              {Array.from({ length: 14 }).map((_, i) => (
-                <Skeleton key={i} variant="rounded" width={90 + (i % 4) * 25} height={32} />
+            <Grid container spacing={3}>
+              {Array.from({ length: 12 }).map((_, i) => (
+                <Grid item xs={12} sm={6} md={4} key={i}>
+                  <Skeleton variant="rounded" height={164} sx={{ borderRadius: 3 }} />
+                </Grid>
               ))}
-            </Stack>
+            </Grid>
+          ) : subjectsError ? (
+            <Box textAlign="center" py={6}>
+              <Typography color="error" variant="body1">
+                {t('subjects.error')}
+              </Typography>
+            </Box>
+          ) : (subjects ?? []).length === 0 ? (
+            <Box textAlign="center" py={6}>
+              <Typography color="text.secondary" variant="body1">
+                {t('subjects.noSubjects')}
+              </Typography>
+            </Box>
           ) : (
-            <Stack direction="row" flexWrap="wrap" gap={1.5} justifyContent="center">
-              {(subjects ?? []).map((subject) => (
-                <Chip
-                  key={subject}
-                  label={subject}
-                  variant="outlined"
-                  onClick={openModal}
-                  sx={{
-                    fontSize: '0.875rem',
-                    py: 0.5,
-                    cursor: 'pointer',
-                    transition: 'all .15s',
-                    '&:hover': { bgcolor: 'primary.main', color: 'white', borderColor: 'primary.main' },
-                  }}
-                />
+            <Grid container spacing={3}>
+              {(subjects ?? []).map((subject, i) => (
+                <Grid item xs={12} sm={6} md={4} key={i}>
+                  <Card
+                    elevation={0}
+                    onClick={openModal}
+                    sx={{
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: 3,
+                      height: '100%',
+                      cursor: 'pointer',
+                      transition: 'all .2s ease',
+                      '&:hover': {
+                        boxShadow: 6,
+                        borderColor: 'primary.main',
+                        transform: 'translateY(-4px)',
+                      },
+                    }}
+                  >
+                    <CardContent sx={{ p: 3 }}>
+                      <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 1.5 }}>
+                        <Avatar
+                          sx={{
+                            bgcolor: subject.color ?? 'primary.main',
+                            width: 44,
+                            height: 44,
+                            fontSize: '1.3rem',
+                            flexShrink: 0,
+                          }}
+                        >
+                          {subject.icon ?? subject.name.charAt(0).toUpperCase()}
+                        </Avatar>
+                        <Typography
+                          variant="subtitle1"
+                          fontWeight={700}
+                          sx={{ lineHeight: 1.3 }}
+                        >
+                          {subject.name}
+                        </Typography>
+                      </Stack>
+                      {subject.description && (
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{
+                            mb: 2,
+                            lineHeight: 1.7,
+                            display: '-webkit-box',
+                            WebkitLineClamp: 3,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                          }}
+                        >
+                          {subject.description}
+                        </Typography>
+                      )}
+                      <Chip
+                        label={`${subject.testCount ?? 0} ${t('subjects.tests')}`}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                        sx={{ fontWeight: 600 }}
+                      />
+                    </CardContent>
+                  </Card>
+                </Grid>
               ))}
-            </Stack>
+            </Grid>
           )}
 
           <Box sx={{ textAlign: 'center', mt: 5 }}>
@@ -736,7 +806,39 @@ export default function LandingPage() {
               <Typography variant="subtitle2" fontWeight={700} sx={{ color: 'white', mb: 1.5 }}>
                 {t('footer.contact')}
               </Typography>
-              <Typography variant="body2">{t('footer.email')}</Typography>
+              <Stack spacing={0.75}>
+                <Button
+                  size="small"
+                  component="a"
+                  href={`mailto:${t('footer.email')}`}
+                  sx={{ color: 'grey.400', justifyContent: 'flex-start', p: 0, textTransform: 'none', minWidth: 'auto' }}
+                >
+                  {t('footer.email')}
+                </Button>
+                <Typography variant="subtitle2" fontWeight={700} sx={{ color: 'white', mt: 1.5 }}>
+                  {t('footer.social')}
+                </Typography>
+                <Button
+                  size="small"
+                  component="a"
+                  href="https://instagram.com/testpro_uz"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{ color: 'grey.400', justifyContent: 'flex-start', p: 0, textTransform: 'none', minWidth: 'auto' }}
+                >
+                  Instagram: {t('footer.instagram')}
+                </Button>
+                <Button
+                  size="small"
+                  component="a"
+                  href="https://t.me/testpro_uz"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{ color: 'grey.400', justifyContent: 'flex-start', p: 0, textTransform: 'none', minWidth: 'auto' }}
+                >
+                  Telegram: {t('footer.telegram')}
+                </Button>
+              </Stack>
             </Grid>
 
             <Grid item xs={12} sm={6} md={4}>

@@ -75,7 +75,10 @@
     "title": "Qaysi fanlar bo'yicha testlar bor?",
     "subtitle": "Matematika, fizika, tarix va boshqa fanlar bo'yicha yuzlab testlar",
     "viewAll": "Barcha testlarni ko'rish",
-    "loading": "Fanlar yuklanmoqda..."
+    "loading": "Fanlar yuklanmoqda...",
+    "tests": "ta test",
+    "noSubjects": "Fanlar hali qo'shilmagan",
+    "error": "Fanlarni yuklashda xatolik yuz berdi"
   },
   "promoWidget": {
     "title": "Promokodingiz bormi?",
@@ -194,7 +197,10 @@
     "appName": "Test-Pro",
     "tagline": "O'zbekistonning zamonaviy ta'lim platformasi",
     "contact": "Aloqa",
-    "email": "support@testpro.uz",
+    "email": "info@test-pro.uz",
+    "instagram": "@testpro_uz",
+    "telegram": "@testpro_uz",
+    "social": "Ijtimoiy tarmoqlar",
     "links": {
       "privacy": "Maxfiylik siyosati",
       "terms": "Foydalanish shartlari",

@@ -75,7 +75,10 @@
     "title": "Which subjects have tests?",
     "subtitle": "Mathematics, physics, history and more — hundreds of tests available",
     "viewAll": "Browse all tests",
-    "loading": "Loading subjects..."
+    "loading": "Loading subjects...",
+    "tests": "tests",
+    "noSubjects": "No subjects added yet",
+    "error": "Failed to load subjects"
   },
   "promoWidget": {
     "title": "Have a promo code?",
@@ -194,7 +197,10 @@
     "appName": "Test-Pro",
     "tagline": "Uzbekistan's modern education platform",
     "contact": "Contact",
-    "email": "support@testpro.uz",
+    "email": "info@test-pro.uz",
+    "instagram": "@testpro_uz",
+    "telegram": "@testpro_uz",
+    "social": "Social media",
     "links": {
       "privacy": "Privacy Policy",
       "terms": "Terms of Service",
