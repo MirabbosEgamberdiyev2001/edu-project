@@ -122,6 +122,11 @@ app:
       enabled: ${UZUM_ENABLED:false}
       service-id: ${UZUM_SERVICE_ID:}
       secret-key: ${UZUM_SECRET_KEY:}
+  otp:
+    # Set APP_OTP_FIXED_ENABLED=true in prod.env to always accept a fixed OTP (testing mode).
+    # Set APP_OTP_FIXED_ENABLED=false for real SecureRandom OTP generation.
+    fixed-enabled: ${APP_OTP_FIXED_ENABLED:false}
+    fixed-value: ${APP_OTP_FIXED_VALUE:777777}
   google:
     client-id: ${GOOGLE_CLIENT_ID:237372892439-4bju17u6k3cjoil26p148m21ilmecd9s.apps.googleusercontent.com}
   telegram:

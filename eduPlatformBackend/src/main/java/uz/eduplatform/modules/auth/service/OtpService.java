@@ -7,6 +7,7 @@ import io.github.bucket4j.Bucket;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uz.eduplatform.core.audit.AuditService;
 import uz.eduplatform.core.common.exception.BusinessException;
@@ -14,12 +15,21 @@ import uz.eduplatform.core.common.utils.MessageService;
 import uz.eduplatform.modules.auth.dto.OtpResponse;
 import uz.eduplatform.modules.auth.dto.RegisterRequest;
 
+import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.function.Function;
 
 @Slf4j
 @Service
 public class OtpService {
+
+    @Value("${app.otp.fixed-enabled:false}")
+    private boolean otpFixedEnabled;
+
+    @Value("${app.otp.fixed-value:777777}")
+    private String otpFixedValue;
+
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final Cache<String, String> otpCache;
     private final Cache<String, String> registrationDataCache;
@@ -172,8 +182,11 @@ public class OtpService {
     }
 
     private String generateOtp() {
-        // TODO: Replace with secure random OTP before final production release.
-        // Fixed OTP for current production testing phase — always sends 777777.
-        return "777777";
+        if (otpFixedEnabled) {
+            log.warn("OTP fixed mode is ENABLED — returning fixed value '{}'. Disable APP_OTP_FIXED_ENABLED for real OTP.", otpFixedValue);
+            return otpFixedValue;
+        }
+        int code = 100000 + SECURE_RANDOM.nextInt(900000);
+        return String.valueOf(code);
     }
 }
