@@ -8,7 +8,7 @@ RUN mvn dependency:go-offline -q
 
 # Build the application (tests are skipped — run them in CI before docker build)
 COPY src ./src
-RUN mvn package -DskipTests -q
+RUN mvn package -Dmaven.test.skip=true -q
 
 # ── Stage 2: Runtime ─────────────────────────────────────────────────────────
 FROM eclipse-temurin:21-jre-alpine
