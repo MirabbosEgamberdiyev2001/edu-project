@@ -68,13 +68,14 @@ export default function ManualGradingDialog({
     setValidationError(null);
 
     // Client-side validation: check all entered scores are within range
-    for (const q of manualQuestions) {
+    for (let qi = 0; qi < manualQuestions.length; qi++) {
+      const q = manualQuestions[qi];
       const grade = grades[q.id];
       // Skip questions where teacher didn't enter a score (leave as-is)
       if (grade?.score == null || grade.score === '') continue;
       const scoreNum = Number(grade.score);
       if (isNaN(scoreNum) || scoreNum < 0) {
-        setValidationError(t('grading.scoreInvalid', { num: q.questionIndex ?? '' }));
+        setValidationError(t('grading.scoreInvalid', { num: qi + 1 }));
         return;
       }
       if (scoreNum > q.points) {
