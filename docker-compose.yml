@@ -1,0 +1,83 @@
+# EduPlatform — Production Docker Compose
+# Values come from the .env file on the server (written by GitLab CI).
+# WARNING: `docker compose down -v` removes ALL volumes including the DB.
+#          This is intentional (clean-state deploy). All data is wiped on each deploy.
+
+services:
+
+  # ── PostgreSQL Database ───────────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: eduplatform-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       eduplatform
+      POSTGRES_USER:     postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test:     ["CMD-SHELL", "pg_isready -U postgres -d eduplatform"]
+      interval: 10s
+      timeout:  5s
+      retries:  10
+      start_period: 20s
+    networks:
+      - eduplatform-net
+
+  # ── Spring Boot Backend ───────────────────────────────────────────────────
+  backend:
+    image: ${BACKEND_IMAGE}
+    container_name: eduplatform-backend
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      # Database — points to the db service above
+      DATABASE_URL:  jdbc:postgresql://db:5432/eduplatform
+      DB_USERNAME:   postgres
+      DB_PASSWORD:   ${DB_PASSWORD}
+      # JWT
+      JWT_SECRET:    ${JWT_SECRET}
+      # CORS / Frontend
+      FRONTEND_BASE_URL: ${FRONTEND_BASE_URL:-http://localhost}
+      CORS_ORIGINS:      ${CORS_ORIGINS:-http://localhost}
+      # File uploads
+      UPLOAD_DIR: /app/uploads
+      # OTP (set false for real SMS)
+      APP_OTP_FIXED_ENABLED: ${APP_OTP_FIXED_ENABLED:-false}
+      # Mail (optional — leave empty to disable)
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_FROM:     ${MAIL_FROM:-}
+      MAIL_ENABLED:  ${MAIL_ENABLED:-false}
+    volumes:
+      - uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "8082"
+    networks:
+      - eduplatform-net
+
+  # ── React Frontend (Nginx) ────────────────────────────────────────────────
+  frontend:
+    image: ${FRONTEND_IMAGE}
+    container_name: eduplatform-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - eduplatform-net
+
+# ── Volumes ──────────────────────────────────────────────────────────────────
+volumes:
+  pgdata:    # PostgreSQL data — WIPED on clean-state deploy
+  uploads:   # Backend file uploads — WIPED on clean-state deploy
+
+# ── Network ──────────────────────────────────────────────────────────────────
+networks:
+  eduplatform-net:
+    driver: bridge

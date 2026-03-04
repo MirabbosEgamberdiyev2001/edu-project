@@ -23,3 +23,9 @@ uploads/
 .DS_Store
 .claude/
 nul
+
+# === Docker / CI secrets ===
+.env
+.env.production.local
+*.pem
+*.key

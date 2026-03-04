@@ -1,0 +1,165 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# EduPlatform — GitLab CI/CD Pipeline
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Stages:
+#   1. build   — Build Docker images (backend + frontend) → push to GitLab Registry
+#   2. deploy  — SSH to server → rolling update (DB data PRESERVED)
+#
+# ⚠️  Database is NEVER wiped by this pipeline.
+#     For a one-time clean reset, run deploy-clean.sh on the server manually.
+#
+# Required GitLab CI/CD Variables (Settings → CI/CD → Variables):
+#   SSH_PRIVATE_KEY       — SSH private key for server access  (type: File, protected)
+#   SERVER_IP             — 62.84.186.113
+#   DB_PASSWORD           — PostgreSQL password
+#   JWT_SECRET            — JWT signing secret (min 32 chars)
+#   FRONTEND_BASE_URL     — http://62.84.186.113  (or your domain)
+#   CORS_ORIGINS          — http://62.84.186.113  (or your domain)
+#   APP_OTP_FIXED_ENABLED — false (set true only for testing)
+#   MAIL_ENABLED          — false (set true + credentials when needed)
+#   MAIL_USERNAME         — (optional)
+#   MAIL_PASSWORD         — (optional)
+#   MAIL_FROM             — (optional)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+variables:
+  DOCKER_TLS_CERTDIR: "/certs"
+  BACKEND_IMAGE:   "$CI_REGISTRY_IMAGE/backend:$CI_COMMIT_SHORT_SHA"
+  FRONTEND_IMAGE:  "$CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHORT_SHA"
+  BACKEND_LATEST:  "$CI_REGISTRY_IMAGE/backend:latest"
+  FRONTEND_LATEST: "$CI_REGISTRY_IMAGE/frontend:latest"
+
+stages:
+  - build
+  - deploy
+
+# ── Backend: Build & Push ────────────────────────────────────────────────────
+build-backend:
+  stage: build
+  image: docker:24
+  services:
+    - docker:24-dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+  script:
+    - echo "=== Building backend image ==="
+    - |
+      docker build \
+        -t "$BACKEND_IMAGE" \
+        -t "$BACKEND_LATEST" \
+        ./eduPlatformBackend
+    - docker push "$BACKEND_IMAGE"
+    - docker push "$BACKEND_LATEST"
+    - echo "✅ Backend pushed → $BACKEND_IMAGE"
+  only:
+    - main
+
+# ── Frontend: Build & Push ────────────────────────────────────────────────────
+build-frontend:
+  stage: build
+  image: docker:24
+  services:
+    - docker:24-dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+  script:
+    - echo "=== Building frontend image ==="
+    - |
+      docker build \
+        --build-arg VITE_API_BASE_URL="/api" \
+        --build-arg VITE_WS_URL="/ws" \
+        --build-arg VITE_GOOGLE_CLIENT_ID="${VITE_GOOGLE_CLIENT_ID:-237372892439-4bju17u6k3cjoil26p148m21ilmecd9s.apps.googleusercontent.com}" \
+        -t "$FRONTEND_IMAGE" \
+        -t "$FRONTEND_LATEST" \
+        ./eduPlatformFrontend
+    - docker push "$FRONTEND_IMAGE"
+    - docker push "$FRONTEND_LATEST"
+    - echo "✅ Frontend pushed → $FRONTEND_IMAGE"
+  only:
+    - main
+
+# ── Deploy: Rolling Update (DB DATA IS PRESERVED) ────────────────────────────
+deploy:
+  stage: deploy
+  image: alpine:3.19
+  needs:
+    - build-backend
+    - build-frontend
+  before_script:
+    - apk add --no-cache openssh-client
+    - mkdir -p ~/.ssh && chmod 700 ~/.ssh
+    - cp "$SSH_PRIVATE_KEY" ~/.ssh/id_ed25519
+    - chmod 600 ~/.ssh/id_ed25519
+    - ssh-keyscan -H "$SERVER_IP" >> ~/.ssh/known_hosts 2>/dev/null
+  script:
+    # 1. Ensure app directory exists
+    - ssh -i ~/.ssh/id_ed25519 root@$SERVER_IP "mkdir -p /opt/eduplatform"
+
+    # 2. Transfer docker-compose.yml
+    - scp -i ~/.ssh/id_ed25519 docker-compose.yml root@$SERVER_IP:/opt/eduplatform/docker-compose.yml
+
+    # 3. Write .env file (base64 encoding avoids shell special-char issues)
+    - |
+      ENV_CONTENT="BACKEND_IMAGE=${BACKEND_IMAGE}
+      FRONTEND_IMAGE=${FRONTEND_IMAGE}
+      DB_PASSWORD=${DB_PASSWORD}
+      JWT_SECRET=${JWT_SECRET}
+      FRONTEND_BASE_URL=${FRONTEND_BASE_URL:-http://${SERVER_IP}}
+      CORS_ORIGINS=${CORS_ORIGINS:-http://${SERVER_IP}}
+      APP_OTP_FIXED_ENABLED=${APP_OTP_FIXED_ENABLED:-false}
+      MAIL_USERNAME=${MAIL_USERNAME:-}
+      MAIL_PASSWORD=${MAIL_PASSWORD:-}
+      MAIL_FROM=${MAIL_FROM:-}
+      MAIL_ENABLED=${MAIL_ENABLED:-false}"
+      printf '%s' "$ENV_CONTENT" | base64 | \
+        ssh -i ~/.ssh/id_ed25519 root@$SERVER_IP "base64 -d > /opt/eduplatform/.env"
+
+    # 4. Login to GitLab Registry on server
+    - |
+      printf '%s' "$CI_REGISTRY_PASSWORD" | base64 | \
+        ssh -i ~/.ssh/id_ed25519 root@$SERVER_IP \
+          "base64 -d | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin"
+
+    # 5. Pull new images
+    - ssh -i ~/.ssh/id_ed25519 root@$SERVER_IP "docker pull ${BACKEND_IMAGE}"
+    - ssh -i ~/.ssh/id_ed25519 root@$SERVER_IP "docker pull ${FRONTEND_IMAGE}"
+
+    # 6. Rolling update — containers recreated, volumes (DB) PRESERVED
+    - |
+      ssh -i ~/.ssh/id_ed25519 root@$SERVER_IP "
+        set -e
+        cd /opt/eduplatform
+        echo '=== Rolling update — DB data preserved ==='
+        docker compose up -d --force-recreate --remove-orphans
+        echo '=== Removing dangling images ==='
+        docker image prune -f 2>/dev/null || true
+      "
+
+    # 7. Wait and verify
+    - |
+      ssh -i ~/.ssh/id_ed25519 root@$SERVER_IP "
+        cd /opt/eduplatform
+        echo '=== Waiting for services (up to 90s) ==='
+        for i in \$(seq 1 18); do
+          sleep 5
+          RUNNING=\$(docker compose ps --status running 2>/dev/null | grep -c 'running' || echo 0)
+          echo \"Attempt \$i/18 — running: \$RUNNING/3\"
+          if [ \"\$RUNNING\" -ge 3 ]; then
+            echo '✅ All services running!'
+            break
+          fi
+        done
+        echo ''
+        docker compose ps
+        echo ''
+        echo '=== Backend logs (last 15 lines) ==='
+        docker compose logs --tail=15 backend
+        echo ''
+        echo '✅ Deployment complete!'
+      "
+  only:
+    - main
+  environment:
+    name: production
+    url: http://$SERVER_IP
